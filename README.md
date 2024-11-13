@@ -1,2 +1,2 @@
 # scooty-doo-backend
-Backend for the Scooty Doo bike renting application
+Backend for the Scooty Doo web application
