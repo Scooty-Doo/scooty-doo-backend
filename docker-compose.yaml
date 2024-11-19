@@ -1,0 +1,26 @@
+version: "1"
+
+networks:
+  scooty-web:
+
+services:
+    api:
+        image: challep/scooty-doo-api:1.0
+        container_name: "api"
+        networks:
+          scooty-web:
+        ports:
+          - 80:80
+#    server:
+#        image: challep/bthloggen-server:1.0
+#        container_name: "server"
+#        ports:
+#            - "1337:1337"
+#        networks:
+#            challeweb:
+#        restart:
+#            "always"
+#        volumes:
+#            - ./data:/data
+#    bike:
+#      image: 
