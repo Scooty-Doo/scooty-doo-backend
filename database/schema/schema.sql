@@ -16,7 +16,7 @@ CREATE SCHEMA IF NOT EXISTS scooty_doo;
 
 -- Set the search path to the new schema
 SET
-    search_path TO scooty_doo;
+    search_path TO scooty_doo, public;
 
 -- Create cities table
 CREATE TABLE
