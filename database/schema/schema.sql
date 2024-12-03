@@ -37,6 +37,7 @@ CREATE TABLE
         email TEXT UNIQUE NOT NULL,
         balance NUMERIC(10, 2) DEFAULT 0.00,
         use_prepay BOOLEAN DEFAULT FALSE,
+        metadata JSONB,
         created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
@@ -70,7 +71,7 @@ CREATE TABLE
     IF NOT EXISTS bike_status (
         id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
         status_code TEXT UNIQUE NOT NULL,
-        status_description TEXT NOT NULL,
+        metadata JSONB,
         created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
@@ -79,12 +80,11 @@ CREATE TABLE
 CREATE TABLE
     IF NOT EXISTS bikes (
         id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-        model TEXT NOT NULL,
-        firm_ware_version TEXT NOT NULL,
         battery_lvl INT NOT NULL CHECK (
             battery_lvl >= 0
             AND battery_lvl <= 100
         ),
+        metadata JSONB,
         last_position GEOMETRY (POINT, 4326),
         city_id INT NOT NULL REFERENCES cities (id),
         created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -128,6 +128,7 @@ CREATE TABLE
         speed_limit INT,
         start_fee NUMERIC(10, 2) NOT NULL,
         end_fee NUMERIC(10, 2) NOT NULL,
+        metadata JSONB,
         created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
@@ -150,6 +151,7 @@ CREATE TABLE
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
         full_name TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
+        metadata JSONB,
         created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
@@ -182,6 +184,7 @@ CREATE TABLE
         transaction_type TEXT NOT NULL CHECK (transaction_type IN ('trip', 'deposit', 'refund')),
         transaction_description TEXT,
         trip_id INT REFERENCES trips (id),
+        metadata JSONB,
         payment_method_id UUID REFERENCES payment_methods (id),
         created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
