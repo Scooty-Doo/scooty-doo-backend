@@ -1,5 +1,3 @@
-version: "1"
-
 networks:
   scooty-web:
 
@@ -12,12 +10,12 @@ services:
         ports:
           - 80:80
 #    server:
-#        image: challep/bthloggen-server:1.0
+#        image: challep/scooty-doo-server:1.0
 #        container_name: "server"
 #        ports:
 #            - "1337:1337"
 #        networks:
-#            challeweb:
+#            scooty-web:
 #        restart:
 #            "always"
 #        volumes:
