@@ -54,7 +54,7 @@ def get_bike_routes(coordinate_tuples: list) -> list:
         else:
             print(f"Request failed with status code {response.status_code} for coordinates {coord_str}")
         
-        time.sleep(5)
+        time.sleep(3)
 
     return responses
 
@@ -70,8 +70,9 @@ def save_responses_to_json(responses: list, output_file: str) -> None:
         json.dump(responses, f, indent=4)
 
 geojson_file = "../map_data/malmo_bike_paths.geojson"
-num_coordinates = 2
+num_coordinates = 0
 coordinates = randomize_coordinates(geojson_file, num_coordinates)
 print(coordinates)
 responses = get_bike_routes(coordinates)
 print(responses)
+save_responses_to_json(responses, '../generated_data/bike_routes.json')
