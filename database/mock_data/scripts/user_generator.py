@@ -1,13 +1,14 @@
 import csv
 import random
 from datetime import datetime, timedelta
+from tsidpy import TSID
 
 def generate_users(
     num_users: int,
     output_file: str,
-    female_first_names_file: str = "name_data/female-first-names.csv",
-    male_first_names_file: str = "name_data/male-first-names.csv",
-    last_names_file: str = "name_data/last-names.csv"
+    female_first_names_file: str = "../name_data/female-first-names.csv",
+    male_first_names_file: str = "../name_data/male-first-names.csv",
+    last_names_file: str = "../name_data/last-names.csv"
 ) -> None:
     """
     Generate a CSV file with random user data.
@@ -39,6 +40,7 @@ def generate_users(
     # Open the output CSV file
     with open(output_file, "w", newline="") as csvfile:
         fieldnames = [
+            "id",
             "full_name",
             "email",
             "balance",
@@ -77,6 +79,7 @@ def generate_users(
 
             writer.writerow(
                 {
+                    "id": TSID.create().number,
                     "full_name": full_name,
                     "email": email,
                     "balance": balance,
@@ -85,3 +88,4 @@ def generate_users(
                 }
             )
 
+generate_users(100, '../generated_data/users.csv')
