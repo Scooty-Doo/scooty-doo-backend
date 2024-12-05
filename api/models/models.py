@@ -18,7 +18,7 @@ class PaymentProvider(BaseModel):
     created_at: datetime.datetime # timestamp?
     updated_at: datetime.datetime # timestamp?
 
-class PaymentMethod:
+class PaymentMethod(BaseModel):
     id: int
     user: "User"
     provider: PaymentProvider
@@ -77,3 +77,37 @@ class City(BaseModel):
     c_location: str # position
     created_at: datetime.datetime # timestamp?
     updated_at: datetime.datetime # timestamp?
+
+class Zone(BaseModel):
+    id: int
+    zone_name: str
+    zone_type: "ZoneType"
+    city: City
+    boundary: str
+    created_at: datetime.datetime # timestamp?
+    updated_at: datetime.datetime # timestamp?
+
+class ZoneType(BaseModel):
+    id: int
+    type_name: str
+    speed_limit: int
+    start_fee: float
+    end_fee: float
+    metadata: str # JSON
+    created_at: datetime.datetime # timestamp?
+    updated_at: datetime.datetime # timestamp?
+
+class AdminRoles(BaseModel):
+    id: int
+    role_name: str
+    created_at: datetime.datetime # timestamp?
+    updated_at: datetime.datetime # timestamp?
+
+class Admin:
+    id: int
+    full_name: str
+    email: str
+    metadata: str # JSON
+    created_at: datetime.datetime # timestamp?
+    updated_at: datetime.datetime # timestamp?
+    roles: list[AdminRoles]
