@@ -1,0 +1,6 @@
+status_code,metadata
+IN_USE,"{\"description\": \"The bike is currently in use by a customer.\", \"severity\": \"low\", \"action_required\": false}"
+AVAILABLE,"{\"description\": \"The bike is available for rental.\", \"severity\": \"low\", \"action_required\": false}"
+CHARGING,"{\"description\": \"The bike is currently charging.\", \"severity\": \"medium\", \"action_required\": false}"
+MAINTENANCE,"{\"description\": \"The bike requires maintenance.\", \"severity\": \"high\", \"action_required\": true}"
+OUT_OF_SERVICE,"{\"description\": \"The bike is out of service and cannot be rented.\", \"severity\": \"high\", \"action_required\": true}"

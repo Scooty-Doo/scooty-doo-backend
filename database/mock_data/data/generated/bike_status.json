@@ -1,0 +1,49 @@
+{
+    "bike_status": [
+        {
+            "id": 1,
+            "status_code": "IN_USE",
+            "metadata": {
+                "description": "The bike is currently in use by a customer.",
+                "severity": "low",
+                "action_required": false
+            }
+        },
+        {
+            "id": 2,
+            "status_code": "AVAILABLE",
+            "metadata": {
+                "description": "The bike is available for rental.",
+                "severity": "low",
+                "action_required": false
+            }
+        },
+        {
+            "id": 3,
+            "status_code": "CHARGING",
+            "metadata": {
+                "description": "The bike is currently charging.",
+                "severity": "medium",
+                "action_required": false
+            }
+        },
+        {
+            "id": 4,
+            "status_code": "MAINTENANCE",
+            "metadata": {
+                "description": "The bike requires maintenance.",
+                "severity": "high",
+                "action_required": true
+            }
+        },
+        {
+            "id": 5,
+            "status_code": "OUT_OF_SERVICE",
+            "metadata": {
+                "description": "The bike is out of service and cannot be rented.",
+                "severity": "high",
+                "action_required": true
+            }
+        }
+    ]
+}
