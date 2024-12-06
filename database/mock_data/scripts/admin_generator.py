@@ -102,6 +102,6 @@ def generate_admin_to_roles(output_file: str) -> None:
         for admin_to_role in admin_to_roles:
             writer.writerow(admin_to_role)
 
-generate_admins("../generated_data/admins.csv")
-generate_admin_roles("../generated_data/admin_roles.csv")
-generate_admin_to_roles("../generated_data/admin_to_roles.csv")
+generate_admins("../data/generated/admins.csv")
+generate_admin_roles("../data/generated/admin_roles.csv")
+generate_admin_to_roles("../data/generated/admin_to_roles.csv")

@@ -50,4 +50,4 @@ def generate_bikes(
                 }
             )
 
-generate_bikes(100, "../generated_data/bikes.csv")
+generate_bikes(100, "../data/generated/bikes.csv")

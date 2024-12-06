@@ -1,6 +1,6 @@
 id,role_name
 1,full_access
 2,bike_maintenance
-4,financial
-5,marketing
-6,customer_support
+3,financial
+4,marketing
+5,customer_support

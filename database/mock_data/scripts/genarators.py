@@ -106,9 +106,9 @@ def generate_zones(output_file: str) -> None:
 def generate_users(
     num_users: int,
     output_file: str,
-    female_first_names_file: str = "../name_data/female-first-names.csv",
-    male_first_names_file: str = "../name_data/male-first-names.csv",
-    last_names_file: str = "../name_data/last-names.csv"
+    female_first_names_file: str = "..../data/source/name_data/female-first-names.csv",
+    male_first_names_file: str = "..../data/source/name_data/male-first-names.csv",
+    last_names_file: str = "..../data/source/name_data/last-names.csv"
 ) -> None:
     """
     Generate a CSV file with random user data.
@@ -486,24 +486,24 @@ def generate_admin_to_roles(output_file: str) -> None:
         for admin_to_role in admin_to_roles:
             writer.writerow(admin_to_role)
 
-generate_users(100, '../generated_data/users.csv')
+generate_users(100, '../data/generated/users.csv')
 
-generate_bikes(100, "../generated_data/bikes.csv")
+generate_bikes(100, "../data/generated/bikes.csv")
 
 # bike_status generated manually
-generate_bike_2_bike_status(list(range(1, 101)), "../generated_data/bike2bike_status.csv")
+generate_bike_2_bike_status(list(range(1, 101)), "../data/generated/bike2bike_status.csv")
 
-json_file_path = "../generated_data/bike_routes.json"
-bikes_file_path = "../generated_data/bikes.csv"
-users_file_path = "../generated_data/users.csv"
-output_file_path = "../generated_data/trip_data.csv"
+json_file_path = "../data/generated/bike_routes.json"
+bikes_file_path = "../data/generated/bikes.csv"
+users_file_path = "../data/generated/users.csv"
+output_file_path = "../data/generated/trip_data.csv"
 generate_trip_data(json_file_path, bikes_file_path, users_file_path, output_file_path)
 
 generate_zone_types(output_file_path)
-output_file_path = "../generated_data/zones.csv"
+output_file_path = "../data/generated/zones.csv"
 generate_zones(output_file_path)
 
-generate_admins("../generated_data/admins.csv")
-generate_admin_roles("../generated_data/admin_roles.csv")
-generate_admin_to_roles("../generated_data/admin_to_roles.csv")
-output_file_path = "../generated_data/zone_types.csv"
+generate_admins("../data/generated/admins.csv")
+generate_admin_roles("../data/generated/admin_roles.csv")
+generate_admin_to_roles("../data/generated/admin_to_roles.csv")
+output_file_path = "../data/generated/zone_types.csv"

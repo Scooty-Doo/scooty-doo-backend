@@ -6,9 +6,9 @@ from tsidpy import TSID
 def generate_users(
     num_users: int,
     output_file: str,
-    female_first_names_file: str = "../name_data/female-first-names.csv",
-    male_first_names_file: str = "../name_data/male-first-names.csv",
-    last_names_file: str = "../name_data/last-names.csv"
+    female_first_names_file: str = "../data/source/name_data/female-first-names.csv",
+    male_first_names_file: str = "../data/source/name_data/male-first-names.csv",
+    last_names_file: str = "../data/source/name_data/last-names.csv"
 ) -> None:
     """
     Generate a CSV file with random user data.
@@ -88,4 +88,4 @@ def generate_users(
                 }
             )
 
-generate_users(100, '../generated_data/users.csv')
+generate_users(100, '../data/generated/users.csv')

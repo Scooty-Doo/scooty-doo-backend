@@ -16,7 +16,7 @@ def run_sql_file(conn, sql_file_path):
         conn.commit()
 
 
-sql_file_path = '../schema/schema.sql'
+sql_file_path = 'schema.sql'
 
 with psycopg.connect(
     dbname="sddb",

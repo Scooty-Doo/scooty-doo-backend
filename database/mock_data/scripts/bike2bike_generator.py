@@ -56,4 +56,4 @@ def generate_bike_2_bike_status(
             )
 
 # Example usage
-generate_bike_2_bike_status(list(range(1, 101)), "../generated_data/bike2bike_status.csv")
+generate_bike_2_bike_status(list(range(1, 101)), "../data/generated/bike2bike_status.csv")

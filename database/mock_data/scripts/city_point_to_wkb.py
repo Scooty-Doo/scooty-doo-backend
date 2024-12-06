@@ -23,6 +23,6 @@ def transform_points_to_wkb(input_csv: str, output_csv: str) -> None:
             row['c_location'] = dumps(point)
             writer.writerow(row)
 
-input_csv = '../generated_data/cities.csv'
-output_csv = '../generated_data/cities_wkb.csv'
+input_csv = '../data/generated/cities.csv'
+output_csv = '../data/generated/cities_wkb.csv'
 transform_points_to_wkb(input_csv, output_csv)

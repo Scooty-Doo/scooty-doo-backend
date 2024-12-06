@@ -100,8 +100,8 @@ def generate_trip_data(json_file, bikes_file, users_file, output_file: str) -> N
                 }
             )
 
-json_file_path = "../generated_data/bike_routes.json"
-bikes_file_path = "../generated_data/bikes.csv"
-users_file_path = "../generated_data/users.csv"
-output_file_path = "../generated_data/trip_data.csv"
+json_file_path = "../data/generated/bike_routes.json"
+bikes_file_path = "../data/generated/bikes.csv"
+users_file_path = "../data/generated/users.csv"
+output_file_path = "../data/generated/trip_data.csv"
 generate_trip_data(json_file_path, bikes_file_path, users_file_path, output_file_path)

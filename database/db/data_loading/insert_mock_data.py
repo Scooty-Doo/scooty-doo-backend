@@ -12,18 +12,18 @@ db_params = {
 }
 
 # path to the CSV file
-cities_file_path = "../mock_data/generated_data/cities.csv"
-users_file_path = "../mock_data/generated_data/users.csv"
-payment_providers_file_path = "../mock_data/generated_data/payment_providers.json"
-bike_status_file_path = "../mock_data/generated_data/bike_status.json"
-bike_file_path = "../mock_data/generated_data/bikes.csv"
-bike_2_status_file_path = "../mock_data/generated_data/bike2bike_status.csv"
-trip_file_path = "../mock_data/generated_data/trip_data.csv"
-zone_types_file_path = "../mock_data/generated_data/zone_types.csv"
-map_zones_file_path = "../mock_data/generated_data/map_zones.csv"
-admin_file_path = "../mock_data/generated_data/admins.csv"
-admin_roles_file_path = "../mock_data/generated_data/admin_roles.csv"
-admin_to_roles_file_path = "../mock_data/generated_data/admin_to_roles.csv"
+cities_file_path = "../../mock_data/data/generated/cities.csv"
+users_file_path = "../../mock_data/data/generated/users.csv"
+payment_providers_file_path = "../../mock_data/data/generated/payment_providers.json"
+bike_status_file_path = "../../mock_data/data/generated/bike_status.json"
+bike_file_path = "../../mock_data/data/generated/bikes.csv"
+bike_2_status_file_path = "../../mock_data/data/generated/bike2bike_status.csv"
+trip_file_path = "../../mock_data/data/generated/trip_data.csv"
+zone_types_file_path = "../../mock_data/data/generated/zone_types.csv"
+map_zones_file_path = "../../mock_data/data/generated/map_zones.csv"
+admin_file_path = "../../mock_data/data/generated/admins.csv"
+admin_roles_file_path = "../../mock_data/data/generated/admin_roles.csv"
+admin_to_roles_file_path = "../../mock_data/data/generated/admin_to_roles.csv"
 
 
 # Psycogs to empty all tables in scooby_doo schema

@@ -92,7 +92,7 @@ def generate_zones(output_file: str) -> None:
         for zone in zones:
             writer.writerow(zone)
 
-output_file_path = "../generated_data/zone_types.csv"
+output_file_path = "../data/generated/zone_types.csv"
 generate_zone_types(output_file_path)
-output_file_path = "../generated_data/zones.csv"
+output_file_path = "../data/generated/zones.csv"
 generate_zones(output_file_path)
