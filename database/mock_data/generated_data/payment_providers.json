@@ -1,0 +1,18 @@
+{
+    "payment_providers": [
+        {
+            "provider_name": "Stripe", 
+            "metadata": {
+                "website": "https://stripe.com", 
+                "support_email": "support@stripe.com"
+            }
+        },
+        {
+            "provider_name": "PayPal", 
+            "metadata": {
+                "website": "https://paypal.com", 
+                "support_email": "support@paypal.com"
+            }
+        }
+    ]
+}
