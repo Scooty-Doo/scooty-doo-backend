@@ -1,0 +1,3 @@
+provider_name,metadata
+Stripe,"{\"website\": \"https://stripe.com\", \"support_email\": \"support@stripe.com\"}"
+PayPal,"{\"website\": \"https://paypal.com\", \"support_email\": \"support@paypal.com\"}"

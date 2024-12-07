@@ -1,0 +1,5 @@
+id,type_name,speed_limit,start_fee,end_fee
+1,Parking,0,5,5
+2,Charging,0,0,0
+3,Forbidden,0,5,20
+4,Slow,10,10,10
