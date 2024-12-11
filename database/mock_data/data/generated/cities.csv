@@ -1,0 +1,4 @@
+id,city_name,country_code,c_location
+1,Gothenburg,SWE,POINT(11.9746 57.7089)
+2,Stockholm,SWE,POINT(18.0686 59.3293)
+3,Malmo,SWE,POINT(13.0038 55.6050)
