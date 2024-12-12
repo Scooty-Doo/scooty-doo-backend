@@ -1,6 +1,5 @@
 from collections.abc import Callable
 
-from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,6 +10,3 @@ def get_repository(model: type[models.Base]) -> Callable[[AsyncSession], reposit
         return repository.DatabaseRepository(model, session)
 
     return func
-
-
-BikeRepository = Annotated[repository.DatabaseRepository[models.Bike], Depends(get_repository(models.Bike))]

@@ -1,9 +1,15 @@
 from pydantic import Json
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from db import db
 from models.models import Bike
+
+from models.bike_test import BikeTest
+from typing import Annotated
+from database import models as db_models, repository
+# from database.repository import BikeRepository
+from dependencies import get_repository
 
 router = APIRouter(
     prefix="/v1/bikes",
@@ -11,13 +17,20 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+BikeRepository = Annotated[repository.DatabaseRepository[db_models.Bike], Depends(get_repository(db_models.Bike))]
+
+@router.get("/available", response_model=list[BikeTest])
+async def get_available_bikes(
+    repository: BikeRepository
+) -> list[BikeTest]:
+    bikes = await repository.filter(db_models.Bike.is_available)
+    return [BikeTest.model_validate(bike) for bike in bikes]
 
 # Include geographical filter
 @router.get("/")
 async def get_all_bikes() -> Json[list[Bike]]:
     res = db.get_all_bikes()
     return JSONResponse(jsonable_encoder({'data': res}))
-
 
 @router.get("/{bike_id}")
 async def get_bike(bike_id: int) -> Json[Bike]:

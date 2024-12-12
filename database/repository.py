@@ -1,6 +1,5 @@
-import uuid
 from typing import Generic, TypeVar, Any, list
-from sqlalchemy import BinaryExpression, select, delete, update, joinedload
+from sqlalchemy import BinaryExpression, select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import models
@@ -21,7 +20,7 @@ class DatabaseRepository(Generic[Model]):
         await self.session.refresh(instance)
         return instance
 
-    async def get(self, pk: int | uuid.UUID) -> Model | None:
+    async def get(self, pk: int) -> Model | None:
         return await self.session.get(self.model, pk)
 
     async def filter(
@@ -33,7 +32,7 @@ class DatabaseRepository(Generic[Model]):
             query = query.where(*expressions)
         return list(await self.session.scalars(query))
 
-    async def update(self, pk: int | uuid.UUID, data: dict[str, Any]) -> Model | None:
+    async def update(self, pk: int, data: dict[str, Any]) -> Model | None:
         query = (
             update(self.model)
             .where(self.model.id == pk)
@@ -44,7 +43,7 @@ class DatabaseRepository(Generic[Model]):
         await self.session.commit()
         return result.scalar_one_or_none()
 
-    async def delete(self, pk: int | uuid.UUID) -> bool:
+    async def delete(self, pk: int) -> bool:
         query = delete(self.model).where(self.model.id == pk)
         result = await self.session.execute(query)
         await self.session.commit()
