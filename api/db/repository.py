@@ -2,9 +2,9 @@ from typing import Generic, TypeVar, Any, list
 from sqlalchemy import BinaryExpression, select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import models
+import api.models.db_models as db_models
 
-Model = TypeVar("Model", bound=models.Base)
+Model = TypeVar("Model", bound=db_models.Base)
 
 class DatabaseRepository(Generic[Model]):
     """Repository for performing database queries."""
@@ -50,9 +50,9 @@ class DatabaseRepository(Generic[Model]):
         return result.rowcount > 0
 
 
-class BikeRepository(DatabaseRepository[models.Bike]):
+class BikeRepository(DatabaseRepository[db_models.Bike]):
     def __init__(self, session: AsyncSession):
-        super().__init__(models.Bike, session)
+        super().__init__(db_models.Bike, session)
 
-    async def get_available_bikes(self) -> list[models.Bike]:
-        return await self.filter(models.Bike.is_available)
+    async def get_available_bikes(self) -> list[db_models.Bike]:
+        return await self.filter(db_models.Bike.is_available)

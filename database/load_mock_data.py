@@ -4,8 +4,8 @@ import asyncio
 from datetime import datetime
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
-from .database import sessionmanager
-from .models import (
+from ..api.db.database import sessionmanager
+from ..api.models.db_models import (
     City, User, PaymentProvider, Bike, Trip, ZoneType, MapZone,
     Admin, AdminRole, Admin2AdminRole
 )
