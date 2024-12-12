@@ -1,9 +1,19 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
 # from routes.bikes import router as bikes_router
 from routes import bikes, trips, users, zones
+from database import sessionmanager
+from config import Settings
 
+sessionmanager.init(Settings.database_url)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+    if sessionmanager._engine is not None:
+        await sessionmanager.close()
 
 app = FastAPI(
     title="Scooty Doo API",
