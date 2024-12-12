@@ -1,9 +1,9 @@
 import uuid
-from typing import Generic, TypeVar, Any
+from typing import Generic, TypeVar, Any, list
 from sqlalchemy import BinaryExpression, select, delete, update, joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import models
+import models
 
 Model = TypeVar("Model", bound=models.Base)
 
@@ -49,15 +49,11 @@ class DatabaseRepository(Generic[Model]):
         result = await self.session.execute(query)
         await self.session.commit()
         return result.rowcount > 0
-    
+
+
 class BikeRepository(DatabaseRepository[models.Bike]):
-    async def get_available(self) -> list[models.Bike]:
-        query = (
-            select(self.model)
-            .join(models.Bike2BikeStatus)
-            .join(models.BikeStatus)
-            .where(models.BikeStatus.status_code == "AVAILABLE")
-            .options(joinedload(self.model.statuses))
-        )
-        result = await self.session.scalars(query)
-        return list(result)
+    def __init__(self, session: AsyncSession):
+        super().__init__(models.Bike, session)
+
+    async def get_available_bikes(self) -> list[models.Bike]:
+        return await self.filter(models.Bike.is_available)

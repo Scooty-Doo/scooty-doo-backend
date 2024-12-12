@@ -22,7 +22,7 @@ from sqlalchemy.ext.declarative import declarative_base
 # import sys
 # sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Import settings from config.py
-from app.config import settings
+from config import settings
 
 Base = declarative_base()
 
