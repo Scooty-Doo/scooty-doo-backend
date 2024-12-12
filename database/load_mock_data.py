@@ -9,7 +9,7 @@ from .models import (
     City, User, PaymentProvider, Bike, Trip, ZoneType, MapZone,
     Admin, AdminRole, Admin2AdminRole
 )
-from app.config import settings
+from config import settings
 
 async def load_mock_data():
     """Load all mock data into the database using SQLAlchemy."""
