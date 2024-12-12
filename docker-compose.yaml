@@ -3,10 +3,10 @@ networks:
 
 services:
     api:
-        image: challep/scooty-doo-api:1.0
+        image: scooty-doo-api-win:1.0
         container_name: "api"
-        networks:
-          scooty-web:
+        # networks:
+        #   scooty-web:
         ports:
           - 80:80
 #    server:
