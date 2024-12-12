@@ -1,0 +1,10 @@
+# Environment files
+.env*
+!.env.example
+# Pycache
+__pycache__/
+
+# virtual environment
+venv/
+
+.vscode/
