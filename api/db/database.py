@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.ext.declarative import declarative_base
 
-from config import settings
+# from config import settings
 
 Base = declarative_base()
 
@@ -43,7 +43,7 @@ class DatabaseSessionManager:
         self._engine: AsyncEngine | None = None
         self._sessionmaker: async_sessionmaker | None = None
 
-    def init(self, url: str = settings.database_url):
+    def init(self, url: str = "postgresql+asyncpg://user:pass@localhost:5432/sddb"):
         """Initialize database engine and session maker.
         
         Args:
@@ -54,7 +54,7 @@ class DatabaseSessionManager:
             pool_pre_ping=True,  # Verify connection before using from pool
             pool_size=10,        # Number of connections to maintain
             max_overflow=10,  # max extra connections to create
-            echo=settings.debug,  # SQL logging
+            echo=True,  # SQL logging
         )
         self._sessionmaker = async_sessionmaker(
             autocommit=False,
