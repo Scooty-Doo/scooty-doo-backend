@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     project_name: str = "scooty-doo"
     debug: bool = False
     environment: str = "local"
-    database_url: str = "postgresql+asyncpg://user:pass@localhost:5432/sddb?options=-csearch_path=public"
+    database_url: str = "postgresql+asyncpg://user:pass@localhost:5432/sddb"
     
     class Config:
         """Pydantic model config.
