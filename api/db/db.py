@@ -1,7 +1,7 @@
 # Fake db used to mock project structure
 from datetime import datetime
-from ..models.models import Bike
-from ..models.models import City
+from models.models import Bike
+from models.models import City
 
 current_time = datetime.now()
 mocked_bikes = [    

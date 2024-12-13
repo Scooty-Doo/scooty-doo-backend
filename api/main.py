@@ -4,10 +4,9 @@ from contextlib import asynccontextmanager
 
 # from routes.bikes import router as bikes_router
 from routes import bikes, trips, users, zones
-from database import sessionmanager
-from config import Settings
+from db.database import sessionmanager
 
-sessionmanager.init(Settings.database_url)
+sessionmanager.init("postgresql+asyncpg://user:pass@localhost:5432/sddb?options=-csearch_path=public")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

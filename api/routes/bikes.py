@@ -3,15 +3,16 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
-from ..models import db_models as db_models
-from ..db import db
-from ..models.models import Bike
+# from models import db_models
+from db import db
+from models.models import Bike
+from models import db_models
 
-from ..models.bike_test import BikeTest
+from models.bike_test import BikeTest
 from typing import Annotated
-from ..db import repository
+from db import repository
 # from database.repository import BikeRepository
-from api.dependencies.dependencies import get_repository
+from dependencies.dependencies import get_repository
 
 router = APIRouter(
     prefix="/v1/bikes",

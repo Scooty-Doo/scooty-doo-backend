@@ -18,10 +18,6 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.ext.declarative import declarative_base
 
-# import os
-# import sys
-# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-# Import settings from config.py
 from config import settings
 
 Base = declarative_base()

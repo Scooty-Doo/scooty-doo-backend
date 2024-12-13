@@ -9,7 +9,7 @@ from ..api.models.db_models import (
     City, User, PaymentProvider, Bike, Trip, ZoneType, MapZone,
     Admin, AdminRole, Admin2AdminRole
 )
-from config import settings
+from api.config import settings
 
 async def load_mock_data():
     """Load all mock data into the database using SQLAlchemy."""

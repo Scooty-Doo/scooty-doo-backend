@@ -1,8 +1,8 @@
-from typing import Generic, TypeVar, Any, list
+from typing import Generic, TypeVar, Any, List
 from sqlalchemy import BinaryExpression, select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import api.models.db_models as db_models
+import models.db_models as db_models
 
 Model = TypeVar("Model", bound=db_models.Base)
 
