@@ -1,9 +1,8 @@
+"""Main API file used to start server."""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# from routes.bikes import router as bikes_router
 from routes import bikes, trips, users, zones
-
 
 app = FastAPI(
     title="Scooty Doo API",
@@ -32,5 +31,6 @@ app.include_router(trips.router)
 
 
 @app.get("/")
-async def Welcome():
+async def welcome():
+    """Sends a message for root path."""
     return {"message": "Welcome to the Scooty Doo API!"}
