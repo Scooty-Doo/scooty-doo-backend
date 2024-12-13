@@ -3,7 +3,9 @@ networks:
 
 services:
     api:
-        image: challep/scooty-doo-api:1.0
+        build:
+            context: ./api
+            dockerfile: Dockerfile
         container_name: "api"
         networks:
           scooty-web:
