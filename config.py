@@ -4,7 +4,6 @@ pydantic_settings for type-safe configuration management.
 Settings can be overridden using environment variables.
 """
 
-import os
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
