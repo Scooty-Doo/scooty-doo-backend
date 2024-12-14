@@ -1,5 +1,6 @@
 import psycopg
 
+
 def run_sql_file(conn, sql_file_path):
     """
     Run a SQL file using psycopg.
@@ -8,7 +9,7 @@ def run_sql_file(conn, sql_file_path):
     conn (psycopg.Connection): The connection object to the PostgreSQL database.
     sql_file_path (str): The path to the SQL file.
     """
-    with open(sql_file_path, 'r') as file:
+    with open(sql_file_path) as file:
         sql = file.read()
 
     with conn.cursor() as cur:
@@ -16,13 +17,9 @@ def run_sql_file(conn, sql_file_path):
         conn.commit()
 
 
-sql_file_path = 'schema.sql'
+sql_file_path = "schema.sql"
 
 with psycopg.connect(
-    dbname="sddb",
-    user="user",
-    password="pass",
-    host="localhost",
-    port="5432"
+    dbname="sddb", user="user", password="pass", host="localhost", port="5432"
 ) as conn:
     run_sql_file(conn, sql_file_path)
