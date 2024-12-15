@@ -6,7 +6,7 @@ from typing import Annotated
 from api.db import db, repository
 
 # from database.repository import BikeRepository
-from api.dependencies.dependencies import get_repository
+from api.dependencies.repository_factory import get_repository
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
