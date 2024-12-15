@@ -18,6 +18,17 @@ class Bike(BaseModel):
     created_at: datetime.datetime  # timestamp?
     updated_at: datetime.datetime  # timestamp?
 
+class BikeAdmin(BaseModel):
+    """Model for bike table in database"""
+
+    id: int
+    battery_level: int
+    metadata: str  # JSON == string?
+    position: str = Field(pattern=r"POINT\(\d{2}\.\d{4}\s\d{2}\.\d{4}\)")  # import some type?
+    city: "City"
+    status: str  # JSON == string?
+    created_at: datetime.datetime  # timestamp?
+    updated_at: datetime.datetime  # timestamp?
 
 class PaymentProvider(BaseModel):
     """Model for payment provider table in database"""

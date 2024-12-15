@@ -3,16 +3,16 @@
 from typing import Annotated
 
 # from models import db_models
-from db import db, repository
+from api.db import db, repository
 
 # from database.repository import BikeRepository
-from dependencies.dependencies import get_repository
+from api.dependencies.dependencies import get_repository
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from api.models import db_models
 from api.models.bike_test import BikeTest
-from api.models import Bike, BikeAdmin
+from api.models.models import Bike, BikeAdmin
 from pydantic import Json
 
 router = APIRouter(
