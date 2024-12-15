@@ -1,8 +1,18 @@
 """Main API file used to start server."""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
 from routes import bikes, trips, users, zones
+from db.database import sessionmanager
+
+sessionmanager.init("postgresql+asyncpg://user:pass@localhost:5432/sddb")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+    if sessionmanager._engine is not None:
+        await sessionmanager.close()
 
 app = FastAPI(
     title="Scooty Doo API",
