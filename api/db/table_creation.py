@@ -1,8 +1,8 @@
 
 # Import your models from models.py
-from models import Base
+from api.models.db_models import Base
 # Import the session manager
-from database import sessionmanager
+from api.db.database import sessionmanager
 
 
 async def load_tables():

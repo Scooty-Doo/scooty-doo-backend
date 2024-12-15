@@ -4,6 +4,9 @@ from contextlib import asynccontextmanager
 from api.db.database import sessionmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from pydantic import ValidationError
+from api.exceptions import validation_exception_handler
 from api.routes import bikes, trips, users, zones
 
 sessionmanager.init("postgresql+asyncpg://user:pass@localhost:5432/sddb")
@@ -39,6 +42,9 @@ app.include_router(zones.router)
 app.include_router(users.router)
 app.include_router(trips.router)
 
+# Add exception handlers
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_exception_handler(ValidationError, validation_exception_handler)
 
 @app.get("/")
 async def welcome():

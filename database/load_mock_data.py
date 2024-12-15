@@ -4,8 +4,8 @@ import asyncio
 from datetime import datetime
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
-from ..api.db.database import sessionmanager
-from ..api.models.db_models import (
+from api.db.database import sessionmanager
+from api.models.db_models import (
     City, User, PaymentProvider, Bike, Trip, ZoneType, MapZone,
     Admin, AdminRole, Admin2AdminRole
 )
@@ -32,6 +32,14 @@ async def load_mock_data():
         await load_zone_types(session)
         await load_map_zones(session)
         await load_admins_and_roles(session)
+        
+        # Update all sequences to continue from the highest IDs
+        await session.execute(text("SELECT setval('cities_id_seq', (SELECT MAX(id) FROM cities))"))
+        await session.execute(text("SELECT setval('users_id_seq', (SELECT MAX(id) FROM users))"))
+        await session.execute(text("SELECT setval('bikes_id_seq', (SELECT MAX(id) FROM bikes))"))
+        await session.execute(text("SELECT setval('zone_types_id_seq', (SELECT MAX(id) FROM zone_types))"))
+        await session.execute(text("SELECT setval('admin_roles_id_seq', (SELECT MAX(id) FROM admin_roles))"))
+        await session.execute(text("SELECT setval('admins_id_seq', (SELECT MAX(id) FROM admins))"))
         
         await session.commit()
 
@@ -60,7 +68,7 @@ async def truncate_tables(session: AsyncSession):
 
 async def load_cities(session: AsyncSession):
     """Load cities from CSV."""
-    with open('app/database/mock_data/data/generated/cities.csv', 'r') as csvfile:
+    with open('database/mock_data/data/generated/cities.csv', 'r') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             city = City(
@@ -74,7 +82,7 @@ async def load_cities(session: AsyncSession):
 
 async def load_users(session: AsyncSession):
     """Load users from CSV."""
-    with open('app/database/mock_data/data/generated/users.csv', 'r') as csvfile:
+    with open('database/mock_data/data/generated/users.csv', 'r') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             user = User(
@@ -90,7 +98,7 @@ async def load_users(session: AsyncSession):
 
 async def load_payment_providers(session: AsyncSession):
     """Load payment providers from JSON."""
-    with open('app/database/mock_data/data/generated/payment_providers.json', 'r') as jsonfile:
+    with open('database/mock_data/data/generated/payment_providers.json', 'r') as jsonfile:
         data = json.load(jsonfile)
         for provider in data['payment_providers']:
             pp = PaymentProvider(
@@ -100,22 +108,9 @@ async def load_payment_providers(session: AsyncSession):
             session.add(pp)
     await session.flush()
 
-# async def load_bike_status(session: AsyncSession):
-#     """Load bike status from JSON."""
-#     with open('app/database/mock_data/data/generated/bike_status.json', 'r') as jsonfile:
-#         data = json.load(jsonfile)
-#         for status in data['bike_status']:
-#             bs = BikeStatus(
-#                 id=status['id'],
-#                 status_code=status['status_code'],
-#                 metadata=status['metadata']
-#             )
-#             session.add(bs)
-#     await session.flush()
-
 async def load_bikes(session: AsyncSession):
     """Load bikes from CSV."""
-    with open('app/database/mock_data/data/generated/bikes_with_availability.csv', 'r') as csvfile:
+    with open('database/mock_data/data/generated/bikes_with_availability.csv', 'r') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             bike = Bike(
@@ -128,24 +123,14 @@ async def load_bikes(session: AsyncSession):
             )
             session.add(bike)
     await session.flush()
-
-# async def load_bike2bike_status(session: AsyncSession):
-#     """Load bike to bike status mappings from CSV."""
-#     with open('app/database/mock_data/data/generated/bike2bike_status.csv', 'r') as csvfile:
-#         reader = csv.DictReader(csvfile)
-#         for row in reader:
-#             b2bs = Bike2BikeStatus(
-#                 bike_id=int(row['bike_id']),
-#                 status_id=int(row['status']),
-#                 created_at=datetime.fromisoformat(row['created_at']),
-#                 updated_at=datetime.fromisoformat(row['updated_at'])
-#             )
-#             session.add(b2bs)
-#     await session.flush()
+    
+    # Update the bikes sequence to continue from the highest ID
+    await session.execute(text("SELECT setval('bikes_id_seq', (SELECT MAX(id) FROM bikes))"))
+    await session.flush()
 
 async def load_trips(session: AsyncSession):
     """Load trips from CSV."""
-    with open('app/database/mock_data/data/generated/trip_data.csv', 'r') as csvfile:
+    with open('database/mock_data/data/generated/trip_data.csv', 'r') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             trip = Trip(
@@ -166,7 +151,7 @@ async def load_trips(session: AsyncSession):
 
 async def load_zone_types(session: AsyncSession):
     """Load zone types from CSV."""
-    with open('app/database/mock_data/data/generated/zone_types.csv', 'r') as csvfile:
+    with open('database/mock_data/data/generated/zone_types.csv', 'r') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             zone_type = ZoneType(
@@ -181,7 +166,7 @@ async def load_zone_types(session: AsyncSession):
 
 async def load_map_zones(session: AsyncSession):
     """Load map zones from CSV."""
-    with open('app/database/mock_data/data/generated/map_zones.csv', 'r') as csvfile:
+    with open('database/mock_data/data/generated/map_zones.csv', 'r') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             map_zone = MapZone(
@@ -196,7 +181,7 @@ async def load_map_zones(session: AsyncSession):
 async def load_admins_and_roles(session: AsyncSession):
     """Load admins, roles and their relationships."""
     # Load roles first
-    with open('app/database/mock_data/data/generated/admin_roles.csv', 'r') as csvfile:
+    with open('database/mock_data/data/generated/admin_roles.csv', 'r') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             role = AdminRole(
@@ -207,7 +192,7 @@ async def load_admins_and_roles(session: AsyncSession):
     await session.flush()
     
     # Load admins
-    with open('app/database/mock_data/data/generated/admins.csv', 'r') as csvfile:
+    with open('database/mock_data/data/generated/admins.csv', 'r') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             admin = Admin(
@@ -219,7 +204,7 @@ async def load_admins_and_roles(session: AsyncSession):
     await session.flush()
     
     # Load admin-role relationships
-    with open('app/database/mock_data/data/generated/admin_to_roles.csv', 'r') as csvfile:
+    with open('database/mock_data/data/generated/admin_to_roles.csv', 'r') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             admin_role = Admin2AdminRole(

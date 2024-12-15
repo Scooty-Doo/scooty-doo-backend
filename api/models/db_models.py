@@ -25,7 +25,7 @@ class City(Base):
     """City database model."""
     __tablename__ = "cities"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     city_name: Mapped[str] = mapped_column(Text, nullable=False)
     country_code: Mapped[str] = mapped_column(CHAR(3), nullable=False)
     c_location: Mapped[Geometry] = mapped_column(Geometry('POINT', srid=4326), nullable=False)
@@ -38,7 +38,7 @@ class User(Base):
     """User database model."""
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     full_name: Mapped[str] = mapped_column(Text, nullable=False)
     email: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     balance: Mapped[float] = mapped_column(Numeric(10, 2), default=0.00)
@@ -54,7 +54,7 @@ class PaymentProvider(Base):
     """Payment provider database model."""
     __tablename__ = "payment_providers"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     provider_name: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     meta_data: Mapped[dict] = mapped_column(JSONB, nullable=True)
 
@@ -65,7 +65,7 @@ class PaymentMethod(Base):
     """Payment method database model."""
     __tablename__ = "payment_methods"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id"),
         nullable=False
@@ -84,25 +84,12 @@ class PaymentMethod(Base):
     provider: Mapped["PaymentProvider"] = relationship(back_populates="payment_methods")
     transactions: Mapped[list["Transaction"]] = relationship(back_populates="payment_method")
 
-# class BikeStatus(Base):
-#     """Bike status database model."""
-#     __tablename__ = "bike_status"
-
-#     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-#     status_code: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
-#     meta_data: Mapped[dict] = mapped_column(JSONB, nullable=True)
-
-#     # Relationships
-#     bikes: Mapped[list["Bike"]] = relationship(
-#         secondary="bike_2_bike_status",
-#         back_populates="statuses"
-#     )
 
 class Bike(Base):
     """Bike database model."""
     __tablename__ = "bikes"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     battery_lvl: Mapped[int] = mapped_column(Integer, nullable=False)
     last_position: Mapped[Geometry] = mapped_column(Geometry('POINT', srid=4326), nullable=True)
     city_id: Mapped[int] = mapped_column(
@@ -114,10 +101,7 @@ class Bike(Base):
 
     # Relationships
     city: Mapped["City"] = relationship(back_populates="bikes")
-    # statuses: Mapped[list["BikeStatus"]] = relationship(
-    #     secondary="bike_2_bike_status",
-    #     back_populates="bikes"
-    # )
+
     trips: Mapped[list["Trip"]] = relationship(back_populates="bike")
 
     __table_args__ = (
@@ -128,7 +112,7 @@ class Trip(Base):
     """Trip database model."""
     __tablename__ = "trips"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     bike_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("bikes.id"), nullable=False)
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), nullable=False)
     start_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
@@ -150,7 +134,7 @@ class ZoneType(Base):
     """Zone type database model."""
     __tablename__ = "zone_types"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     type_name: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     speed_limit: Mapped[int] = mapped_column(Integer, nullable=True)
     start_fee: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
@@ -164,7 +148,7 @@ class MapZone(Base):
     """Map zone database model."""
     __tablename__ = "map_zones"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     zone_name: Mapped[str] = mapped_column(Text, nullable=False)
     zone_type_id: Mapped[int] = mapped_column(
         ForeignKey("zone_types.id"),
@@ -184,7 +168,7 @@ class Transaction(Base):
     """Transaction database model."""
     __tablename__ = "transactions"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id"),
         nullable=False
@@ -211,22 +195,12 @@ class Transaction(Base):
     trip: Mapped["Trip"] = relationship(back_populates="transactions")
     payment_method: Mapped["PaymentMethod"] = relationship(back_populates="transactions")
 
-# class Bike2BikeStatus(Base):
-#     """Association table for Bike and BikeStatus."""
-#     __tablename__ = "bike_2_bike_status"
-
-#     bike_id: Mapped[int] = mapped_column(
-#         Integer, ForeignKey("bikes.id"), primary_key=True
-#     )
-#     status_id: Mapped[int] = mapped_column(
-#         Integer, ForeignKey("bike_status.id"), primary_key=True
-#     )
 
 class Admin(Base):
     """Admin database model."""
     __tablename__ = "admins"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     full_name: Mapped[str] = mapped_column(Text, nullable=False)
     email: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     meta_data: Mapped[dict] = mapped_column(JSONB, nullable=True)
@@ -240,7 +214,7 @@ class AdminRole(Base):
     """Admin role database model."""
     __tablename__ = "admin_roles"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     role_name: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
 
     admins: Mapped[list["Admin"]] = relationship(

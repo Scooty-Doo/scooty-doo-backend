@@ -7,10 +7,10 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from app.database import models
+from api.models import db_models
 from geoalchemy2 import alembic_helpers
-from app.config import settings
-from app.database.models import Base
+from api.config import settings
+from api.models.db_models import Base
 from sqlalchemy.sql import text
 
 # this is the Alembic Config object, which provides
