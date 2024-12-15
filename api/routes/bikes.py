@@ -10,9 +10,9 @@ from dependencies.dependencies import get_repository
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
-from models import db_models
-from models.bike_test import BikeTest
-from models.models import Bike, BikeAdmin
+from api.models import db_models
+from api.models.bike_test import BikeTest
+from api.models import Bike, BikeAdmin
 from pydantic import Json
 
 router = APIRouter(

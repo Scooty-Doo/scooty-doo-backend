@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from models.models import Bike, City
+from api.models import Bike, City
 
 current_time = datetime.now()
 mocked_bikes = [

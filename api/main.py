@@ -1,10 +1,10 @@
 """Main API file used to start server."""
 from contextlib import asynccontextmanager
 
-from db.database import sessionmanager
+from api.db.database import sessionmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import bikes, trips, users, zones
+from api.routes import bikes, trips, users, zones
 
 sessionmanager.init("postgresql+asyncpg://user:pass@localhost:5432/sddb")
 
