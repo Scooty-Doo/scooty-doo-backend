@@ -23,6 +23,18 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 
+class DatabaseError(Exception):
+    """Base exception for database errors."""
+
+    pass
+
+
+class DatabaseNotInitializedError(DatabaseError):
+    """Raised when trying to use database before initialization."""
+
+    pass
+
+
 class DatabaseSessionManager:
     """Manages database sessions and connections.
 
@@ -63,10 +75,15 @@ class DatabaseSessionManager:
             expire_on_commit=False,  # Don't expire objects after commit
         )
 
+    @property
+    def is_initialized(self) -> bool:
+        """Check if manager is initialized."""
+        return self._engine is not None
+
     async def close(self):
         """Close database connections and cleanup resources."""
         if self._engine is None:
-            raise Exception("DatabaseSessionManager is not initialized")
+            raise DatabaseNotInitializedError("DatabaseSessionManager is not initialized")
         await self._engine.dispose()
         self._engine = None
         self._sessionmaker = None
@@ -84,14 +101,14 @@ class DatabaseSessionManager:
             Exception: If manager not initialized
         """
         if self._engine is None:
-            raise Exception("DatabaseSessionManager is not initialized")
+            raise DatabaseNotInitializedError("DatabaseSessionManager is not initialized")
 
         async with self._engine.begin() as connection:
             try:
                 yield connection
-            except Exception:
+            except Exception as e:
                 await connection.rollback()
-                raise
+                raise DatabaseError(f"Database connection error: {str(e)}") from e
 
     @contextlib.asynccontextmanager
     async def session(self) -> AsyncIterator[AsyncSession]:
@@ -106,14 +123,14 @@ class DatabaseSessionManager:
             Exception: If manager not initialized
         """
         if self._sessionmaker is None:
-            raise Exception("DatabaseSessionManager is not initialized")
+            raise DatabaseNotInitializedError("DatabaseSessionManager is not initialized")
 
         session = self._sessionmaker()
         try:
             yield session
-        except Exception:
+        except Exception as e:
             await session.rollback()
-            raise
+            raise DatabaseError(f"Database session error: {str(e)}") from e
         finally:
             await session.close()
 
