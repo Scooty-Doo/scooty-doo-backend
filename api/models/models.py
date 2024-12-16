@@ -1,113 +1,216 @@
-from pydantic import BaseModel
-import datetime
+"""Module for pydantic models"""
 
-class Bike(BaseModel):
-    id: int
-    battery_level: int
-    metadata: str # JSON == string?
-    position: list[float] # import some type?
-    city: "City"
-    status: str # JSON == string?
-    created_at: datetime.datetime # timestamp?
-    updated_at: datetime.datetime # timestamp?
+# pylint: disable=too-few-public-methods
+from datetime import datetime
+from typing import Optional, Generic, TypeVar, Any
+from pydantic import BaseModel, Field, ConfigDict
+
+"""
+Feels very clunky to work with JSON:API in FastAPI and perhaps we should consider a library.
+Perhaps: https://fastapi-jsonapi.readthedocs.io/en/latest/
+"""
+class JsonApiLinks(BaseModel):
+    """JSON:API links object."""
+    self: str
+
+class JsonApiError(BaseModel):
+    """JSON:API error object."""
+    status: str
+    title: str
+    detail: Optional[str] = None
+
+class JsonApiErrorResponse(BaseModel):
+    """JSON:API error response."""
+    errors: list[JsonApiError]
+
+T = TypeVar('T', bound=BaseModel)
+
+class JsonApiResponse(BaseModel, Generic[T]):
+    """JSON:API response wrapper."""
+    data: T | list[T]
+    links: JsonApiLinks
+
+class BikeAttributes(BaseModel):
+    """Bike attributes for JSON:API response."""
+    battery_level: int = Field(ge=0, le=100, alias="battery_lvl")
+    position: Optional[str] = Field(
+        None,
+        pattern=r"POINT\(\d+\.\d+\s\d+\.\d+\)",
+        description="WKT POINT format, e.g. 'POINT(57.7089 11.9746)'",
+        alias="last_position"
+    )
+    is_available: bool = True
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+class BikeRelationships(BaseModel):
+    """Bike relationships for JSON:API response."""
+    city: dict[str, Any]
+
+class BikeResource(BaseModel):
+    """JSON:API resource object for bikes."""
+    id: str
+    type: str = "bikes"
+    attributes: BikeAttributes
+    relationships: Optional[BikeRelationships] = None
+    links: Optional[JsonApiLinks] = None
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    @classmethod
+    def from_db_model(cls, bike: Any, request_url: str) -> "BikeResource":
+        """Create a BikeResource from a database model."""
+        return cls(
+            id=str(bike.id),
+            attributes=BikeAttributes.model_validate(bike),
+            relationships=BikeRelationships(
+                city={"data": {"type": "cities", "id": str(bike.city_id)}}
+            ),
+            links=JsonApiLinks(
+                self=f"{request_url}/{bike.id}"
+            )
+        )
+
+class BikeCreate(BaseModel):
+    """Model for creating a new bike
+        TODO: Either convert battery_lvl to battery_level or update the database column name"""
+    battery_lvl: int = Field(ge=0, le=100)
+    city_id: int
+    last_position: Optional[str] = Field(
+            None,
+            pattern=r"POINT\(\d+\.\d+\s\d+\.\d+\)",
+            description="WKT POINT format, e.g. 'POINT(57.7089 11.9746)'"
+        )
+    is_available: bool = True
+    meta_data: Optional[dict[str, Any]] = None
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+class BikeUpdate(BaseModel):
+    """Model for updating an existing bike
+    TODO: Either convert battery_lvl to battery_level or update the database column name"""
+    battery_lvl: Optional[int] = Field(None, ge=0, le=100, alias="battery_lvl")
+    city_id: Optional[int] = None
+    last_position: Optional[str] = Field(
+        None,
+        pattern=r"POINT\(\d+\.\d+\s\d+\.\d+\)",
+        description="WKT POINT format, e.g. 'POINT(57.7089 11.9746)'",
+        alias="last_position"
+    )
+    is_available: Optional[bool] = None
+    meta_data: Optional[dict[str, Any]] = None
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 class PaymentProvider(BaseModel):
+    """Model for payment provider table in database"""
     id: int
     provider_name: str
-    metadata: str # JSON
-    created_at: datetime.datetime # timestamp?
-    updated_at: datetime.datetime # timestamp?
+    metadata: str  # JSON
+    created_at: datetime
+    updated_at: datetime
 
 class PaymentMethod(BaseModel):
+    """Model for payment method table in database"""
     id: int
     user: "User"
     provider: PaymentProvider
     provider_specific_id: str
     is_active: bool
     is_default: bool
-    metadata: str # JSON
-    created_at: datetime.datetime # timestamp?
-    updated_at: datetime.datetime # timestamp?
+    metadata: str  # JSON
+    created_at: datetime
+    updated_at: datetime
 
 class Trip(BaseModel):
+    """Model for trip table in database"""
     id: int
     bike_id: int
     user_id: int
-    start_time: datetime.datetime # timestamp?
-    end_time: datetime.datetime # timestamp?
-    start_position: list[float] # import some type?
-    end_position: list[float] # import some type?
-    path_taken: str # Linestring - import some type?
+    start_time: datetime
+    end_time: datetime
+    start_position: list[float]  # Use list for type hinting
+    end_position: list[float]  # Use list for type hinting
+    path_taken: str  # Linestring - import some type?
     start_fee: float
     time_fee: float
     end_fee: float
     total_fee: float
-    created_at: datetime.datetime # timestamp?
-    updated_at: datetime.datetime # timestamp?
+    created_at: datetime
+    updated_at: datetime
 
 class Transaction(BaseModel):
+    """Model for transaction table in database"""
     id: int
     user: "User"
     amount: float
-    transtion_type: str
+    transaction_type: str
     transaction_description: str
     trip: Trip
-    metadata: str # JSON
+    metadata: str  # JSON
     payment_method: PaymentMethod
-    created_at: datetime.datetime # timestamp?
-    updated_at: datetime.datetime # timestamp?
+    created_at: datetime
+    updated_at: datetime
 
 class User(BaseModel):
+    """Model for user table in database"""
     id: int
     full_name: str
     email: str
     balance: float
     use_prepay: bool
     metadata: str
-    payment_methods: list[PaymentMethod] # Should work?
-    trips: list[Trip]
-    transactions: list[Transaction]
-    created_at: datetime.datetime # timestamp?
-    updated_at: datetime.datetime # timestamp?
+    payment_methods: list[PaymentMethod]  # Use list for type hinting
+    trips: list[Trip]  # Use list for type hinting
+    transactions: list[Transaction]  # Use list for type hinting
+    created_at: datetime
+    updated_at: datetime
 
 class City(BaseModel):
+    """Model for city table in database"""
     id: int
     city_name: str
     country_code: str
-    c_location: str # position
-    created_at: datetime.datetime # timestamp?
-    updated_at: datetime.datetime # timestamp?
+    c_location: str  # position
+    created_at: datetime
+    updated_at: datetime
 
 class Zone(BaseModel):
+    """Model for zone table in database"""
     id: int
     zone_name: str
     zone_type: "ZoneType"
     city: City
     boundary: str
-    created_at: datetime.datetime # timestamp?
-    updated_at: datetime.datetime # timestamp?
+    created_at: datetime
+    updated_at: datetime
 
 class ZoneType(BaseModel):
+    """Model for zone type table in database"""
     id: int
     type_name: str
     speed_limit: int
     start_fee: float
     end_fee: float
-    metadata: str # JSON
-    created_at: datetime.datetime # timestamp?
-    updated_at: datetime.datetime # timestamp?
+    metadata: str  # JSON
+    created_at: datetime
+    updated_at: datetime
 
 class AdminRoles(BaseModel):
+    """Model for admin roles table in database"""
     id: int
     role_name: str
-    created_at: datetime.datetime # timestamp?
-    updated_at: datetime.datetime # timestamp?
+    created_at: datetime
+    updated_at: datetime
 
-class Admin:
+class Admin(BaseModel):
+    """Model for admin table in database"""
     id: int
     full_name: str
     email: str
-    metadata: str # JSON
-    created_at: datetime.datetime # timestamp?
-    updated_at: datetime.datetime # timestamp?
-    roles: list[AdminRoles]
+    metadata: str  # JSON
+    created_at: datetime
+    updated_at: datetime
+    roles: list[AdminRoles]  # Use list for type hinting
