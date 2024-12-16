@@ -1,18 +1,20 @@
 """Module for the /bikes routes"""
 
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+
 from api.db import repository
 from api.dependencies.repository_factory import get_repository
 from api.models import db_models
 from api.models.models import (
-    BikeResource,
-    JsonApiResponse,
-    JsonApiLinks,
     BikeCreate,
+    BikeResource,
     BikeUpdate,
     JsonApiError,
     JsonApiErrorResponse,
+    JsonApiLinks,
+    JsonApiResponse,
 )
 
 router = APIRouter(

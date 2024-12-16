@@ -7,7 +7,7 @@ This module provides the core database functionality for the application:
 """
 
 import contextlib
-from typing import AsyncGenerator, AsyncIterator
+from collections.abc import AsyncGenerator, AsyncIterator
 
 from sqlalchemy.ext.asyncio import (
     AsyncConnection,
@@ -22,18 +22,19 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
+
 class DatabaseSessionManager:
     """Manages database sessions and connections.
-    
+
     This class handles the lifecycle of database connections and sessions:
     - Creates and configures the SQLAlchemy engine
     - Provides context managers for connections and sessions
     - Handles cleanup of resources
-    
+
     Usage:
         manager = DatabaseSessionManager()
         manager.init()  # Initialize on startup
-        
+
         async with manager.session() as session:
             # Use session for database operations
     """
@@ -45,14 +46,14 @@ class DatabaseSessionManager:
 
     def init(self, url: str = "postgresql+asyncpg://user:pass@localhost:5432/sddb"):
         """Initialize database engine and session maker.
-        
+
         Args:
             url: Database connection URL. Defaults to URL from settings.
         """
         self._engine = create_async_engine(
             url,
             pool_pre_ping=True,  # Verify connection before using from pool
-            pool_size=10,        # Number of connections to maintain
+            pool_size=10,  # Number of connections to maintain
             max_overflow=10,  # max extra connections to create
             echo=True,  # SQL logging
         )
@@ -73,12 +74,12 @@ class DatabaseSessionManager:
     @contextlib.asynccontextmanager
     async def connect(self) -> AsyncIterator[AsyncConnection]:
         """Get a database connection.
-        
+
         Provides transaction management and automatic rollback on errors.
-        
+
         Yields:
             AsyncConnection: Database connection
-        
+
         Raises:
             Exception: If manager not initialized
         """
@@ -95,12 +96,12 @@ class DatabaseSessionManager:
     @contextlib.asynccontextmanager
     async def session(self) -> AsyncIterator[AsyncSession]:
         """Get a database session.
-        
+
         Provides transaction management and automatic cleanup.
-        
+
         Yields:
             AsyncSession: Database session
-            
+
         Raises:
             Exception: If manager not initialized
         """
@@ -123,17 +124,19 @@ class DatabaseSessionManager:
     async def drop_all(self, connection: AsyncConnection):
         await connection.run_sync(Base.metadata.drop_all)
 
+
 # Global session manager instance
 sessionmanager = DatabaseSessionManager()
 
+
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
     """FastAPI dependency for database sessions.
-    
+
     Usage:
         @app.get("/items")
         async def get_items(session: AsyncSession = Depends(get_db_session)):
             ...
-    
+
     Yields:
         AsyncSession: Database session that's automatically cleaned up
     """
