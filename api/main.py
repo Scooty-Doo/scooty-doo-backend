@@ -9,16 +9,16 @@ from pydantic import ValidationError
 
 from api.db.database import sessionmanager
 from api.exceptions import validation_exception_handler
-from api.routes import bikes, trips, users, zones, oauth
+from api.routes import bikes, oauth, trips, users, zones
 
 sessionmanager.init("postgresql+asyncpg://user:pass@localhost:5432/sddb")
 
 
 @asynccontextmanager
-async def lifespan(application: FastAPI):
+async def lifespan(application: FastAPI):  # pylint: disable=unused-argument
     """Context manager for the lifespan of the application."""
     yield
-    if sessionmanager._engine is not None:
+    if sessionmanager.is_initialized:
         await sessionmanager.close()
 
 

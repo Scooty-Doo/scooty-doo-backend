@@ -31,14 +31,18 @@ app.post('/auth/github/callback', async (req, res) => {
     }
 });
 """
+
 import os
+
 import httpx
-from fastapi import HTTPException
 from dotenv import load_dotenv
+from fastapi import HTTPException
 
 load_dotenv()
 
+
 async def get_github_access_token(code: str):
+    """Get the access token from the GitHub API."""
     url = "https://github.com/login/oauth/access_token"
     headers = {"Accept": "application/json"}
     data = {
@@ -62,7 +66,9 @@ async def get_github_access_token(code: str):
 
     return access_token
 
+
 async def get_github_user(access_token: str):
+    """Get the user details from the GitHub API."""
     url = "https://api.github.com/user"
     headers = {"Authorization": f"Bearer {access_token}"}
 

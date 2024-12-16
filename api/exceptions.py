@@ -11,9 +11,10 @@ from api.models.models import JsonApiError, JsonApiErrorResponse
 
 
 async def validation_exception_handler(
-    request: Request, exc: Union[RequestValidationError, ValidationError]
+    request: Request,  # pylint: disable=unused-argument # noqa: ARG001
+    exc: Union[RequestValidationError, ValidationError],
 ) -> JSONResponse:
-    """Handle validation errors in JSON:API format."""
+    """Handle validation errors in JSON:API format. Request param required for FastAPI."""
     errors = []
     for error in exc.errors():
         field = " -> ".join(str(loc) for loc in error["loc"] if loc != "body")

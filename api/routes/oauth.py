@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+
 from api.models.oauth_models import GitHubCode
 from api.oauth.oauth import get_github_access_token, get_github_user
 
@@ -7,6 +8,7 @@ router = APIRouter(
     tags=["oauth"],
     responses={404: {"description": "Not found"}},
 )
+
 
 @router.post("/github")
 async def login_github(code: GitHubCode):
