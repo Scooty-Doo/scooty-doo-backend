@@ -91,11 +91,17 @@ async def get_all_bikes(
     request: Request,
     bike_repository: BikeRepository,
     city_id: Annotated[int | None, Query()] = None,
+    min_battery: Annotated[int | None, Query(ge=0, le=100)] = None,
+    max_battery: Annotated[int | None, Query(ge=0, le=100)] = None,
 ) -> JsonApiResponse[BikeResource]:
     """Get all bikes (admin only)."""
     filters = {}
     if city_id is not None:
         filters["city_id"] = city_id
+    if min_battery is not None:
+        filters["min_battery"] = min_battery
+    if max_battery is not None:
+        filters["max_battery"] = max_battery
 
     bikes = await bike_repository.get_bikes(filters)
     base_url = str(request.base_url).rstrip("/") + request.url.path
