@@ -39,15 +39,7 @@ python3 -m database.load_mock_data
 ```bash
 # Start the API server (from project root)
 uvicorn api.main:app --reload
-```
 
-## Useful commands
-
-To run API-server:
-```
-uvicorn api.main:app --reload
-```
-or
-```
+# Alternatively set python PATH and run via this:
 PYTHONPATH=. fastapi dev api/main.py
 ```
