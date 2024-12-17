@@ -5,10 +5,35 @@ https://fastapi-jsonapi.readthedocs.io/en/latest/
 """
 
 # pylint: disable=too-few-public-methods
+import re
 from datetime import datetime
-from typing import Any, Generic, Optional, TypeVar
+from typing import Annotated, Any, Generic, Optional, TypeVar
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
+
+
+def validate_wkt_point(value: str | None) -> str | None:
+    """Validate WKT POINT format and coordinates."""
+    if value is None:
+        return None
+
+    point_pattern = r"^POINT\(\s*(-?\d+(\.\d+)?|-?\d+\.\d+)\s+(-?\d+(\.\d+)?|-?\d+\.\d+)\s*\)$"
+    match = re.match(point_pattern, str(value))
+
+    if not match:
+        raise ValueError(f"Invalid WKT POINT format: {value}")
+
+    longitude, latitude = map(float, match.groups()[0:2])
+
+    if not -180 <= longitude <= 180:
+        raise ValueError(f"Longitude {longitude} out of range [-180, 180]")
+    if not -90 <= latitude <= 90:
+        raise ValueError(f"Latitude {latitude} out of range [-90, 90]")
+
+    return value
+
+
+WKTPoint = Annotated[str, BeforeValidator(validate_wkt_point)]
 
 
 class JsonApiLinks(BaseModel):
@@ -47,9 +72,8 @@ class BikeAttributes(BaseModel):
     """Bike attributes for JSON:API response."""
 
     battery_level: int = Field(ge=0, le=100, alias="battery_lvl")
-    position: Optional[str] = Field(
+    position: Optional[WKTPoint] = Field(
         None,
-        pattern=r"POINT\(\d+\.\d+\s\d+\.\d+\)",
         description="WKT POINT format, e.g. 'POINT(57.7089 11.9746)'",
         alias="last_position",
     )
@@ -96,9 +120,8 @@ class BikeCreate(BaseModel):
 
     battery_lvl: int = Field(ge=0, le=100)
     city_id: int
-    last_position: Optional[str] = Field(
+    last_position: Optional[WKTPoint] = Field(
         None,
-        pattern=r"POINT\(\d+\.\d+\s\d+\.\d+\)",
         description="WKT POINT format, e.g. 'POINT(57.7089 11.9746)'",
     )
     is_available: bool = True
@@ -113,9 +136,8 @@ class BikeUpdate(BaseModel):
 
     battery_lvl: Optional[int] = Field(None, ge=0, le=100, alias="battery_lvl")
     city_id: Optional[int] = None
-    last_position: Optional[str] = Field(
+    last_position: Optional[WKTPoint] = Field(
         None,
-        pattern=r"POINT\(\d+\.\d+\s\d+\.\d+\)",
         description="WKT POINT format, e.g. 'POINT(57.7089 11.9746)'",
         alias="last_position",
     )
