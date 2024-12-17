@@ -29,7 +29,18 @@ def validate_wkt_point(value: str | None) -> str | None:
     return value
 
 
-WKTPoint = Annotated[str, BeforeValidator(validate_wkt_point)]
+WKTPoint = Annotated[
+    str, 
+    BeforeValidator(validate_wkt_point),
+    Field(
+        description="WKT POINT format with longitude (-180 to 180) and latitude (-90 to 90)",
+        example="POINT(11.9746 57.7089)",
+        json_schema_extra={
+            "format": "WKT POINT",
+            "examples": ["POINT(11.9746 57.7089)"],
+        }
+    )
+]
 
 
 class JsonApiLinks(BaseModel):
@@ -70,7 +81,6 @@ class BikeAttributes(BaseModel):
     battery_level: int = Field(ge=0, le=100, alias="battery_lvl")
     position: Optional[WKTPoint] = Field(
         None,
-        description="WKT POINT format, e.g. 'POINT(57.7089 11.9746)'",
         alias="last_position",
     )
     is_available: bool = True
