@@ -64,6 +64,7 @@ class DatabaseRepository(Generic[Model]):
 
     async def count(self, *expressions: BinaryExpression) -> int:
         """Count instances matching expressions."""
+        # pylint: disable=not-callable
         query = select(func.count()).select_from(self.model)
         if expressions:
             query = query.where(*expressions)
@@ -176,8 +177,8 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
         await self.session.commit()
         return result.mappings().first()
 
-    async def get(self, id_: int) -> Optional[db_models.Bike]:
+    async def get_bike(self, pk: int) -> Optional[db_models.Bike]:
         """Get a bike by ID."""
-        stmt = select(*self._get_bike_columns()).where(self.model.id == id_)
+        stmt = select(*self._get_bike_columns()).where(self.model.id == pk)
         result = await self.session.execute(stmt)
         return result.mappings().first()

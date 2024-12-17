@@ -1,4 +1,15 @@
 """Module for the /bikes routes"""
+# Filtering with query params seems clunky. Could it be done easier? Perhaps one of these:
+# https://github.com/arthurio/fastapi-filter
+# https://github.com/OleksandrZhydyk/FastAPI-SQLAlchemy-Filters
+#
+# TODO: Should probably add pydantic type checks to query params?
+# Otherwise, the db might go through a lot of work for nothing if the query params are invalid.
+# TODO: Admin checks
+# TODO: Pagination
+# TODO: Fix update
+# TODO: Error handling
+# TODO: Efficient query param handling
 
 from typing import Annotated
 
@@ -75,43 +86,30 @@ def raise_not_found(detail: str):
     )
 
 
-"""Filtering with query params seems clunky. Could it be done easier? Perhaps one of these:
-https://github.com/arthurio/fastapi-filter
-https://github.com/OleksandrZhydyk/FastAPI-SQLAlchemy-Filters
-
-TODO: Should probably add pydantic type checks to query params?
-Otherwis, the db might go through a lot of work for nothing if the query params are invalid.
-TODO: Admin checks
-TODO: Pagination
-TODO: Fix update
-TODO: Error handling
-TODO: Efficient query param handlning
-
-"""
-
-
 @router.get("/", response_model=JsonApiResponse[BikeResource])
 async def get_all_bikes(
-    request: Request, repository: BikeRepository, city_id: Annotated[int | None, Query()] = None
+    request: Request,
+    bike_repository: BikeRepository,
+    city_id: Annotated[int | None, Query()] = None,
 ) -> JsonApiResponse[BikeResource]:
     """Get all bikes (admin only)."""
     filters = {}
     if city_id is not None:
         filters["city_id"] = city_id
 
-    bikes = await repository.get_bikes(filters)
+    bikes = await bike_repository.get_bikes(filters)
     base_url = str(request.base_url).rstrip("/") + request.url.path
 
     return JsonApiResponse(
         data=[BikeResource.from_db_model(bike, base_url) for bike in bikes],
-        links=JsonApiLinks(self=base_url.rsplit("/", 1)[0]),
+        links=JsonApiLinks(self_link=base_url.rsplit("/", 1)[0]),
     )
 
 
 @router.get("/available", response_model=JsonApiResponse[BikeResource])
 async def get_available_bikes(
     request: Request,
-    repository: BikeRepository,
+    bike_repository: BikeRepository,
     city_id: Annotated[int | None, Query()] = None,
     min_battery: Annotated[int | None, Query(ge=0, le=100)] = None,
     max_battery: Annotated[int | None, Query(ge=0, le=100)] = None,
@@ -128,58 +126,58 @@ async def get_available_bikes(
     if max_battery is not None:
         filters["max_battery"] = max_battery
 
-    bikes = await repository.get_bikes(filters)
+    bikes = await bike_repository.get_bikes(filters)
     base_url = str(request.base_url).rstrip("/") + request.url.path
 
     return JsonApiResponse(
         data=[BikeResource.from_db_model(bike, base_url) for bike in bikes],
-        links=JsonApiLinks(self=base_url.rsplit("/", 1)[0]),
+        links=JsonApiLinks(self_link=base_url.rsplit("/", 1)[0]),
     )
 
 
 @router.get("/{bike_id}", response_model=JsonApiResponse[BikeResource])
 async def get_bike(
-    request: Request, bike_id: int, repository: BikeRepository
+    request: Request, bike_id: int, bike_repository: BikeRepository
 ) -> JsonApiResponse[BikeResource]:
     """Get a bike by ID."""
-    bike = await repository.get(bike_id)
+    bike = await bike_repository.get_bike(bike_id)
     if bike is None:
         raise_not_found(f"Bike with ID {bike_id} not found")
 
     base_url = str(request.base_url).rstrip("/") + request.url.path.rsplit("/", 1)[0]
 
     return JsonApiResponse(
-        data=BikeResource.from_db_model(bike, base_url), links=JsonApiLinks(self=base_url)
+        data=BikeResource.from_db_model(bike, base_url), links=JsonApiLinks(self_link=base_url)
     )
 
 
 @router.post("/", response_model=JsonApiResponse[BikeResource], status_code=status.HTTP_201_CREATED)
 async def add_bike(
-    request: Request, bike: BikeCreate, repository: BikeRepository
+    request: Request, bike: BikeCreate, bike_repository: BikeRepository
 ) -> JsonApiResponse[BikeResource]:
     """Add a new bike to the database (admin only)"""
     bike_data = bike.model_dump()
-    created_bike = await repository.add_bike(bike_data)
+    created_bike = await bike_repository.add_bike(bike_data)
 
     base_url = str(request.base_url).rstrip("/") + "/v1/bikes"
     return JsonApiResponse(
         data=BikeResource.from_db_model(created_bike, base_url),
-        links=JsonApiLinks(self=f"{base_url}/{created_bike.id}"),
+        links=JsonApiLinks(self_link=f"{base_url}/{created_bike.id}"),
     )
 
 
 @router.patch("/{bike_id}", response_model=JsonApiResponse[BikeResource])
 async def update_bike(
-    request: Request, bike_id: int, bike_update: BikeUpdate, repository: BikeRepository
+    request: Request, bike_id: int, bike_update: BikeUpdate, bike_repository: BikeRepository
 ) -> JsonApiResponse[BikeResource]:
     """Update a bike."""
-    bike = await repository.get(bike_id)
+    bike = await bike_repository.get(bike_id)
     if bike is None:
         raise_not_found(f"Bike with ID {bike_id} not found")
 
     update_data = bike_update.model_dump(exclude_unset=True)
     print("DATA:", update_data)
-    updated_bike = await repository.update_bike(bike_id, update_data)
+    updated_bike = await bike_repository.update_bike(bike_id, update_data)
     print("UPDATED BIKE:", updated_bike)
     if updated_bike is None:
         raise_not_found(f"Failed to update bike with ID {bike_id}")
@@ -187,15 +185,16 @@ async def update_bike(
     base_url = str(request.base_url).rstrip("/") + request.url.path.rsplit("/", 1)[0]
 
     return JsonApiResponse(
-        data=BikeResource.from_db_model(updated_bike, base_url), links=JsonApiLinks(self=base_url)
+        data=BikeResource.from_db_model(updated_bike, base_url),
+        links=JsonApiLinks(self_link=base_url),
     )
 
 
 @router.delete("/{bike_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def remove_bike(bike_id: int, repository: BikeRepository):
+async def remove_bike(bike_id: int, bike_repository: BikeRepository):
     """Remove a bike."""
-    bike = await repository.get(bike_id)
+    bike = await bike_repository.get(bike_id)
     if bike is None:
         raise_not_found(f"Bike with ID {bike_id} not found")
 
-    await repository.delete(bike_id)
+    await bike_repository.delete(bike_id)

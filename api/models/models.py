@@ -1,4 +1,8 @@
-"""Module for pydantic models"""
+"""Module for pydantic models
+Note: JSON:API integration with FastAPI feels clunky.
+use a library like fastapi-jsonapi?
+https://fastapi-jsonapi.readthedocs.io/en/latest/
+"""
 
 # pylint: disable=too-few-public-methods
 from datetime import datetime
@@ -6,16 +10,13 @@ from typing import Any, Generic, Optional, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
-"""
-Feels very clunky to work with JSON:API in FastAPI and perhaps we should consider a library.
-Perhaps: https://fastapi-jsonapi.readthedocs.io/en/latest/
-"""
-
 
 class JsonApiLinks(BaseModel):
     """JSON:API links object."""
 
-    self: str
+    self_link: str = Field(..., alias="self")
+
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class JsonApiError(BaseModel):
@@ -85,7 +86,7 @@ class BikeResource(BaseModel):
             relationships=BikeRelationships(
                 city={"data": {"type": "cities", "id": str(bike.city_id)}}
             ),
-            links=JsonApiLinks(self=f"{request_url}/{bike.id}"),
+            links=JsonApiLinks(self_link=f"{request_url}/{bike.id}"),
         )
 
 

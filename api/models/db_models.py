@@ -1,3 +1,5 @@
+"""SQLAlchemy database models for Scooty Doo API."""
+
 from datetime import datetime
 
 from geoalchemy2 import Geometry
@@ -17,18 +19,19 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
+# pylint: disable=too-few-public-methods
 class Base(DeclarativeBase):
     """Base database model."""
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        server_default=func.now(),
+        server_default=func.now(),  # pylint: disable=not-callable
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        server_default=func.now(),
-        onupdate=func.now(),
-        server_onupdate=func.now(),
+        server_default=func.now(),  # pylint: disable=not-callable
+        onupdate=func.now(),  # pylint: disable=not-callable
+        server_onupdate=func.now(),  # pylint: disable=not-callable
     )
 
 

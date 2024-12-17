@@ -1,3 +1,5 @@
+"""Database script to load mock data into the database using SQLAlchemy."""
+
 import asyncio
 import csv
 import json
@@ -85,7 +87,7 @@ async def truncate_tables(session: AsyncSession):
 
 async def load_cities(session: AsyncSession):
     """Load cities from CSV."""
-    with open("database/mock_data/data/generated/cities.csv") as csvfile:
+    with open("database/mock_data/data/generated/cities.csv", encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             city = City(
@@ -100,7 +102,7 @@ async def load_cities(session: AsyncSession):
 
 async def load_users(session: AsyncSession):
     """Load users from CSV."""
-    with open("database/mock_data/data/generated/users.csv") as csvfile:
+    with open("database/mock_data/data/generated/users.csv", encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             user = User(
@@ -129,7 +131,9 @@ async def load_payment_providers(session: AsyncSession):
 
 async def load_bikes(session: AsyncSession):
     """Load bikes from CSV."""
-    with open("database/mock_data/data/generated/bikes_with_availability.csv") as csvfile:
+    with open(
+        "database/mock_data/data/generated/bikes_with_availability.csv", encoding="utf-8"
+    ) as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             bike = Bike(
@@ -150,7 +154,7 @@ async def load_bikes(session: AsyncSession):
 
 async def load_trips(session: AsyncSession):
     """Load trips from CSV."""
-    with open("database/mock_data/data/generated/trip_data.csv") as csvfile:
+    with open("database/mock_data/data/generated/trip_data.csv", encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             trip = Trip(
@@ -172,7 +176,7 @@ async def load_trips(session: AsyncSession):
 
 async def load_zone_types(session: AsyncSession):
     """Load zone types from CSV."""
-    with open("database/mock_data/data/generated/zone_types.csv") as csvfile:
+    with open("database/mock_data/data/generated/zone_types.csv", encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             zone_type = ZoneType(
@@ -188,7 +192,7 @@ async def load_zone_types(session: AsyncSession):
 
 async def load_map_zones(session: AsyncSession):
     """Load map zones from CSV."""
-    with open("database/mock_data/data/generated/map_zones.csv") as csvfile:
+    with open("database/mock_data/data/generated/map_zones.csv", encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             map_zone = MapZone(
@@ -204,7 +208,9 @@ async def load_map_zones(session: AsyncSession):
 async def load_admins_and_roles(session: AsyncSession):
     """Load admins, roles and their relationships."""
     # Load roles first
-    with open("database/mock_data/data/generated/admin_roles.csv") as csvfile:
+    with open(
+        "database/mock_data/data/generated/admin_roles.csv", encoding="utf-8"
+    ) as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             role = AdminRole(id=int(row["id"]), role_name=row["role_name"])
@@ -212,7 +218,7 @@ async def load_admins_and_roles(session: AsyncSession):
     await session.flush()
 
     # Load admins
-    with open("database/mock_data/data/generated/admins.csv") as csvfile:
+    with open("database/mock_data/data/generated/admins.csv", encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             admin = Admin(id=int(row["id"]), full_name=row["full_name"], email=row["email"])
@@ -220,7 +226,9 @@ async def load_admins_and_roles(session: AsyncSession):
     await session.flush()
 
     # Load admin-role relationships
-    with open("database/mock_data/data/generated/admin_to_roles.csv") as csvfile:
+    with open(
+        "database/mock_data/data/generated/admin_to_roles.csv", encoding="utf-8"
+    ) as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             admin_role = Admin2AdminRole(admin_id=int(row["admin_id"]), role_id=int(row["role_id"]))

@@ -1,3 +1,6 @@
+"""Module for creating repository dependencies."""
+
+# pylint: disable=E0401
 from collections.abc import Callable
 from typing import TypeVar
 

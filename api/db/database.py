@@ -7,6 +7,8 @@ This module provides the core database functionality for the application:
 """
 
 import contextlib
+
+# pylint: disable=E0401
 from collections.abc import AsyncGenerator, AsyncIterator
 
 from sqlalchemy.ext.asyncio import (
@@ -16,23 +18,16 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.ext.declarative import declarative_base
 
-# from config import settings
-
-Base = declarative_base()
+from api.models.db_models import Base
 
 
 class DatabaseError(Exception):
     """Base exception for database errors."""
 
-    pass
-
 
 class DatabaseNotInitializedError(DatabaseError):
     """Raised when trying to use database before initialization."""
-
-    pass
 
 
 class DatabaseSessionManager:
@@ -136,9 +131,11 @@ class DatabaseSessionManager:
 
     # Used for testing
     async def create_all(self, connection: AsyncConnection):
+        """Create all tables in the database."""
         await connection.run_sync(Base.metadata.create_all)
 
     async def drop_all(self, connection: AsyncConnection):
+        """Drop all tables in the database."""
         await connection.run_sync(Base.metadata.drop_all)
 
 
