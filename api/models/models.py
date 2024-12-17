@@ -1,22 +1,146 @@
 """Module for pydantic models"""
 
 # pylint: disable=too-few-public-methods
-import datetime
+import re
+from datetime import datetime
+from typing import Annotated, Any, Generic, Optional, TypeVar
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
 
 
-class Bike(BaseModel):
-    """Model for bike table in database"""
+def validate_wkt_point(value: str | None) -> str | None:
+    """Validate WKT POINT format and coordinates."""
+    if value is None:
+        return None
 
-    id: int
-    battery_level: int
-    metadata: str  # JSON == string?
-    position: str = Field(pattern=r"POINT\(\d{2}\.\d{4}\s\d{2}\.\d{4}\)")  # import some type?
-    city: "City"
-    status: str  # JSON == string?
-    created_at: datetime.datetime  # timestamp?
-    updated_at: datetime.datetime  # timestamp?
+    point_pattern = r"^POINT\(\s*(-?\d+(\.\d+)?|-?\d+\.\d+)\s+(-?\d+(\.\d+)?|-?\d+\.\d+)\s*\)$"
+    match = re.match(point_pattern, str(value))
+
+    if not match:
+        raise ValueError(f"Invalid WKT POINT format: {value}")
+
+    longitude, latitude = map(float, match.groups()[0:2])
+
+    if not -180 <= longitude <= 180:
+        raise ValueError(f"Longitude {longitude} out of range [-180, 180]")
+    if not -90 <= latitude <= 90:
+        raise ValueError(f"Latitude {latitude} out of range [-90, 90]")
+
+    return value
+
+
+WKTPoint = Annotated[str, BeforeValidator(validate_wkt_point)]
+
+
+class JsonApiLinks(BaseModel):
+    """JSON:API links object."""
+
+    self_link: str = Field(..., alias="self")
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class JsonApiError(BaseModel):
+    """JSON:API error object."""
+
+    status: str
+    title: str
+    detail: Optional[str] = None
+
+
+class JsonApiErrorResponse(BaseModel):
+    """JSON:API error response."""
+
+    errors: list[JsonApiError]
+
+
+T = TypeVar("T", bound=BaseModel)
+
+
+class JsonApiResponse(BaseModel, Generic[T]):
+    """JSON:API response wrapper."""
+
+    data: T | list[T]
+    links: JsonApiLinks
+
+
+class BikeAttributes(BaseModel):
+    """Bike attributes for JSON:API response."""
+
+    battery_level: int = Field(ge=0, le=100, alias="battery_lvl")
+    position: Optional[WKTPoint] = Field(
+        None,
+        description="WKT POINT format, e.g. 'POINT(57.7089 11.9746)'",
+        alias="last_position",
+    )
+    is_available: bool = True
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+
+class BikeRelationships(BaseModel):
+    """Bike relationships for JSON:API response."""
+
+    city: dict[str, Any]
+
+
+class BikeResource(BaseModel):
+    """JSON:API resource object for bikes."""
+
+    id: str
+    type: str = "bikes"
+    attributes: BikeAttributes
+    relationships: Optional[BikeRelationships] = None
+    links: Optional[JsonApiLinks] = None
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    @classmethod
+    def from_db_model(cls, bike: Any, request_url: str) -> "BikeResource":
+        """Create a BikeResource from a database model."""
+        return cls(
+            id=str(bike.id),
+            attributes=BikeAttributes.model_validate(bike),
+            relationships=BikeRelationships(
+                city={"data": {"type": "cities", "id": str(bike.city_id)}}
+            ),
+            links=JsonApiLinks(self_link=f"{request_url}/{bike.id}"),
+        )
+
+
+class BikeCreate(BaseModel):
+    """Model for creating a new bike
+    TODO: Either convert battery_lvl to battery_level or update the database column name"""
+
+    battery_lvl: int = Field(ge=0, le=100)
+    city_id: int
+    last_position: Optional[WKTPoint] = Field(
+        None,
+        description="WKT POINT format, e.g. 'POINT(57.7089 11.9746)'",
+    )
+    is_available: bool = True
+    meta_data: Optional[dict[str, Any]] = None
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+
+class BikeUpdate(BaseModel):
+    """Model for updating an existing bike
+    TODO: Either convert battery_lvl to battery_level or update the database column name"""
+
+    battery_lvl: Optional[int] = Field(None, ge=0, le=100, alias="battery_lvl")
+    city_id: Optional[int] = None
+    last_position: Optional[WKTPoint] = Field(
+        None,
+        description="WKT POINT format, e.g. 'POINT(57.7089 11.9746)'",
+        alias="last_position",
+    )
+    is_available: Optional[bool] = None
+    meta_data: Optional[dict[str, Any]] = None
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class PaymentProvider(BaseModel):
