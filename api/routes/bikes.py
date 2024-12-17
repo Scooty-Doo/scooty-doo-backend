@@ -15,7 +15,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
-from api.db import repository
+from api.db.repository_bike import BikeRepository as BikeRepoClass
 from api.dependencies.repository_factory import get_repository
 from api.models import db_models
 from api.models.models import (
@@ -70,8 +70,8 @@ router = APIRouter(
 )
 
 BikeRepository = Annotated[
-    repository.BikeRepository,
-    Depends(get_repository(db_models.Bike, repository_class=repository.BikeRepository)),
+    BikeRepoClass,
+    Depends(get_repository(db_models.Bike, repository_class=BikeRepoClass)),
 ]
 
 

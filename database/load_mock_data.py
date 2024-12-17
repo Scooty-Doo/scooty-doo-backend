@@ -119,7 +119,9 @@ async def load_users(session: AsyncSession):
 
 async def load_payment_providers(session: AsyncSession):
     """Load payment providers from JSON."""
-    with open("database/mock_data/data/generated/payment_providers.json") as jsonfile:
+    with open(
+        "database/mock_data/data/generated/payment_providers.json", encoding="utf-8"
+    ) as jsonfile:
         data = json.load(jsonfile)
         for provider in data["payment_providers"]:
             pp = PaymentProvider(
@@ -208,9 +210,7 @@ async def load_map_zones(session: AsyncSession):
 async def load_admins_and_roles(session: AsyncSession):
     """Load admins, roles and their relationships."""
     # Load roles first
-    with open(
-        "database/mock_data/data/generated/admin_roles.csv", encoding="utf-8"
-    ) as csvfile:
+    with open("database/mock_data/data/generated/admin_roles.csv", encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             role = AdminRole(id=int(row["id"]), role_name=row["role_name"])
@@ -226,9 +226,7 @@ async def load_admins_and_roles(session: AsyncSession):
     await session.flush()
 
     # Load admin-role relationships
-    with open(
-        "database/mock_data/data/generated/admin_to_roles.csv", encoding="utf-8"
-    ) as csvfile:
+    with open("database/mock_data/data/generated/admin_to_roles.csv", encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             admin_role = Admin2AdminRole(admin_id=int(row["admin_id"]), role_id=int(row["role_id"]))
