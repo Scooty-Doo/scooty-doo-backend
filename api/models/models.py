@@ -1,22 +1,128 @@
-"""Module for pydantic models"""
+"""Module for pydantic models
+Note: JSON:API integration with FastAPI feels clunky.
+use a library like fastapi-jsonapi?
+https://fastapi-jsonapi.readthedocs.io/en/latest/
+"""
 
 # pylint: disable=too-few-public-methods
-import datetime
+from datetime import datetime
+from typing import Any, Generic, Optional, TypeVar
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
-class Bike(BaseModel):
-    """Model for bike table in database"""
+class JsonApiLinks(BaseModel):
+    """JSON:API links object."""
 
-    id: int
-    battery_level: int
-    metadata: str  # JSON == string?
-    position: str = Field(pattern=r"POINT\(\d{2}\.\d{4}\s\d{2}\.\d{4}\)")  # import some type?
-    city: "City"
-    status: str  # JSON == string?
-    created_at: datetime.datetime  # timestamp?
-    updated_at: datetime.datetime  # timestamp?
+    self_link: str = Field(..., alias="self")
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class JsonApiError(BaseModel):
+    """JSON:API error object."""
+
+    status: str
+    title: str
+    detail: Optional[str] = None
+
+
+class JsonApiErrorResponse(BaseModel):
+    """JSON:API error response."""
+
+    errors: list[JsonApiError]
+
+
+T = TypeVar("T", bound=BaseModel)
+
+
+class JsonApiResponse(BaseModel, Generic[T]):
+    """JSON:API response wrapper."""
+
+    data: T | list[T]
+    links: JsonApiLinks
+
+
+class BikeAttributes(BaseModel):
+    """Bike attributes for JSON:API response."""
+
+    battery_level: int = Field(ge=0, le=100, alias="battery_lvl")
+    position: Optional[str] = Field(
+        None,
+        pattern=r"POINT\(\d+\.\d+\s\d+\.\d+\)",
+        description="WKT POINT format, e.g. 'POINT(57.7089 11.9746)'",
+        alias="last_position",
+    )
+    is_available: bool = True
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+
+class BikeRelationships(BaseModel):
+    """Bike relationships for JSON:API response."""
+
+    city: dict[str, Any]
+
+
+class BikeResource(BaseModel):
+    """JSON:API resource object for bikes."""
+
+    id: str
+    type: str = "bikes"
+    attributes: BikeAttributes
+    relationships: Optional[BikeRelationships] = None
+    links: Optional[JsonApiLinks] = None
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    @classmethod
+    def from_db_model(cls, bike: Any, request_url: str) -> "BikeResource":
+        """Create a BikeResource from a database model."""
+        return cls(
+            id=str(bike.id),
+            attributes=BikeAttributes.model_validate(bike),
+            relationships=BikeRelationships(
+                city={"data": {"type": "cities", "id": str(bike.city_id)}}
+            ),
+            links=JsonApiLinks(self_link=f"{request_url}/{bike.id}"),
+        )
+
+
+class BikeCreate(BaseModel):
+    """Model for creating a new bike
+    TODO: Either convert battery_lvl to battery_level or update the database column name"""
+
+    battery_lvl: int = Field(ge=0, le=100)
+    city_id: int
+    last_position: Optional[str] = Field(
+        None,
+        pattern=r"POINT\(\d+\.\d+\s\d+\.\d+\)",
+        description="WKT POINT format, e.g. 'POINT(57.7089 11.9746)'",
+    )
+    is_available: bool = True
+    meta_data: Optional[dict[str, Any]] = None
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+
+class BikeUpdate(BaseModel):
+    """Model for updating an existing bike
+    TODO: Either convert battery_lvl to battery_level or update the database column name"""
+
+    battery_lvl: Optional[int] = Field(None, ge=0, le=100, alias="battery_lvl")
+    city_id: Optional[int] = None
+    last_position: Optional[str] = Field(
+        None,
+        pattern=r"POINT\(\d+\.\d+\s\d+\.\d+\)",
+        description="WKT POINT format, e.g. 'POINT(57.7089 11.9746)'",
+        alias="last_position",
+    )
+    is_available: Optional[bool] = None
+    meta_data: Optional[dict[str, Any]] = None
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 class PaymentProvider(BaseModel):
@@ -25,8 +131,8 @@ class PaymentProvider(BaseModel):
     id: int
     provider_name: str
     metadata: str  # JSON
-    created_at: datetime.datetime  # timestamp?
-    updated_at: datetime.datetime  # timestamp?
+    created_at: datetime
+    updated_at: datetime
 
 
 class PaymentMethod(BaseModel):
@@ -39,8 +145,8 @@ class PaymentMethod(BaseModel):
     is_active: bool
     is_default: bool
     metadata: str  # JSON
-    created_at: datetime.datetime  # timestamp?
-    updated_at: datetime.datetime  # timestamp?
+    created_at: datetime
+    updated_at: datetime
 
 
 class Trip(BaseModel):
@@ -49,17 +155,17 @@ class Trip(BaseModel):
     id: int
     bike_id: int
     user_id: int
-    start_time: datetime.datetime  # timestamp?
-    end_time: datetime.datetime  # timestamp?
-    start_position: list[float]  # import some type?
-    end_position: list[float]  # import some type?
+    start_time: datetime
+    end_time: datetime
+    start_position: list[float]  # Use list for type hinting
+    end_position: list[float]  # Use list for type hinting
     path_taken: str  # Linestring - import some type?
     start_fee: float
     time_fee: float
     end_fee: float
     total_fee: float
-    created_at: datetime.datetime  # timestamp?
-    updated_at: datetime.datetime  # timestamp?
+    created_at: datetime
+    updated_at: datetime
 
 
 class Transaction(BaseModel):
@@ -68,13 +174,13 @@ class Transaction(BaseModel):
     id: int
     user: "User"
     amount: float
-    transtion_type: str
+    transaction_type: str
     transaction_description: str
     trip: Trip
     metadata: str  # JSON
     payment_method: PaymentMethod
-    created_at: datetime.datetime  # timestamp?
-    updated_at: datetime.datetime  # timestamp?
+    created_at: datetime
+    updated_at: datetime
 
 
 class User(BaseModel):
@@ -86,11 +192,11 @@ class User(BaseModel):
     balance: float
     use_prepay: bool
     metadata: str
-    payment_methods: list[PaymentMethod]  # Should work?
-    trips: list[Trip]
-    transactions: list[Transaction]
-    created_at: datetime.datetime  # timestamp?
-    updated_at: datetime.datetime  # timestamp?
+    payment_methods: list[PaymentMethod]  # Use list for type hinting
+    trips: list[Trip]  # Use list for type hinting
+    transactions: list[Transaction]  # Use list for type hinting
+    created_at: datetime
+    updated_at: datetime
 
 
 class City(BaseModel):
@@ -100,8 +206,8 @@ class City(BaseModel):
     city_name: str
     country_code: str
     c_location: str  # position
-    created_at: datetime.datetime  # timestamp?
-    updated_at: datetime.datetime  # timestamp?
+    created_at: datetime
+    updated_at: datetime
 
 
 class Zone(BaseModel):
@@ -112,8 +218,8 @@ class Zone(BaseModel):
     zone_type: "ZoneType"
     city: City
     boundary: str
-    created_at: datetime.datetime  # timestamp?
-    updated_at: datetime.datetime  # timestamp?
+    created_at: datetime
+    updated_at: datetime
 
 
 class ZoneType(BaseModel):
@@ -125,8 +231,8 @@ class ZoneType(BaseModel):
     start_fee: float
     end_fee: float
     metadata: str  # JSON
-    created_at: datetime.datetime  # timestamp?
-    updated_at: datetime.datetime  # timestamp?
+    created_at: datetime
+    updated_at: datetime
 
 
 class AdminRoles(BaseModel):
@@ -134,17 +240,17 @@ class AdminRoles(BaseModel):
 
     id: int
     role_name: str
-    created_at: datetime.datetime  # timestamp?
-    updated_at: datetime.datetime  # timestamp?
+    created_at: datetime
+    updated_at: datetime
 
 
-class Admin:
+class Admin(BaseModel):
     """Model for admin table in database"""
 
     id: int
     full_name: str
     email: str
     metadata: str  # JSON
-    created_at: datetime.datetime  # timestamp?
-    updated_at: datetime.datetime  # timestamp?
-    roles: list[AdminRoles]
+    created_at: datetime
+    updated_at: datetime
+    roles: list[AdminRoles]  # Use list for type hinting

@@ -3,10 +3,12 @@ networks:
 
 services:
     api:
-        image: challep/scooty-doo-api:1.0
+        build:
+            context: ./api
+            dockerfile: Dockerfile
         container_name: "api"
-        networks:
-          scooty-web:
+        # networks:
+        #   scooty-web:
         ports:
           - 80:80
 #    server:
