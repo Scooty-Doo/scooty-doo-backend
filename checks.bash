@@ -9,16 +9,16 @@ echo _______________________
 ruff check --fix
 printf "\n${COLOR} Linting api with pylint${NC}\n"
 echo _______________________
-pylint --rcfile=.pylintrc --fail-under=9 ./api
+pylint --fail-under=9 ./api
 printf "\n${COLOR}Linting database with pylint${NC}\n"
 echo _______________________
-pylint --rcfile=.pylintrc --fail-under=9 ./database
+pylint --fail-under=9 ./database
 printf "\n${COLOR}Linting tests with pylint${NC}\n"
 echo _______________________
-pylint --rcfile=.pylintrc --fail-under=9 ./tests
+pylint --fail-under=9 ./tests
 printf "\n${COLOR}Running tests with pytest${NC}\n"
 echo _______________________
-coverage run -m pytest
+coverage run -m pytest -q
 printf "\n${COLOR}Generating coverage${NC}\n"
 echo _______________________
 coverage html
