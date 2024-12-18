@@ -35,7 +35,7 @@ jobs:
         ruff check
     - name: Lint with pylint
       run: |
-        pylint --rcfile=.pylintrc --fail-under=9
+        pylint --rcfile=.pylintrc --fail-under=9 .
     - name: Test with pytest
       run: |
         pytest
