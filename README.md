@@ -43,3 +43,14 @@ uvicorn api.main:app --reload
 # Alternatively set python PATH and run via this:
 PYTHONPATH=. fastapi dev api/main.py
 ```
+
+### Run tests
+```bash
+# Run without coverage
+pytest
+# Run with coverage
+coverage run -m pytest
+# To create reports
+coverage report # CLI
+coverage html # HTML
+```

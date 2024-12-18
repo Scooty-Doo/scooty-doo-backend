@@ -1,4 +1,0 @@
-# .pylintrc
-[MASTER]
-# Add project root to Python path
-init-hook='import sys; sys.path.append(".")'
