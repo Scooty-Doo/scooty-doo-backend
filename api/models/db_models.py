@@ -196,7 +196,7 @@ class Transaction(Base):
 
     # Relationships
     user: Mapped["User"] = relationship(back_populates="transactions")
-    trip: Mapped["Trip"] = relationship(back_populates="transactions")
+    trip: Mapped["Trip"] = relationship(back_populates="transaction")
     payment_method: Mapped["PaymentMethod"] = relationship(back_populates="transactions")
 
 
