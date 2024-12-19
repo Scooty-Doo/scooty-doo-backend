@@ -14,7 +14,7 @@ from api.models.models import (
     JsonApiResponse,
 )
 
-from api.models.trip_models import TripResource
+from api.models.trip_models import TripResource, TripCreate, UserTripStart
 
 router = APIRouter(
     prefix="/v1/trips",
@@ -26,6 +26,7 @@ TripRepository = Annotated[
     TripRepoClass,
     Depends(get_repository(db_models.Trip, repository_class=TripRepoClass)),
 ]
+# TODO: Error handling
 
 @router.get("/", response_model=JsonApiResponse[TripResource])
 async def get_trips(
@@ -46,7 +47,34 @@ async def get_trips(
 
     return JsonApiResponse(
         data=[TripResource.from_db_model(trip, base_url) for trip in trips],
-        links=JsonApiLinks(self=base_url.rsplit("/", 1)[0]),
+        links=JsonApiLinks(self_link=base_url.rsplit("/", 1)[0]),
     )
 
+@router.get("/{trip_id}", response_model=JsonApiResponse[TripResource])
+async def get_trip(
+    request: Request,
+    trip_id: int,
+    trip_repository: TripRepository
+) -> JsonApiResponse[TripResource]:
+    """Get a single trip by ID."""
+    trip = await trip_repository.get_trip(trip_id)
 
+    base_url = str(request.base_url).rstrip("/") + request.url.path
+
+    return JsonApiResponse(
+        data=TripResource.from_db_model(trip, base_url),
+        links=JsonApiLinks(self_link=base_url),
+    )
+
+@router.post("/", response_model=JsonApiResponse[TripResource], status_code=status.HTTP_201_CREATED)
+async def start_trip(
+    request: Request,
+    trip_data: UserTripStart,
+    trip_repository: TripRepository
+) -> JsonApiResponse[TripResource]:
+    """Endpoint for user to start a trip"""
+    
+    # Check if user is allowed to rent
+    
+    # Check if bike is available
+    return 
