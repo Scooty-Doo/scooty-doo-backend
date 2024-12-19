@@ -143,7 +143,7 @@ class Trip(Base):
     # Relationships
     bike: Mapped["Bike"] = relationship(back_populates="trips")
     user: Mapped["User"] = relationship(back_populates="trips")
-    transactions: Mapped[list["Transaction"]] = relationship(back_populates="trip")
+    transaction: Mapped["Transaction"] = relationship(back_populates="trip")
 
 
 class ZoneType(Base):
@@ -190,7 +190,7 @@ class Transaction(Base):
         Text, CheckConstraint("transaction_type IN ('trip', 'deposit', 'refund')"), nullable=False
     )
     transaction_description: Mapped[str] = mapped_column(Text, nullable=True)
-    trip_id: Mapped[int] = mapped_column(ForeignKey("trips.id"), nullable=True)
+    trip_id: Mapped[int] = mapped_column(ForeignKey("trips.id"), nullable=True, unique=True)
     payment_method_id: Mapped[int] = mapped_column(ForeignKey("payment_methods.id"), nullable=True)
     meta_data: Mapped[dict] = mapped_column(JSONB, nullable=True)
 
