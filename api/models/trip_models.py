@@ -3,34 +3,36 @@
 from datetime import datetime
 from typing import Annotated, Any, Generic, Optional, TypeVar
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
-from models import WKTPoint, JsonApiLinks
+from api.models.models import WKTPoint, JsonApiLinks, JsonApiResponse
 
 class TripAttributes(BaseModel):
     """Trip attributes for JSON:API response."""
 
-
+    # FOr now just use string for path_taken to simplify
+    # Set Optional and a default value for any nullable field in db
     start_position: WKTPoint
-    end_position: Optional[WKTPoint] = Field(
-        None
-    )
-    path_taken: Optional[str] # this needs to be converted
+    end_position: Optional[WKTPoint] = None
+    path_taken: Optional[str] = None
     start_time: datetime
-    end_time: Optional[datetime]
-    start_fee: float # Should be confloat, but I couldn't wrap my head around it
-    time_fee: Optional[float]
-    end_fee: Optional[float]
-    total_fee: Optional[float]
+    end_time: Optional[datetime] = None
+    #Confloat deprecated, see: https://docs.pydantic.dev/2.10/api/types/#pydantic.types.confloat
+    start_fee: Optional[Annotated[float, Field(gt=0)]] = None
+    time_fee: Optional[Annotated[float, Field(gt=0)]] = None
+    end_fee: Optional[Annotated[float, Field(gt=0)]] = None
+    total_fee: Optional[Annotated[float, Field(gt=0)]] = None
     created_at: datetime
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
 
 class TripRelationships(BaseModel):
     """Trip relationships for JSON:API response."""
 
     user: dict[str, Any]
     bike: dict[str, Any]
-    transaction: dict[str, Any] # list? Should this be different?
+    # Change to optional and set default to None since each trip doesnt have a transaction
+    transaction: Optional[dict[str, Any]] = None
 
 
 class TripResource(BaseModel):
@@ -47,50 +49,22 @@ class TripResource(BaseModel):
     @classmethod
     def from_db_model(cls, trip: Any, request_url: str) -> "TripResource":
         """Create a TripResource from a database model."""
+        relationships = {
+            "user": {"data": {"type": "users", "id": str(trip.user_id)}},
+            "bike": {"data": {"type": "bikes", "id": str(trip.bike_id)}},
+        }
+
+        # Add transaction only if it exists
+        if hasattr(trip, 'transaction') and trip.transaction is not None:
+            relationships["transaction"] = {
+                "data": {"type": "transactions", "id": str(trip.transaction.id)}
+            }
+
         return cls(
             id=str(trip.id),
             attributes=TripAttributes.model_validate(trip),
-            relationships=TripRelationships(
-                city={
-                    "data": 
-                      {
-                          {"type": "user", "id": str(trip.user_id)},
-                          {"type": "bike", "id": str(trip.bike_id)},
-                          {"type": "transaction", "id": str(trip.transaction_id)} # This is a list? Syntax? For loop?
-                      }
-            }),
+            relationships=TripRelationships(**relationships),
+            # Add links to user/bike/transaction?
             links=JsonApiLinks(self_link=f"{request_url}{trip.id}"),
         )
 
-
-class TripCreate(BaseModel):
-    """Model for creating a new trip"""
-    """
-    battery_lvl: int = Field(ge=0, le=100)
-    city_id: int
-    last_position: Optional[WKTPoint] = Field(
-        None,
-        description="WKT POINT format, e.g. 'POINT(57.7089 11.9746)'",
-    )
-    is_available: bool = True
-    meta_data: Optional[dict[str, Any]] = None
-
-    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
-    """
-
-
-class TripUpdate(BaseModel):
-    """Model for updating an existing trip"""
-    """
-    battery_lvl: Optional[int] = Field(None, ge=0, le=100, alias="battery_lvl")
-    city_id: Optional[int] = None
-    last_position: Optional[WKTPoint] = Field(
-        None,
-        description="WKT POINT format, e.g. 'POINT(57.7089 11.9746)'",
-        alias="last_position",
-    )
-    is_available: Optional[bool] = None
-    meta_data: Optional[dict[str, Any]] = None
-
-    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
-    """
