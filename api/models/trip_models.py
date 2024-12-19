@@ -16,10 +16,10 @@ class TripAttributes(BaseModel):
     start_time: datetime
     end_time: Optional[datetime] = None
     #Confloat deprecated, see: https://docs.pydantic.dev/2.10/api/types/#pydantic.types.confloat
-    start_fee: Optional[Annotated[float, Field(gt=0)]] = None
-    time_fee: Optional[Annotated[float, Field(gt=0)]] = None
-    end_fee: Optional[Annotated[float, Field(gt=0)]] = None
-    total_fee: Optional[Annotated[float, Field(gt=0)]] = None
+    start_fee: Optional[Annotated[float, Field(ge=0)]] = None
+    time_fee: Optional[Annotated[float, Field(ge=0)]] = None
+    end_fee: Optional[Annotated[float, Field(ge=0)]] = None
+    total_fee: Optional[Annotated[float, Field(ge=0)]] = None
     created_at: datetime
     updated_at: datetime
 
@@ -65,6 +65,30 @@ class TripResource(BaseModel):
             attributes=TripAttributes.model_validate(trip),
             relationships=TripRelationships(**relationships),
             # Add links to user/bike/transaction?
-            links=JsonApiLinks(self_link=f"{request_url}{trip.id}"),
+            links=JsonApiLinks(self_link=f"{request_url}"),
         )
 
+class TripCreate(BaseModel):
+    """Model for creating a new trip"""
+    bike_id: int
+    user_id: int
+    start_position: WKTPoint
+
+class UserTripStart(BaseModel):
+    """Model for starting a trip"""
+    user_id: int
+    bike_id: int
+
+# class TripEnd(BaseModel):
+#     """Model for ending a trip"""
+#     end_position: WKTPoint = Field(
+#         None,
+#         description="WKT POINT format, e.g. 'POINT(57.7089 11.9746)'",
+#     )
+#     path_taken: str = Field(
+#         None,
+#         description="WKT LINESTRING format, e.g. 'LINESTRING(57.7089 11.9746, 57.7089 11.9746)'",
+#     )
+#     end_time: datetime
+#     end_fee: Annotated[float, Field(gt=0)]
+#     total_fee: Annotated[float, Field(gt=0)]
