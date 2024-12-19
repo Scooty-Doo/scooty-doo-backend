@@ -156,133 +156,132 @@ class BikeUpdate(BaseModel):
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
+# class PaymentProvider(BaseModel):
+#     """Model for payment provider table in database"""
 
-class PaymentProvider(BaseModel):
-    """Model for payment provider table in database"""
-
-    id: int
-    provider_name: str
-    metadata: str  # JSON
-    created_at: datetime
-    updated_at: datetime
-
-
-class PaymentMethod(BaseModel):
-    """Model for payment method table in database"""
-
-    id: int
-    user: "User"
-    provider: PaymentProvider
-    provider_specific_id: str
-    is_active: bool
-    is_default: bool
-    metadata: str  # JSON
-    created_at: datetime
-    updated_at: datetime
+#     id: int
+#     provider_name: str
+#     metadata: str  # JSON
+#     created_at: datetime
+#     updated_at: datetime
 
 
-class Trip(BaseModel):
-    """Model for trip table in database"""
+# class PaymentMethod(BaseModel):
+#     """Model for payment method table in database"""
 
-    id: int
-    bike_id: int
-    user_id: int
-    start_time: datetime
-    end_time: datetime
-    start_position: list[float]  # Use list for type hinting
-    end_position: list[float]  # Use list for type hinting
-    path_taken: str  # Linestring - import some type?
-    start_fee: float
-    time_fee: float
-    end_fee: float
-    total_fee: float
-    created_at: datetime
-    updated_at: datetime
+#     id: int
+#     user: "User"
+#     provider: PaymentProvider
+#     provider_specific_id: str
+#     is_active: bool
+#     is_default: bool
+#     metadata: str  # JSON
+#     created_at: datetime
+#     updated_at: datetime
 
 
-class Transaction(BaseModel):
-    """Model for transaction table in database"""
+# class Trip(BaseModel):
+#     """Model for trip table in database"""
 
-    id: int
-    user: "User"
-    amount: float
-    transaction_type: str
-    transaction_description: str
-    trip: Trip
-    metadata: str  # JSON
-    payment_method: PaymentMethod
-    created_at: datetime
-    updated_at: datetime
-
-
-class User(BaseModel):
-    """Model for user table in database"""
-
-    id: int
-    full_name: str
-    email: str
-    balance: float
-    use_prepay: bool
-    metadata: str
-    payment_methods: list[PaymentMethod]  # Use list for type hinting
-    trips: list[Trip]  # Use list for type hinting
-    transactions: list[Transaction]  # Use list for type hinting
-    created_at: datetime
-    updated_at: datetime
+#     id: int
+#     bike_id: int
+#     user_id: int
+#     start_time: datetime
+#     end_time: datetime
+#     start_position: list[float]  # Use list for type hinting
+#     end_position: list[float]  # Use list for type hinting
+#     path_taken: str  # Linestring - import some type?
+#     start_fee: float
+#     time_fee: float
+#     end_fee: float
+#     total_fee: float
+#     created_at: datetime
+#     updated_at: datetime
 
 
-class City(BaseModel):
-    """Model for city table in database"""
+# class Transaction(BaseModel):
+#     """Model for transaction table in database"""
 
-    id: int
-    city_name: str
-    country_code: str
-    c_location: str  # position
-    created_at: datetime
-    updated_at: datetime
-
-
-class Zone(BaseModel):
-    """Model for zone table in database"""
-
-    id: int
-    zone_name: str
-    zone_type: "ZoneType"
-    city: City
-    boundary: str
-    created_at: datetime
-    updated_at: datetime
+#     id: int
+#     user: "User"
+#     amount: float
+#     transaction_type: str
+#     transaction_description: str
+#     trip: Trip
+#     metadata: str  # JSON
+#     payment_method: PaymentMethod
+#     created_at: datetime
+#     updated_at: datetime
 
 
-class ZoneType(BaseModel):
-    """Model for zone type table in database"""
+# class User(BaseModel):
+#     """Model for user table in database"""
 
-    id: int
-    type_name: str
-    speed_limit: int
-    start_fee: float
-    end_fee: float
-    metadata: str  # JSON
-    created_at: datetime
-    updated_at: datetime
-
-
-class AdminRoles(BaseModel):
-    """Model for admin roles table in database"""
-
-    id: int
-    role_name: str
-    created_at: datetime
-    updated_at: datetime
+#     id: int
+#     full_name: str
+#     email: str
+#     balance: float
+#     use_prepay: bool
+#     metadata: str
+#     payment_methods: list[PaymentMethod]  # Use list for type hinting
+#     trips: list[Trip]  # Use list for type hinting
+#     transactions: list[Transaction]  # Use list for type hinting
+#     created_at: datetime
+#     updated_at: datetime
 
 
-class Admin(BaseModel):
-    """Model for admin table in database"""
+# class City(BaseModel):
+#     """Model for city table in database"""
 
-    id: int
-    full_name: str
-    email: str
-    metadata: str  # JSON
-    created_at: datetime
-    updated_at: datetime
-    roles: list[AdminRoles]  # Use list for type hinting
+#     id: int
+#     city_name: str
+#     country_code: str
+#     c_location: str  # position
+#     created_at: datetime
+#     updated_at: datetime
+
+
+# class Zone(BaseModel):
+#     """Model for zone table in database"""
+
+#     id: int
+#     zone_name: str
+#     zone_type: "ZoneType"
+#     city: City
+#     boundary: str
+#     created_at: datetime
+#     updated_at: datetime
+
+
+# class ZoneType(BaseModel):
+#     """Model for zone type table in database"""
+
+#     id: int
+#     type_name: str
+#     speed_limit: int
+#     start_fee: float
+#     end_fee: float
+#     metadata: str  # JSON
+#     created_at: datetime
+#     updated_at: datetime
+
+
+# class AdminRoles(BaseModel):
+#     """Model for admin roles table in database"""
+
+#     id: int
+#     role_name: str
+#     created_at: datetime
+#     updated_at: datetime
+
+
+# class Admin(BaseModel):
+#     """Model for admin table in database"""
+
+#     id: int
+#     full_name: str
+#     email: str
+#     metadata: str  # JSON
+#     created_at: datetime
+#     updated_at: datetime
+#     roles: list[AdminRoles]  # Use list for type hinting
