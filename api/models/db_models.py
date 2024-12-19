@@ -130,7 +130,11 @@ class Trip(Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     bike_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("bikes.id"), nullable=False)
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), nullable=False)
-    start_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    start_time: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),  # pylint: disable=not-callable
+        nullable=False
+    )
     end_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     start_position: Mapped[Geometry] = mapped_column(Geometry("POINT", srid=4326), nullable=False)
     end_position: Mapped[Geometry] = mapped_column(Geometry("POINT", srid=4326), nullable=True)
