@@ -38,9 +38,7 @@ async def load_mock_data():
         await load_cities(session)
         await load_users(session)
         await load_payment_providers(session)
-        # await load_bike_status(session)
         await load_bikes(session)
-        # await load_bike2bike_status(session)
         await load_trips(session)
         await load_zone_types(session)
         await load_map_zones(session)
@@ -134,7 +132,7 @@ async def load_payment_providers(session: AsyncSession):
 async def load_bikes(session: AsyncSession):
     """Load bikes from CSV."""
     with open(
-        "database/mock_data/data/generated/bikes_with_availability.csv", encoding="utf-8"
+        "database/mock_data/data/generated/bikes_with_updated_positions.csv", encoding="utf-8"
     ) as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
