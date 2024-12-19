@@ -29,7 +29,7 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
             self.model.end_time,
             ST_AsText(self.model.start_position).label("start_position"), # is this correct?
             ST_AsText(self.model.end_position).label("end_position"), # is this correct?
-            self.model.path_taken, # Conversion?
+            ST_AsText(self.model.path_taken).label("path_taken"), # Conversion?
             self.model.start_fee,
             self.model.time_fee,
             self.model.end_fee,
@@ -37,13 +37,6 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
             self.model.created_at,
             self.model.updated_at
         ]
-    
-    def _ewkb_to_wkt(self, ewkb) -> str:
-        """Converts EKWB to WKT via geoalchemy2 and shapely. Shapely formats POINT (x y),
-        and to conform to the pydantic models the space is removed.
-        TODO: Move this to the db"""
-        wkt = to_shape(ewkb).wkt
-        return re.sub(r"POINT \(", "POINT(", wkt)
 
     def _build_filters(self, filters: dict[str, Any]) -> list[BinaryExpression]:
         """Build SQLAlchemy filters from a dictionary of parameters.
@@ -51,13 +44,13 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
         expressions = []
 
         if filters.get("bike_id") is not None:
-            expressions.append(self.model.city_id == filters["bike_id"])
+            expressions.append(self.model.bike_id == filters["bike_id"])
 
         if filters.get("user_id") is not None:
-            expressions.append(self.model.is_available == filters["user_id"])
+            expressions.append(self.model.user_id == filters["user_id"])
 
         return expressions
-
+        
     async def get_trips(self, filters: Optional[dict[str, Any]] = None) -> list[db_models.Trip]:
         """Get trip with dynamic filters."""
         stmt = select(*self._get_trip_columns())
@@ -70,32 +63,32 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
         result = await self.session.execute(stmt)
         return list(result.mappings().all())
 
-    async def add_trip(self, trip_data: dict[str, Any]) -> db_models.Trip:
-        """Add a new trip to the database."""
-        db_trip = db_models.Trip(**trip_data)
-        self.session.add(db_trip)
-        await self.session.commit()
-        await self.session.refresh(db_trip)
+    # async def add_trip(self, trip_data: dict[str, Any]) -> db_models.Trip:
+    #     """Add a new trip to the database."""
+    #     db_trip = db_models.Trip(**trip_data)
+    #     self.session.add(db_trip)
+    #     await self.session.commit()
+    #     await self.session.refresh(db_trip)
 
-        db_trip.start_position = self._ewkb_to_wkt(db_trip.start_position) # Is this correct?
-        db_trip.end_position = self._ewkb_to_wkt(db_trip.end_position) # Is this correct?
-        return db_trip
+    #     db_trip.start_position = self._ewkb_to_wkt(db_trip.start_position) # Is this correct?
+    #     db_trip.end_position = self._ewkb_to_wkt(db_trip.end_position) # Is this correct?
+    #     return db_trip
 
-    async def update_trip(self, pk: int, data: dict[str, Any]) -> Optional[db_models.Trip]:
-        """Update a trip by primary key."""
-        query = (
-            update(self.model)
-            .where(self.model.id == pk)
-            .values(**data)
-            .returning(*self._get_trip_columns())
-        )
+    # async def update_trip(self, pk: int, data: dict[str, Any]) -> Optional[db_models.Trip]:
+    #     """Update a trip by primary key."""
+    #     query = (
+    #         update(self.model)
+    #         .where(self.model.id == pk)
+    #         .values(**data)
+    #         .returning(*self._get_trip_columns())
+    #     )
 
-        result = await self.session.execute(query)
-        await self.session.commit()
-        return result.mappings().first()
+    #     result = await self.session.execute(query)
+    #     await self.session.commit()
+    #     return result.mappings().first()
 
-    async def get_trip(self, pk: int) -> Optional[db_models.Trip]:
-        """Get a trip by ID."""
-        stmt = select(*self._get_bike_columns()).where(self.model.id == pk)
-        result = await self.session.execute(stmt)
-        return result.mappings().first()
+    # async def get_trip(self, pk: int) -> Optional[db_models.Trip]:
+    #     """Get a trip by ID."""
+    #     stmt = select(*self._get_bike_columns()).where(self.model.id == pk)
+    #     result = await self.session.execute(stmt)
+    #     return result.mappings().first()
