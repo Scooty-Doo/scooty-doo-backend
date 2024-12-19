@@ -63,6 +63,11 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
         result = await self.session.execute(stmt)
         return list(result.mappings().all())
 
+    async def get_trip(self, pk: int) -> Optional[db_models.Trip]:
+        """Get a trip by ID."""
+        stmt = select(*self._get_trip_columns()).where(self.model.id == pk)
+        result = await self.session.execute(stmt)
+        return result.mappings().first()
     # async def add_trip(self, trip_data: dict[str, Any]) -> db_models.Trip:
     #     """Add a new trip to the database."""
     #     db_trip = db_models.Trip(**trip_data)
@@ -87,8 +92,3 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
     #     await self.session.commit()
     #     return result.mappings().first()
 
-    # async def get_trip(self, pk: int) -> Optional[db_models.Trip]:
-    #     """Get a trip by ID."""
-    #     stmt = select(*self._get_bike_columns()).where(self.model.id == pk)
-    #     result = await self.session.execute(stmt)
-    #     return result.mappings().first()
