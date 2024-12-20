@@ -90,6 +90,8 @@ async def start_trip(
 ) -> JsonApiResponse[TripResource]:
     """Endpoint for user to start a trip"""
     await user_repository.check_user_eligibility(trip.user_id)
+    # För närvarande hämtas cykelposition ur db i trip repo (ingen koll av tillgänglighet)
+    # Här ska kontakt med cykelapi ske och då kan vi ta bort positionskontrollen
     created_trip = await trip_repository.add_trip(trip.model_dump())
     
     base_url = str(request.base_url).rstrip("/")
@@ -99,18 +101,14 @@ async def start_trip(
         links=JsonApiLinks(self=self_link),
     )
 
-# @router.patch("/", response_model=JsonApiResponse[TripResource], status_code=status.HTTP_200_OK)
-# async def end_trip(
-#     request: Request,
-#     trip_data: TripEnd,
-#     trip_repository: TripRepository
-# ) -> JsonApiResponse[TripResource]:
-#     """Endpoint for user to end a trip"""
-#     # Jag skrev TripEnd-modellen på 5 sekunder och har inte tänkt igenom den
-
-#     # 1. Skapa metod för att uppdatera trip i triprepo. 
-#     # 2. Om du kodar det kan jag tycka att du kan börja med att göra det halvt mockat:
-#     # - Passa in fees manuellt härifrån
-#     # - Skit i transaction, men dra av fees från användarens konto
-#     # Fokusera på hur svarsdatan ska se ut till användaren
-#     return
+@router.patch("/", response_model=JsonApiResponse[TripResource], status_code=status.HTTP_200_OK)
+async def end_trip(
+    request: Request,
+    trip_data: TripEnd,
+    trip_repository: TripRepository
+) -> JsonApiResponse[TripResource]:
+    """Endpoint for user to end a trip"""
+    # Undrar om det trots allt inte borde vara olika endpoints som cykel och kund anropar
+    # Visst man kan ju göra en kontroll av vilken typ av auth det är, men blir nog en del
+    # if satser och en ganska massiv route
+    return
