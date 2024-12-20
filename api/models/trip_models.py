@@ -79,6 +79,12 @@ class UserTripStart(BaseModel):
     user_id: int
     bike_id: int
 
+class TripEnd(BaseModel):
+    """Model for ending a trip"""
+    end_position: WKTPoint
+    path_taken: str
+    end_time: datetime
+
 # class TripEnd(BaseModel):
 #     """Model for ending a trip"""
 #     end_position: WKTPoint = Field(
