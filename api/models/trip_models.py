@@ -85,16 +85,3 @@ class TripEnd(BaseModel):
     path_taken: str
     end_time: datetime
 
-# class TripEnd(BaseModel):
-#     """Model for ending a trip"""
-#     end_position: WKTPoint = Field(
-#         None,
-#         description="WKT POINT format, e.g. 'POINT(57.7089 11.9746)'",
-#     )
-#     path_taken: str = Field(
-#         None,
-#         description="WKT LINESTRING format, e.g. 'LINESTRING(57.7089 11.9746, 57.7089 11.9746)'",
-#     )
-#     end_time: datetime
-#     end_fee: Annotated[float, Field(gt=0)]
-#     total_fee: Annotated[float, Field(gt=0)]

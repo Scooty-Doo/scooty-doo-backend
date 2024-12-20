@@ -9,6 +9,13 @@ from pydantic import ValidationError
 
 from api.models.models import JsonApiError, JsonApiErrorResponse
 
+class UserNotFoundException(Exception):
+    """Exception raised when a user is not found."""
+    pass
+
+class UserNotEligibleException(Exception):
+    """Exception raised when a user is not eligible."""
+    pass
 
 async def validation_exception_handler(
     request: Request,  # pylint: disable=unused-argument # noqa: ARG001

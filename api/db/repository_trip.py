@@ -5,7 +5,7 @@ from typing import Any, Optional
 
 from geoalchemy2.functions import ST_AsText
 from geoalchemy2.shape import to_shape
-from sqlalchemy import BinaryExpression, and_, select, update
+from sqlalchemy import BinaryExpression, and_, select, update, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.db.repository_base import DatabaseRepository
@@ -27,15 +27,15 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
             self.model.user_id,
             self.model.start_time,
             self.model.end_time,
-            ST_AsText(self.model.start_position).label("start_position"), # is this correct?
-            ST_AsText(self.model.end_position).label("end_position"), # is this correct?
-            ST_AsText(self.model.path_taken).label("path_taken"), # Conversion?
+            ST_AsText(self.model.start_position).label("start_position"),
+            ST_AsText(self.model.end_position).label("end_position"),
+            ST_AsText(self.model.path_taken).label("path_taken"),
             self.model.start_fee,
             self.model.time_fee,
             self.model.end_fee,
             self.model.total_fee,
             self.model.created_at,
-            self.model.updated_at
+            self.model.updated_at,
         ]
 
     def _build_filters(self, filters: dict[str, Any]) -> list[BinaryExpression]:
@@ -50,7 +50,7 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
             expressions.append(self.model.user_id == filters["user_id"])
 
         return expressions
-        
+
     async def get_trips(self, filters: Optional[dict[str, Any]] = None) -> list[db_models.Trip]:
         """Get trip with dynamic filters."""
         stmt = select(*self._get_trip_columns())
@@ -68,16 +68,25 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
         stmt = select(*self._get_trip_columns()).where(self.model.id == pk)
         result = await self.session.execute(stmt)
         return result.mappings().first()
-    # async def add_trip(self, trip_data: dict[str, Any]) -> db_models.Trip:
-    #     """Add a new trip to the database."""
-    #     db_trip = db_models.Trip(**trip_data)
-    #     self.session.add(db_trip)
-    #     await self.session.commit()
-    #     await self.session.refresh(db_trip)
 
-    #     db_trip.start_position = self._ewkb_to_wkt(db_trip.start_position) # Is this correct?
-    #     db_trip.end_position = self._ewkb_to_wkt(db_trip.end_position) # Is this correct?
-    #     return db_trip
+    async def add_trip(self, trip_data: dict[str, Any]) -> db_models.Trip:
+        """Create a new trip"""
+        bike_id = trip_data["bike_id"]
+        user_id = trip_data["user_id"]
+        subquery = select(db_models.Bike.last_position).where(db_models.Bike.id == bike_id).scalar_subquery()
+        
+        stmt = insert(db_models.Trip).values(
+            user_id=user_id,
+            bike_id=bike_id,
+            start_position=subquery,
+            start_fee = 0,
+        ).returning(*self._get_trip_columns())
+
+        result = await self.session.execute(stmt)
+        await self.session.commit()
+
+        return result.mappings().one()
+    
 
     # async def update_trip(self, pk: int, data: dict[str, Any]) -> Optional[db_models.Trip]:
     #     """Update a trip by primary key."""
@@ -91,4 +100,3 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
     #     result = await self.session.execute(query)
     #     await self.session.commit()
     #     return result.mappings().first()
-

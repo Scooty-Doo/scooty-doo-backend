@@ -4,9 +4,11 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
+from api.db.repository_bike import BikeRepository as BikeRepoClass
 from api.db.repository_trip import TripRepository as TripRepoClass
 from api.db.repository_user import UserRepository as UserRepoClass
 from api.dependencies.repository_factory import get_repository
+from api.exceptions import UserNotEligibleException, UserNotFoundException
 from api.models import db_models
 from api.models.models import (
     JsonApiError,
@@ -14,8 +16,7 @@ from api.models.models import (
     JsonApiLinks,
     JsonApiResponse,
 )
-
-from api.models.trip_models import TripResource, TripCreate, UserTripStart, TripEnd
+from api.models.trip_models import TripCreate, TripEnd, TripResource, UserTripStart
 
 router = APIRouter(
     prefix="/v1/trips",
@@ -34,6 +35,10 @@ UserRepository = Annotated[
     Depends(get_repository(db_models.User, repository_class=UserRepoClass)),
 ]
 
+BikeRepository = Annotated[
+    BikeRepoClass,
+    Depends(get_repository(db_models.Bike, repository_class=BikeRepoClass)),
+]
 # TODO: Error handling
 
 @router.get("/", response_model=JsonApiResponse[TripResource])
@@ -78,51 +83,46 @@ async def get_trip(
 @router.post("/", response_model=JsonApiResponse[TripResource], status_code=status.HTTP_201_CREATED)
 async def start_trip(
     request: Request,
-    trip_data: UserTripStart,
+    trip: UserTripStart,
     trip_repository: TripRepository,
-    user_repository: UserRepository
+    user_repository: UserRepository,
+    bike_repository: BikeRepository
 ) -> JsonApiResponse[TripResource]:
     """Endpoint for user to start a trip"""
-    # OBS FUNDERA ÖVER VILKA REPOS SOM BEHÖVS OCH HUR DE SKRIVS IN!
-    # LADE TILL user_repository: UserRepository VÄLDIGT SNABBT
+    trip_data = trip.model_dump()
+    try:
+        await user_repository.check_user_eligibility(trip.user_id)
+    except UserNotFoundException as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except UserNotEligibleException as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
+    
+    # Prata med cykeln för att se om den är tillgänglig
+    # När detta läggs till behöver inte längre trip repo kontroller last_position
 
-    #Generellt bör det inte behövas konvertering när geodata matas in i databasen
-    # Postgis ska vara inställt för att fixa det på egen hand
+    created_trip = await trip_repository.add_trip(trip_data)
 
-    # Indata för det här bör vara userid och bikeid (borde finnas i usertripstart-modellen)
+    base_url = str(request.base_url).rstrip("/")
+    self_link = f"{base_url}/v1/trips/{created_trip.id}"
+    trip_resource = TripResource.from_db_model(created_trip, self_link)
 
-    # 1. Kolla om användaren får hyra. Här ska vi nog på sikt använda oss av metadatafältet
-    # Men jag misstänker att det kan strula lite eftersom metadatafält är i binär form
-    # SÅ inför test imorgon tänker jag att vi skriver en placeholder för det i user repo,
-    # som bara kollar så att användaren användare som har use_prepay=true inte ligger på minus på kontot (balance<=0)
+    return JsonApiResponse(
+        data=trip_resource,
+        links=JsonApiLinks(self=self_link),
+    )
 
-    # 2. Fråga cykeln om den är hyrbar
+# @router.patch("/", response_model=JsonApiResponse[TripResource], status_code=status.HTTP_200_OK)
+# async def end_trip(
+#     request: Request,
+#     trip_data: TripEnd,
+#     trip_repository: TripRepository
+# ) -> JsonApiResponse[TripResource]:
+#     """Endpoint for user to end a trip"""
+#     # Jag skrev TripEnd-modellen på 5 sekunder och har inte tänkt igenom den
 
-    # 3. Om 1 och 2 går igenom:
-    # triprepo.starttrip() - Tänker jag rätt behövs här behövs förutom userid och bikeid endast startposiotion
-    # Jag skapade en separat modell för det i trip_models "TripCreate"
-    # Starttid bör automatiskt sättas till tiden raden skapas i databasen
-    # Om du ger dig an detta kan jag tycka att du initialt skulle kunna hoppa över bitarna med fees
-    # och hårdkoda det på något sätt. Alltså att du matar in det fejkat for now.
-    # Så kan jag titta på hur vi bäst löser det med joins/dbfunctioner/triggers/whatever sen
-
-    # Frågan är om vi ska använda response_model=JsonApiResponse[TripResource]
-    # Vi kanske istället ska skapa en mer begränsad modell för svaret på en startad tripp
-    # Att TripResource har massa fält som först är relevanta efter en avslutad resa
-    return 
-
-@router.patch("/", response_model=JsonApiResponse[TripResource], status_code=status.HTTP_200_OK)
-async def end_trip(
-    request: Request,
-    trip_data: TripEnd,
-    trip_repository: TripRepository
-) -> JsonApiResponse[TripResource]:
-    """Endpoint for user to end a trip"""
-    # Jag skrev TripEnd-modellen på 5 sekunder och har inte tänkt igenom den
-
-    # 1. Skapa metod för att uppdatera trip i triprepo. 
-    # 2. Om du kodar det kan jag tycka att du kan börja med att göra det halvt mockat:
-    # - Passa in fees manuellt härifrån
-    # - Skit i transaction, men dra av fees från användarens konto
-    # Fokusera på hur svarsdatan ska se ut till användaren
-    return
+#     # 1. Skapa metod för att uppdatera trip i triprepo. 
+#     # 2. Om du kodar det kan jag tycka att du kan börja med att göra det halvt mockat:
+#     # - Passa in fees manuellt härifrån
+#     # - Skit i transaction, men dra av fees från användarens konto
+#     # Fokusera på hur svarsdatan ska se ut till användaren
+#     return
