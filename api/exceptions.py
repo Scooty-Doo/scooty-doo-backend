@@ -2,20 +2,48 @@
 
 from typing import Union
 
-from fastapi import Request
+from fastapi import Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
-
+from sqlalchemy.exc import IntegrityError
 from api.models.models import JsonApiError, JsonApiErrorResponse
 
-class UserNotFoundException(Exception):
-    """Exception raised when a user is not found."""
-    pass
+class ApiException(Exception):
+    """Base exception for API errors."""
+    status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR
+    title: str = "Internal Server Error"
 
-class UserNotEligibleException(Exception):
+class UserNotFoundException(ApiException):
+    """Exception raised when a user is not found."""
+    status_code = status.HTTP_404_NOT_FOUND
+    title = "User Not Found"
+
+class UserNotEligibleException(ApiException):
     """Exception raised when a user is not eligible."""
-    pass
+    status_code = status.HTTP_403_FORBIDDEN
+    title = "User Not Eligible"
+
+class ActiveTripExistsException(ApiException):
+    """Exception raised when user already has an active trip."""
+    status_code = status.HTTP_409_CONFLICT
+    title = "Active Trip Exists"
+
+async def api_exception_handler(
+    request: Request,  # pylint: disable=unused-argument
+    exc: ApiException,
+) -> JSONResponse:
+    """Handle API exceptions in JSON:API format."""
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=JsonApiErrorResponse(
+            errors=[JsonApiError(
+                status=str(exc.status_code),
+                title=exc.title,
+                detail=str(exc)
+            )]
+        ).model_dump(),
+    )
 
 async def validation_exception_handler(
     request: Request,  # pylint: disable=unused-argument # noqa: ARG001

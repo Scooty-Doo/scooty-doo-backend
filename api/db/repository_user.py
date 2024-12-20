@@ -22,7 +22,8 @@ class UserRepository(DatabaseRepository[db_models.User]):
 
 
     async def check_user_eligibility(self, user_id: int) -> None:
-        """Check if a user exists, and if they have prepay check that they have positive balance."""
+        """Check if a user exists, and if they have prepay check that they have positive balance.
+        TODO: Check if user allready has trips ongoing"""
         user = await self.get(user_id)
         if user is None:
             raise UserNotFoundException(f"User with ID {user_id} not found.")

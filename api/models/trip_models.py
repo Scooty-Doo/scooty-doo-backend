@@ -25,7 +25,6 @@ class TripAttributes(BaseModel):
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
-
 class TripRelationships(BaseModel):
     """Trip relationships for JSON:API response."""
 
@@ -67,12 +66,6 @@ class TripResource(BaseModel):
             # Add links to user/bike/transaction?
             links=JsonApiLinks(self_link=f"{request_url}"),
         )
-
-class TripCreate(BaseModel):
-    """Model for creating a new trip"""
-    bike_id: int
-    user_id: int
-    start_position: WKTPoint
 
 class UserTripStart(BaseModel):
     """Model for starting a trip"""

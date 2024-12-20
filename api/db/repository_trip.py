@@ -7,7 +7,8 @@ from geoalchemy2.functions import ST_AsText
 from geoalchemy2.shape import to_shape
 from sqlalchemy import BinaryExpression, and_, select, update, insert
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from sqlalchemy.exc import IntegrityError
+from api.exceptions import ActiveTripExistsException
 from api.db.repository_base import DatabaseRepository
 from api.models import db_models
 
@@ -75,18 +76,25 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
         user_id = trip_data["user_id"]
         subquery = select(db_models.Bike.last_position).where(db_models.Bike.id == bike_id).scalar_subquery()
         
-        stmt = insert(db_models.Trip).values(
-            user_id=user_id,
-            bike_id=bike_id,
-            start_position=subquery,
-            start_fee = 0,
-        ).returning(*self._get_trip_columns())
+        try:
+            stmt = insert(db_models.Trip).values(
+                user_id=user_id,
+                bike_id=bike_id,
+                start_position=subquery,
+                start_fee=0,
+            ).returning(*self._get_trip_columns())
 
-        result = await self.session.execute(stmt)
-        await self.session.commit()
+            result = await self.session.execute(stmt)
+            await self.session.commit()
+            return result.mappings().one()
+        except IntegrityError as e:
+            await self.session.rollback()
+            if "idx_one_active_trip_per_user" in str(e):
+                raise ActiveTripExistsException(
+                    f"User {user_id} already has an active trip"
+                )
+            raise e
 
-        return result.mappings().one()
-    
 
     # async def update_trip(self, pk: int, data: dict[str, Any]) -> Optional[db_models.Trip]:
     #     """Update a trip by primary key."""

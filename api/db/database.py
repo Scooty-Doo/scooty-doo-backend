@@ -10,6 +10,7 @@ import contextlib
 
 # pylint: disable=E0401
 from collections.abc import AsyncGenerator, AsyncIterator
+from api.exceptions import ApiException
 
 from sqlalchemy.ext.asyncio import (
     AsyncConnection,
@@ -125,6 +126,8 @@ class DatabaseSessionManager:
             yield session
         except Exception as e:
             await session.rollback()
+            if isinstance(e, ApiException):
+                raise e
             raise DatabaseError(f"Database session error: {str(e)}") from e
         finally:
             await session.close()

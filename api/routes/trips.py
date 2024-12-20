@@ -8,7 +8,7 @@ from api.db.repository_bike import BikeRepository as BikeRepoClass
 from api.db.repository_trip import TripRepository as TripRepoClass
 from api.db.repository_user import UserRepository as UserRepoClass
 from api.dependencies.repository_factory import get_repository
-from api.exceptions import UserNotEligibleException, UserNotFoundException
+from api.exceptions import UserNotEligibleException, UserNotFoundException, ActiveTripExistsException
 from api.models import db_models
 from api.models.models import (
     JsonApiError,
@@ -16,7 +16,7 @@ from api.models.models import (
     JsonApiLinks,
     JsonApiResponse,
 )
-from api.models.trip_models import TripCreate, TripEnd, TripResource, UserTripStart
+from api.models.trip_models import TripEnd, TripResource, UserTripStart
 
 router = APIRouter(
     prefix="/v1/trips",
@@ -89,25 +89,13 @@ async def start_trip(
     bike_repository: BikeRepository
 ) -> JsonApiResponse[TripResource]:
     """Endpoint for user to start a trip"""
-    trip_data = trip.model_dump()
-    try:
-        await user_repository.check_user_eligibility(trip.user_id)
-    except UserNotFoundException as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except UserNotEligibleException as e:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
+    await user_repository.check_user_eligibility(trip.user_id)
+    created_trip = await trip_repository.add_trip(trip.model_dump())
     
-    # Prata med cykeln för att se om den är tillgänglig
-    # När detta läggs till behöver inte längre trip repo kontroller last_position
-
-    created_trip = await trip_repository.add_trip(trip_data)
-
     base_url = str(request.base_url).rstrip("/")
     self_link = f"{base_url}/v1/trips/{created_trip.id}"
-    trip_resource = TripResource.from_db_model(created_trip, self_link)
-
     return JsonApiResponse(
-        data=trip_resource,
+        data=TripResource.from_db_model(created_trip, self_link),
         links=JsonApiLinks(self=self_link),
     )
 
