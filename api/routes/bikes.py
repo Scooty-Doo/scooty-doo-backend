@@ -1,4 +1,5 @@
 """Module for the /bikes routes"""
+
 # Filtering with query params seems clunky. Could it be done easier? Perhaps one of these:
 # https://github.com/arthurio/fastapi-filter
 # https://github.com/OleksandrZhydyk/FastAPI-SQLAlchemy-Filters

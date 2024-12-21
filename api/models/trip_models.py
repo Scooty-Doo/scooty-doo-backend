@@ -72,11 +72,6 @@ class UserTripStart(BaseModel):
     user_id: int
     bike_id: int
 
-class UserTripEnd(BaseModel):
-    """Model for ending a trip"""
-    user_id: int
-    bike_id: int
-    trip_id: int
 class BikeTripReport(BaseModel):
     """Bike status report from bike service."""
     city_id: int
@@ -114,11 +109,12 @@ class TripCreate(BaseModel):
     bike_id: int
     start_position: WKTPoint
 
-class TripEnd(BaseModel):
+class TripEndRepoParams(BaseModel):
     """Model for ending a trip"""
     end_position: WKTPoint
     path_taken: str
     end_time: datetime
+    trip_id: int
 
 class BikeTripEndRequest(BaseModel):
     maintenance: bool = False

@@ -1,19 +1,26 @@
 """Repository module for database operations."""
 
-import re
-import decimal
-from typing import Any, Optional
-from datetime import datetime
 import asyncio
+import decimal
+import re
+from datetime import datetime
+from typing import Any, Optional
+
 from geoalchemy2.functions import ST_AsText
 from geoalchemy2.shape import to_shape
-from sqlalchemy import BinaryExpression, and_, select, update, insert
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import BinaryExpression, and_, insert, select, update
 from sqlalchemy.exc import IntegrityError
-from api.exceptions import ActiveTripExistsException
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from api.db.repository_base import DatabaseRepository
+from api.exceptions import (
+    ActiveTripExistsException,
+    TripAlreadyEndedException,
+    TripNotFoundException,
+    UnauthorizedTripAccessException,
+)
 from api.models import db_models
-from api.models.trip_models import TripCreate
+from api.models.trip_models import TripCreate, TripEndRepoParams
 
 
 class TripRepository(DatabaseRepository[db_models.Trip]):
@@ -94,50 +101,65 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
 
     def _calculate_fees(self, start_time: datetime, end_time: datetime) -> dict[str, decimal]:
         """Calculate trip fees."""
-        time_fee = decimal("0.5")
-        minutes = (end_time - start_time).total_seconds() / 60
+        time_fee = decimal("3")
+        minutes = decimal(str((end_time - start_time).total_seconds() / 60))
 
         fees = {
             "start_fee": decimal("10"),
-            "time_fee": time_fee * decimal(str(minutes)),
+            "time_fee": time_fee * minutes,
             "end_fee": decimal("0"),
         }
         fees["total_fee"] = sum(fees.values())
         return fees
 
-    async def end_trip(self, trip_id: int, trip_data: dict[str, Any]) -> Optional[db_models.Trip]:
+    async def end_trip(self, params: TripEndRepoParams) -> db_models.Trip:
         """End a trip and process all related updates."""
         async with self.session.begin():
-            # Get current trip
-            trip = await self.session.get(self.model, trip_id)
+            # Get trip with lock
+            trip = await self.session.get(self.model, params.trip_id)
             if not trip:
-                return None
+                raise TripNotFoundException(f"Trip {params.trip_id} not found")
+            if trip.user_id != params.user_id:
+                raise UnauthorizedTripAccessException(
+                    f"User {params.user_id} does not own trip {params.trip_id}"
+                )
+            if trip.bid_id != params.bike_id:
+                raise UnauthorizedTripAccessException(
+                    f"Bike {params.bike_id} does not match trip {params.trip_id}"
+                )
+            if trip.end_time:
+                raise TripAlreadyEndedException(f"Trip {params.trip_id} is already ended")
 
-            end_time = trip_data.get('end_time', datetime.now())
-            fees = self._calculate_fees(trip.start_time, end_time)
+            # Calculate fees
+            fees = self._calculate_fees(trip.start_time, params.end_time)
             
-            update_data = {**trip_data, **fees}
-            stmt = (
-                update(self.model)
-                .where(self.model.id == trip_id)
-                .values(**update_data)
-                .returning(*self.model.__table__.columns)
-            )
-            result = await self.session.execute(stmt)
-            updated_trip = result.mappings().one()
-
-            await asyncio.gather(
+            # Update trip with end data and fees
+            update_data = {
+                "end_time": params.end_time,
+                "end_position": params.end_position,
+                "path_taken": params.path_taken,
+                **fees
+            }
+            
+            # Execute all updates in parallel
+            results = await asyncio.gather(
+                self.session.execute(
+                    update(self.model)
+                    .where(self.model.id == params.trip_id)
+                    .values(**update_data)
+                    .returning(*self.model.__table__.columns)
+                ),
                 self.session.execute(
                     insert(db_models.Transaction).values(
-                        trip_id=trip_id,
-                        user_id=trip.user_id,
+                        trip_id=params.trip_id,
+                        user_id=params.user_id,
                         amount=fees["total_fee"],
                         type="trip"
                     )
                 ),
                 self.session.execute(
                     update(db_models.User)
-                    .where(db_models.User.id == trip.user_id)
+                    .where(db_models.User.id == params.user_id)
                     .values(balance=db_models.User.balance - fees["total_fee"])
                 ),
                 self.session.execute(
@@ -147,4 +169,4 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
                 )
             )
 
-            return updated_trip
+            return results[0].mappings().one()

@@ -39,6 +39,21 @@ class BikeServiceUnavailableError(ApiException):
     status_code = status.HTTP_503_SERVICE_UNAVAILABLE
     title = "Bike Service Unavailable"
 
+class TripNotFoundException(ApiException):
+    """Exception raised when a trip is not found."""
+    status_code = status.HTTP_404_NOT_FOUND
+    title = "Trip Not Found"
+
+class UnauthorizedTripAccessException(ApiException):
+    """Exception raised when a user tries to access a trip they do not own."""
+    status_code = status.HTTP_403_FORBIDDEN
+    title = "Unauthorized Trip Access"
+
+class TripAlreadyEndedException(ApiException):
+    """Exception raised when a trip has already ended."""
+    status_code = status.HTTP_409_CONFLICT
+    title = "Trip Already Ended"
+
 async def api_exception_handler(
     request: Request,  # pylint: disable=unused-argument
     exc: ApiException,

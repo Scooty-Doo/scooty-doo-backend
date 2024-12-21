@@ -1,5 +1,4 @@
 import httpx
-from fastapi import HTTPException
 from api.models.trip_models import (
     BikeTripEndRequest,
     BikeTripStartRequest,

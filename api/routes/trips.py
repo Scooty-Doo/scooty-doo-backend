@@ -1,23 +1,31 @@
 """Module for the /trips routes"""
 
-from typing import Annotated
 import random
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-import httpx
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Query, Request, status
+
 from api.db.repository_bike import BikeRepository as BikeRepoClass
 from api.db.repository_trip import TripRepository as TripRepoClass
 from api.db.repository_user import UserRepository as UserRepoClass
 from api.dependencies.repository_factory import get_repository
-from api.exceptions import UserNotEligibleException, UserNotFoundException, ActiveTripExistsException
+from api.exceptions import (
+    UnauthorizedTripAccessException,
+)
 from api.models import db_models
-from api.services.bike_caller import mock_start_trip as bike_start_trip, mock_end_trip as bike_end_trip
 from api.models.models import (
-    JsonApiError,
-    JsonApiErrorResponse,
     JsonApiLinks,
     JsonApiResponse,
 )
-from api.models.trip_models import TripEnd, TripResource, UserTripStart, BikeTripReport, TripCreate, UserTripEnd
+from api.models.trip_models import (
+    TripCreate,
+    TripEndRepoParams,
+    TripResource,
+    UserTripStart,
+)
+from api.services.bike_caller import mock_end_trip as bike_end_trip
+from api.services.bike_caller import mock_start_trip as bike_start_trip
+
 router = APIRouter(
     prefix="/v1/trips",
     tags=["trips"],
@@ -29,7 +37,6 @@ TripRepository = Annotated[
     Depends(get_repository(db_models.Trip, repository_class=TripRepoClass)),
 ]
 
-# FIXME: OBS DENNA SKREV JAG SNABBT IN OCH INTE GENOMTÄNKT
 UserRepository = Annotated[
     UserRepoClass,
     Depends(get_repository(db_models.User, repository_class=UserRepoClass)),
@@ -78,6 +85,7 @@ async def get_trip(
         data=TripResource.from_db_model(trip, base_url),
         links=JsonApiLinks(self_link=base_url),
     )
+
 @router.post("/", response_model=JsonApiResponse[TripResource], status_code=status.HTTP_201_CREATED)
 async def start_trip(
     request: Request,
@@ -110,27 +118,45 @@ async def start_trip(
         links=JsonApiLinks(self=self_link),
     )
 
-@router.patch("/end", response_model=JsonApiResponse[TripResource], status_code=status.HTTP_200_OK)
+@router.patch("/{trip_id}", response_model=JsonApiResponse[TripResource])
 async def end_trip(
     request: Request,
-    user_trip_data: UserTripEnd,
+    trip_id: int,
+    user_trip_data: UserTripStart,
     trip_repository: TripRepository
 ) -> JsonApiResponse[TripResource]:
     """Endpoint for user to end a trip"""
-    bike_id = user_trip_data.bike_id
-    user_id = user_trip_data.user_id
-    # TripEND innehåller bara user_id och bike_id
-    bike_response = await bike_end_trip(bike_id, False, True)
+    # get bike (mocked atm)
+    bike_response = await bike_end_trip(user_trip_data.bike_id, False, True)
+    
+    #  validate that user, trip and bike match before calling db
+    if bike_response.log.user_id != user_trip_data.user_id:
+        raise UnauthorizedTripAccessException(
+            detail=f"User {user_trip_data.user_id} is not allowed to end trip {trip_id}"
+        )
+    
+    if bike_response.log.id != trip_id:
+        raise UnauthorizedTripAccessException(
+            detail=f"Trip {trip_id} does not match bike trip {bike_response.log.id}"
+        )
 
-    return
-
-@router.patch("/", response_model=JsonApiResponse[TripResource], status_code=status.HTTP_200_OK)
-async def end_trip(
-    request: Request,
-    trip_report: BikeTripReport,
-    trip_repository: TripRepository
-) -> JsonApiResponse[TripResource]:
-    """Endpoint for user to end a trip"""
-
-    return
-
+    # Create end trip data from bike response
+    repo_params = TripEndRepoParams(
+        end_time=bike_response.log.end_time,
+        end_position=bike_response.log.end_position,
+        path_taken=bike_response.log.path_taken,
+        trip_id=trip_id,
+        user_id=user_trip_data.user_id
+    )
+    
+    # End trip in repository
+    updated_trip = await trip_repository.end_trip(
+        repo_params
+    )
+    
+    base_url = str(request.base_url).rstrip("/")
+    self_link = f"{base_url}/v1/trips/{updated_trip.id}"
+    return JsonApiResponse(
+        data=TripResource.from_db_model(updated_trip, self_link),
+        links=JsonApiLinks(self=self_link),
+    )
