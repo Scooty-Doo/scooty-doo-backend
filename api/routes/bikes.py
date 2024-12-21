@@ -205,6 +205,7 @@ async def emit_update(bike_id, updated_bike):
     print("Emitting")
     output_data = {
         "bike_id": bike_id,
+        "last_position": updated_bike.last_position,
         "city_id": updated_bike.city_id,
         "battery_lvl": updated_bike.battery_lvl,
         "is_available": updated_bike.is_available,
