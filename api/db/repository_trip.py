@@ -13,6 +13,7 @@ from sqlalchemy.exc import IntegrityError
 from api.exceptions import ActiveTripExistsException
 from api.db.repository_base import DatabaseRepository
 from api.models import db_models
+from api.models.trip_models import TripCreate
 
 
 class TripRepository(DatabaseRepository[db_models.Trip]):
@@ -72,36 +73,23 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
         result = await self.session.execute(stmt)
         return result.mappings().first()
 
-    async def add_trip(self, trip_data: dict[str, Any]) -> db_models.Trip:
-        """Create a new trip
-        TODO: """
-        bike_id = trip_data["bike_id"]
-        user_id = trip_data["user_id"]
-        subquery = (
-            select(db_models.Bike.last_position)
-            .where(db_models.Bike.id == bike_id)
-            .scalar_subquery()
-        )
-
+    async def add_trip(self, trip_data: TripCreate) -> db_models.Trip:
+        """Create a new trip using validated data from bike service."""
         try:
             stmt = (
                 insert(db_models.Trip)
-                .values(
-                    user_id=user_id,
-                    bike_id=bike_id,
-                    start_position=subquery,
-                    start_fee=0,
-                )
+                .values(**trip_data.model_dump())
                 .returning(*self._get_trip_columns())
             )
-
             result = await self.session.execute(stmt)
             await self.session.commit()
             return result.mappings().one()
         except IntegrityError as e:
             await self.session.rollback()
             if "idx_one_active_trip_per_user" in str(e):
-                raise ActiveTripExistsException(f"User {user_id} already has an active trip")
+                raise ActiveTripExistsException(
+                    f"User {trip_data.user_id} already has an active trip"
+                )
             raise e
 
     def _calculate_fees(self, start_time: datetime, end_time: datetime) -> dict[str, decimal]:

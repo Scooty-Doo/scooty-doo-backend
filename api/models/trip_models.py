@@ -37,7 +37,7 @@ class TripRelationships(BaseModel):
 class TripResource(BaseModel):
     """JSON:API resource object for trips."""
 
-    id: str
+    id: int
     type: str = "trips"
     attributes: TripAttributes
     relationships: Optional[TripRelationships] = None
@@ -71,19 +71,25 @@ class UserTripStart(BaseModel):
     """Model for starting a trip"""
     user_id: int
     bike_id: int
+
+class UserTripEnd(BaseModel):
+    """Model for ending a trip"""
+    user_id: int
+    bike_id: int
+    trip_id: int
 class BikeTripReport(BaseModel):
     """Bike status report from bike service."""
     city_id: int
     last_position: WKTPoint
     battery_lvl: float
-    id: str
+    id: int
     is_available: bool
 
 
 class BikeTripStartlog(BaseModel):
     """Trip log from bike service."""
     user_id: int
-    id: str
+    id: int
     start_time: datetime
     start_position: WKTPoint
 class BikeTripEndLog(BikeTripStartlog):
@@ -100,6 +106,13 @@ class BikeTripEndData(BaseModel):
     """Combined bike data from service."""
     report: BikeTripReport
     log: BikeTripEndLog
+
+class TripCreate(BaseModel):
+    """Data required to create a new trip."""
+    id: int
+    user_id: int
+    bike_id: int
+    start_position: WKTPoint
 
 class TripEnd(BaseModel):
     """Model for ending a trip"""

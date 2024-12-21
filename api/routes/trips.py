@@ -1,7 +1,7 @@
 """Module for the /trips routes"""
 
 from typing import Annotated
-from random import Random
+import random
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 import httpx
 from api.db.repository_bike import BikeRepository as BikeRepoClass
@@ -17,7 +17,7 @@ from api.models.models import (
     JsonApiLinks,
     JsonApiResponse,
 )
-from api.models.trip_models import TripEnd, TripResource, UserTripStart, BikeTripReport
+from api.models.trip_models import TripEnd, TripResource, UserTripStart, BikeTripReport, TripCreate, UserTripEnd
 router = APIRouter(
     prefix="/v1/trips",
     tags=["trips"],
@@ -78,8 +78,6 @@ async def get_trip(
         data=TripResource.from_db_model(trip, base_url),
         links=JsonApiLinks(self_link=base_url),
     )
-
-# Skrivit nedan också, men kanske byta ut response_model till en mindre modell
 @router.post("/", response_model=JsonApiResponse[TripResource], status_code=status.HTTP_201_CREATED)
 async def start_trip(
     request: Request,
@@ -89,14 +87,21 @@ async def start_trip(
     bike_repository: BikeRepository
 ) -> JsonApiResponse[TripResource]:
     """Endpoint for user to start a trip"""
-    # mockat id för trip_id
-    trip_id = Random.randint(1, 1000000)
-
     await user_repository.check_user_eligibility(trip.user_id)
-    # För närvarande hämtas cykelposition ur db i trip repo (ingen koll av tillgänglighet)
-    # Här ska kontakt med cykelapi ske och då kan vi ta bort positionskontrollen
-    bike_response = await bike_start_trip(trip.bike_id, trip.user_id, trip_id)
-    created_trip = await trip_repository.add_trip(trip.model_dump())
+    trip_id = random.randint(1, 1000000)
+    # Get bike data first
+    bike_data = await bike_start_trip(trip.bike_id, trip.user_id, trip_id)
+    
+    # Create trip using bike response data
+    trip_data = TripCreate(
+        id=trip_id,
+        user_id=trip.user_id,
+        bike_id=trip.bike_id,
+        start_position=bike_data.log.start_position,
+        start_time=bike_data.log.start_time,
+    )
+    
+    created_trip = await trip_repository.add_trip(trip_data)
     
     base_url = str(request.base_url).rstrip("/")
     self_link = f"{base_url}/v1/trips/{created_trip.id}"
@@ -108,7 +113,7 @@ async def start_trip(
 @router.patch("/end", response_model=JsonApiResponse[TripResource], status_code=status.HTTP_200_OK)
 async def end_trip(
     request: Request,
-    user_trip_data: UserTripStart,
+    user_trip_data: UserTripEnd,
     trip_repository: TripRepository
 ) -> JsonApiResponse[TripResource]:
     """Endpoint for user to end a trip"""
