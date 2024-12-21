@@ -1,8 +1,10 @@
 """Repository module for database operations."""
 
 import re
+import decimal
 from typing import Any, Optional
-
+from datetime import datetime
+import asyncio
 from geoalchemy2.functions import ST_AsText
 from geoalchemy2.shape import to_shape
 from sqlalchemy import BinaryExpression, and_, select, update, insert
@@ -71,18 +73,27 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
         return result.mappings().first()
 
     async def add_trip(self, trip_data: dict[str, Any]) -> db_models.Trip:
-        """Create a new trip"""
+        """Create a new trip
+        TODO: """
         bike_id = trip_data["bike_id"]
         user_id = trip_data["user_id"]
-        subquery = select(db_models.Bike.last_position).where(db_models.Bike.id == bike_id).scalar_subquery()
-        
+        subquery = (
+            select(db_models.Bike.last_position)
+            .where(db_models.Bike.id == bike_id)
+            .scalar_subquery()
+        )
+
         try:
-            stmt = insert(db_models.Trip).values(
-                user_id=user_id,
-                bike_id=bike_id,
-                start_position=subquery,
-                start_fee=0,
-            ).returning(*self._get_trip_columns())
+            stmt = (
+                insert(db_models.Trip)
+                .values(
+                    user_id=user_id,
+                    bike_id=bike_id,
+                    start_position=subquery,
+                    start_fee=0,
+                )
+                .returning(*self._get_trip_columns())
+            )
 
             result = await self.session.execute(stmt)
             await self.session.commit()
@@ -90,21 +101,62 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
         except IntegrityError as e:
             await self.session.rollback()
             if "idx_one_active_trip_per_user" in str(e):
-                raise ActiveTripExistsException(
-                    f"User {user_id} already has an active trip"
-                )
+                raise ActiveTripExistsException(f"User {user_id} already has an active trip")
             raise e
 
+    def _calculate_fees(self, start_time: datetime, end_time: datetime) -> dict[str, decimal]:
+        """Calculate trip fees."""
+        time_fee = decimal("0.5")
+        minutes = (end_time - start_time).total_seconds() / 60
 
-    # async def update_trip(self, pk: int, data: dict[str, Any]) -> Optional[db_models.Trip]:
-    #     """Update a trip by primary key."""
-    #     query = (
-    #         update(self.model)
-    #         .where(self.model.id == pk)
-    #         .values(**data)
-    #         .returning(*self._get_trip_columns())
-    #     )
+        fees = {
+            "start_fee": decimal("10"),
+            "time_fee": time_fee * decimal(str(minutes)),
+            "end_fee": decimal("0"),
+        }
+        fees["total_fee"] = sum(fees.values())
+        return fees
 
-    #     result = await self.session.execute(query)
-    #     await self.session.commit()
-    #     return result.mappings().first()
+    async def end_trip(self, trip_id: int, trip_data: dict[str, Any]) -> Optional[db_models.Trip]:
+        """End a trip and process all related updates."""
+        async with self.session.begin():
+            # Get current trip
+            trip = await self.session.get(self.model, trip_id)
+            if not trip:
+                return None
+
+            end_time = trip_data.get('end_time', datetime.now())
+            fees = self._calculate_fees(trip.start_time, end_time)
+            
+            update_data = {**trip_data, **fees}
+            stmt = (
+                update(self.model)
+                .where(self.model.id == trip_id)
+                .values(**update_data)
+                .returning(*self.model.__table__.columns)
+            )
+            result = await self.session.execute(stmt)
+            updated_trip = result.mappings().one()
+
+            await asyncio.gather(
+                self.session.execute(
+                    insert(db_models.Transaction).values(
+                        trip_id=trip_id,
+                        user_id=trip.user_id,
+                        amount=fees["total_fee"],
+                        type="trip"
+                    )
+                ),
+                self.session.execute(
+                    update(db_models.User)
+                    .where(db_models.User.id == trip.user_id)
+                    .values(balance=db_models.User.balance - fees["total_fee"])
+                ),
+                self.session.execute(
+                    update(db_models.Bike)
+                    .where(db_models.Bike.id == trip.bike_id)
+                    .values(is_available=True)
+                )
+            )
+
+            return updated_trip

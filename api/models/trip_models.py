@@ -71,6 +71,35 @@ class UserTripStart(BaseModel):
     """Model for starting a trip"""
     user_id: int
     bike_id: int
+class BikeTripReport(BaseModel):
+    """Bike status report from bike service."""
+    city_id: int
+    last_position: WKTPoint
+    battery_lvl: float
+    id: str
+    is_available: bool
+
+
+class BikeTripStartlog(BaseModel):
+    """Trip log from bike service."""
+    user_id: int
+    id: str
+    start_time: datetime
+    start_position: WKTPoint
+class BikeTripEndLog(BikeTripStartlog):
+    """Trip log from bike service."""
+    end_time: datetime
+    end_position: WKTPoint
+    path_taken: str
+
+class BikeTripStartData(BaseModel):
+    """Combined bike data from service."""
+    report: BikeTripReport
+    log: BikeTripStartlog
+class BikeTripEndData(BaseModel):
+    """Combined bike data from service."""
+    report: BikeTripReport
+    log: BikeTripEndLog
 
 class TripEnd(BaseModel):
     """Model for ending a trip"""
@@ -78,3 +107,10 @@ class TripEnd(BaseModel):
     path_taken: str
     end_time: datetime
 
+class BikeTripEndRequest(BaseModel):
+    maintenance: bool = False
+    ignore_zone: bool = False
+
+class BikeTripStartRequest(BaseModel):
+    user_id: int
+    trip_id: int

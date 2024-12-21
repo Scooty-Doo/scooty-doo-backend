@@ -1,23 +1,23 @@
 """Module for the /trips routes"""
 
 from typing import Annotated
-
+from random import Random
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-
+import httpx
 from api.db.repository_bike import BikeRepository as BikeRepoClass
 from api.db.repository_trip import TripRepository as TripRepoClass
 from api.db.repository_user import UserRepository as UserRepoClass
 from api.dependencies.repository_factory import get_repository
 from api.exceptions import UserNotEligibleException, UserNotFoundException, ActiveTripExistsException
 from api.models import db_models
+from api.services.bike_caller import mock_start_trip as bike_start_trip, mock_end_trip as bike_end_trip
 from api.models.models import (
     JsonApiError,
     JsonApiErrorResponse,
     JsonApiLinks,
     JsonApiResponse,
 )
-from api.models.trip_models import TripEnd, TripResource, UserTripStart
-
+from api.models.trip_models import TripEnd, TripResource, UserTripStart, BikeTripReport
 router = APIRouter(
     prefix="/v1/trips",
     tags=["trips"],
@@ -89,9 +89,13 @@ async def start_trip(
     bike_repository: BikeRepository
 ) -> JsonApiResponse[TripResource]:
     """Endpoint for user to start a trip"""
+    # mockat id för trip_id
+    trip_id = Random.randint(1, 1000000)
+
     await user_repository.check_user_eligibility(trip.user_id)
     # För närvarande hämtas cykelposition ur db i trip repo (ingen koll av tillgänglighet)
     # Här ska kontakt med cykelapi ske och då kan vi ta bort positionskontrollen
+    bike_response = await bike_start_trip(trip.bike_id, trip.user_id, trip_id)
     created_trip = await trip_repository.add_trip(trip.model_dump())
     
     base_url = str(request.base_url).rstrip("/")
@@ -101,14 +105,27 @@ async def start_trip(
         links=JsonApiLinks(self=self_link),
     )
 
-@router.patch("/", response_model=JsonApiResponse[TripResource], status_code=status.HTTP_200_OK)
+@router.patch("/end", response_model=JsonApiResponse[TripResource], status_code=status.HTTP_200_OK)
 async def end_trip(
     request: Request,
-    trip_data: TripEnd,
+    user_trip_data: UserTripStart,
     trip_repository: TripRepository
 ) -> JsonApiResponse[TripResource]:
     """Endpoint for user to end a trip"""
-    # Undrar om det trots allt inte borde vara olika endpoints som cykel och kund anropar
-    # Visst man kan ju göra en kontroll av vilken typ av auth det är, men blir nog en del
-    # if satser och en ganska massiv route
+    bike_id = user_trip_data.bike_id
+    user_id = user_trip_data.user_id
+    # TripEND innehåller bara user_id och bike_id
+    bike_response = await bike_end_trip(bike_id, False, True)
+
     return
+
+@router.patch("/", response_model=JsonApiResponse[TripResource], status_code=status.HTTP_200_OK)
+async def end_trip(
+    request: Request,
+    trip_report: BikeTripReport,
+    trip_repository: TripRepository
+) -> JsonApiResponse[TripResource]:
+    """Endpoint for user to end a trip"""
+
+    return
+
