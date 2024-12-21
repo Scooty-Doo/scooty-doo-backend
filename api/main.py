@@ -2,6 +2,7 @@
 
 from contextlib import asynccontextmanager
 
+import socketio
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,6 +11,7 @@ from pydantic import ValidationError
 from api.db.database import sessionmanager
 from api.exceptions import validation_exception_handler
 from api.routes import bikes, oauth, trips, users, zones
+from api.socket.socket import socket
 
 sessionmanager.init("postgresql+asyncpg://user:pass@localhost:5432/sddb")
 
@@ -57,3 +59,15 @@ app.add_exception_handler(ValidationError, validation_exception_handler)
 async def welcome():
     """Sends a message for root path."""
     return {"message": "Welcome to the Scooty Doo API!"}
+
+
+socket_app = socketio.ASGIApp(socket)
+
+app.mount("/", socket_app)
+
+
+@socket.event
+async def connect(sid: int, _):
+    """Function for when client connects to socket."""
+    await socket.enter_room(sid, "bike_updates")
+    print("Client connected to bike update broadcast")
