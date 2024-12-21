@@ -29,6 +29,16 @@ class ActiveTripExistsException(ApiException):
     status_code = status.HTTP_409_CONFLICT
     title = "Active Trip Exists"
 
+class BikeRejectedError(ApiException):
+    """Exception raised when bike rejects rental request."""
+    status_code = status.HTTP_400_BAD_REQUEST
+    title = "Bike Rental Rejected"
+
+class BikeServiceUnavailableError(ApiException):
+    """Exception raised when bike service cannot be reached."""
+    status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    title = "Bike Service Unavailable"
+
 async def api_exception_handler(
     request: Request,  # pylint: disable=unused-argument
     exc: ApiException,
