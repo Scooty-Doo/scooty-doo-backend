@@ -176,4 +176,4 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
                 )
 
             await self.session.commit()
-            return updated_trip, updated_user_balance, created_transaction
+            return updated_trip

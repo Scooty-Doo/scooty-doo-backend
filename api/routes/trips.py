@@ -98,9 +98,8 @@ async def start_trip(
     """Endpoint for user to start a trip"""
     await user_repository.check_user_eligibility(trip.user_id)
 
-    # MOCKAT - TA BORT NÄR KLAR
-    # trip_id = random.randint(1, 1000000)
-    trip_id = 354743
+    trip_id = random.randint(1, 1000000)
+
     # Get bike data first
     bike_data = await bike_start_trip(trip.bike_id, trip.user_id, trip_id)
 
@@ -132,7 +131,9 @@ async def end_trip(
 ) -> JsonApiResponse[TripResource]:
     """Endpoint for user to end a trip"""
     # get bike (mocked atm)
-    bike_response = await bike_end_trip(user_trip_data.bike_id, False, True)
+    # bike_response = await bike_end_trip(user_trip_data.bike_id, False, True)
+    # MOCKED CALL:
+    bike_response = await bike_end_trip(user_trip_data.bike_id, user_trip_data.user_id, trip_id, False, True)
 
     #  validate that user, trip and bike match before calling db
     if bike_response.log.user_id != user_trip_data.user_id:
