@@ -51,7 +51,7 @@ class TripResource(BaseModel):
 
     @classmethod
     def from_db_model(
-        cls, trip: Any, request_url: str, user_amount: float, transaction: Optional[Any] = None
+        cls, trip: Any, request_url: str, user_amount: Optional[float] = None, transaction: Optional[Any] = None
     ) -> "TripResource":
         """Create a TripResource from a database model."""
         relationships = {
