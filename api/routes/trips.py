@@ -23,8 +23,7 @@ from api.models.trip_models import (
     TripResource,
     UserTripStart,
 )
-from api.services.bike_caller import mock_end_trip as bike_end_trip
-from api.services.bike_caller import mock_start_trip as bike_start_trip
+from api.services.bike_caller import get_bike_service
 
 router = APIRouter(
     prefix="/v1/trips",
@@ -96,6 +95,8 @@ async def start_trip(
     bike_repository: BikeRepository,
 ) -> JsonApiResponse[TripResource]:
     """Endpoint for user to start a trip"""
+    bike_start_trip, _ = get_bike_service()
+
     await user_repository.check_user_eligibility(trip.user_id)
 
     trip_id = random.randint(1, 1000000)
@@ -133,6 +134,7 @@ async def end_trip(
     # get bike (mocked atm)
     # bike_response = await bike_end_trip(user_trip_data.bike_id, False, True)
     # MOCKED CALL:
+    _, bike_end_trip = get_bike_service()
     bike_response = await bike_end_trip(user_trip_data.bike_id, user_trip_data.user_id, trip_id, False, True)
 
     #  validate that user, trip and bike match before calling db

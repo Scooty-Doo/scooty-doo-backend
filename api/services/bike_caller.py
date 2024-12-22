@@ -7,8 +7,9 @@ from api.models.trip_models import (
     BikeTripStartData,
 )
 from api.exceptions import BikeRejectedError, BikeServiceUnavailableError
+from api.config import settings
 
-EXAMPLE_BASE_URL = "localhost:8001"
+EXAMPLE_BASE_URL = "http://localhost:8001"
 MOCK_DATA = {
     "message": "Trip ended successfully",
     "data": {
@@ -76,7 +77,7 @@ async def start_trip(bike_id: int, user_id: int, trip_id: int) -> BikeTripStartD
 
 
 async def end_trip(
-    bike_id: int, maintenance: bool = False, ignore_zone: bool = False
+    bike_id: int, user_id: int, trip_id: int, maintenance: bool = False, ignore_zone: bool = False
 ) -> BikeTripEndData:
     """Call bike service to end trip."""
     async with httpx.AsyncClient() as client:
@@ -96,3 +97,10 @@ async def end_trip(
             raise BikeRejectedError(error_detail)
         except httpx.RequestError as exc:
             raise BikeServiceUnavailableError(f"Could not connect to bike service: {str(exc)}")
+
+
+# Dependency injection
+def get_bike_service():
+    if settings.use_mocked_bike_call:
+        return mock_start_trip, mock_end_trip
+    return start_trip, end_trip
