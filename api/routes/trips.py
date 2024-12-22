@@ -158,15 +158,11 @@ async def end_trip(
     )
 
     # End trip in repository
-    updated_trip, updated_user_balance, created_transaction = await trip_repository.end_trip(
-        repo_params, bike_response.report.is_available
-    )
+    updated_trip = await trip_repository.end_trip(repo_params, bike_response.report.is_available)
 
     base_url = str(request.base_url).rstrip("/")
     self_link = f"{base_url}/v1/trips/{updated_trip.id}"
     return JsonApiResponse(
-        data=TripResource.from_db_model(
-            updated_trip, self_link, updated_user_balance.balance, created_transaction
-        ),
+        data=TripResource.from_db_model(updated_trip, self_link),
         links=JsonApiLinks(self=self_link),
     )
