@@ -14,6 +14,12 @@ class ApiException(Exception):
     status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR
     title: str = "Internal Server Error"
 
+    def __init__(self, detail: str = None):
+        self.detail = detail or self.title
+
+    def __str__(self):
+        return self.detail
+
 class UserNotFoundException(ApiException):
     """Exception raised when a user is not found."""
     status_code = status.HTTP_404_NOT_FOUND
