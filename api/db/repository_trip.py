@@ -1,6 +1,5 @@
 """Repository module for database operations."""
 
-import asyncio
 import decimal
 import re
 from datetime import datetime
@@ -99,74 +98,81 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
                 )
             raise e
 
-    def _calculate_fees(self, start_time: datetime, end_time: datetime) -> dict[str, decimal]:
+    def _calculate_fees(
+        self, start_time: datetime, end_time: datetime
+    ) -> dict[str, decimal.Decimal]:
         """Calculate trip fees."""
-        time_fee = decimal("3")
-        minutes = decimal(str((end_time - start_time).total_seconds() / 60))
-
+        print(f"Calculating fees from {start_time} to {end_time}")
+        time_fee = decimal.Decimal("0.5")
+        print("TIME_FEE", time_fee)
+        minutes = decimal.Decimal(str((end_time - start_time).total_seconds() / 60))
+        print("MINUTES", minutes)
         fees = {
-            "start_fee": decimal("10"),
+            "start_fee": decimal.Decimal("10"),
             "time_fee": time_fee * minutes,
-            "end_fee": decimal("0"),
+            "end_fee": decimal.Decimal("0"),
         }
+        print("FEES:", fees)
         fees["total_fee"] = sum(fees.values())
+        print(f"Calculated fees: {fees}")
         return fees
 
-    async def end_trip(self, params: TripEndRepoParams) -> db_models.Trip:
-        """End a trip and process all related updates."""
+    async def end_trip(
+        self, params: TripEndRepoParams, is_available: bool = True
+    ) -> Optional[db_models.Trip]:
         async with self.session.begin():
-            # Get trip with lock
-            trip = await self.session.get(self.model, params.trip_id)
+            stmt = select(*self._get_trip_columns()).where(self.model.id == params.trip_id)
+            result = await self.session.execute(stmt)
+            trip = result.mappings().first()
+
+            # chekc if trip exists, is owned by the user, and is not already ended
             if not trip:
                 raise TripNotFoundException(f"Trip {params.trip_id} not found")
             if trip.user_id != params.user_id:
                 raise UnauthorizedTripAccessException(
                     f"User {params.user_id} does not own trip {params.trip_id}"
                 )
-            if trip.bid_id != params.bike_id:
-                raise UnauthorizedTripAccessException(
-                    f"Bike {params.bike_id} does not match trip {params.trip_id}"
-                )
             if trip.end_time:
                 raise TripAlreadyEndedException(f"Trip {params.trip_id} is already ended")
 
-            # Calculate fees
             fees = self._calculate_fees(trip.start_time, params.end_time)
-            
-            # Update trip with end data and fees
             update_data = {
                 "end_time": params.end_time,
                 "end_position": params.end_position,
                 "path_taken": params.path_taken,
-                **fees
+                **fees,
             }
-            
-            # Execute all updates in parallel
-            results = await asyncio.gather(
-                self.session.execute(
-                    update(self.model)
-                    .where(self.model.id == params.trip_id)
-                    .values(**update_data)
-                    .returning(*self.model.__table__.columns)
-                ),
-                self.session.execute(
-                    insert(db_models.Transaction).values(
-                        trip_id=params.trip_id,
-                        user_id=params.user_id,
-                        amount=fees["total_fee"],
-                        type="trip"
-                    )
-                ),
-                self.session.execute(
-                    update(db_models.User)
-                    .where(db_models.User.id == params.user_id)
-                    .values(balance=db_models.User.balance - fees["total_fee"])
-                ),
-                self.session.execute(
+
+            updated_trip_result = await self.session.execute(
+                update(self.model)
+                .where(self.model.id == params.trip_id)
+                .values(**update_data)
+                .returning(*self._get_trip_columns())
+            )
+            updated_trip = updated_trip_result.mappings().first()
+
+            updated_user_balance = await self.session.execute(
+                update(db_models.User)
+                .where(db_models.User.id == params.user_id)
+                .values(balance=db_models.User.balance - fees["total_fee"])
+                .returning(db_models.User)
+            )
+            created_transaction = await self.session.execute(
+                insert(db_models.Transaction).values(
+                    trip_id=params.trip_id,
+                    user_id=params.user_id,
+                    amount=fees["total_fee"],
+                    transaction_type="trip",
+                )
+            )
+
+            # Check if the bike is_available has changed and update if it has
+            if is_available:
+                await self.session.execute(
                     update(db_models.Bike)
                     .where(db_models.Bike.id == trip.bike_id)
                     .values(is_available=True)
                 )
-            )
 
-            return results[0].mappings().one()
+            await self.session.commit()
+            return updated_trip
