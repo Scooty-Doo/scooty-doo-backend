@@ -23,8 +23,7 @@ def validate_wkt_point(value: str | None) -> str | None:
     if not match:
         raise ValueError(f"Invalid WKT POINT format: {value}")
 
-    longitude, latitude = map(float, match.groups()[0:2])
-
+    longitude, latitude = float(match.group(1)), float(match.group(3))
     if not -180 <= latitude <= 180:
         raise ValueError(f"Longitude {latitude} out of range [-180, 180]")
     if not -90 <= longitude <= 90:
