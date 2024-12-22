@@ -85,40 +85,6 @@ class TripResource(BaseModel):
         )
 
 
-# class TripResource(BaseModel):
-#     """JSON:API resource object for trips."""
-
-#     id: int
-#     type: str = "trips"
-#     attributes: TripAttributes
-#     relationships: Optional[TripRelationships] = None
-#     links: Optional[JsonApiLinks] = None
-
-#     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
-
-#     @classmethod
-#     def from_db_model(cls, trip: Any, request_url: str) -> "TripResource":
-#         """Create a TripResource from a database model."""
-#         relationships = {
-#             "user": {"data": {"type": "users", "id": str(trip.user_id)}},
-#             "bike": {"data": {"type": "bikes", "id": str(trip.bike_id)}},
-#         }
-
-#         # Add transaction only if it exists
-#         if hasattr(trip, 'transaction') and trip.transaction is not None:
-#             relationships["transaction"] = {
-#                 "data": {"type": "transactions", "id": str(trip.transaction.id)}
-#             }
-
-#         return cls(
-#             id=str(trip.id),
-#             attributes=TripAttributes.model_validate(trip),
-#             relationships=TripRelationships(**relationships),
-#             # Add links to user/bike/transaction?
-#             links=JsonApiLinks(self_link=f"{request_url}"),
-#         )
-
-
 class UserTripStart(BaseModel):
     """Model for starting a trip"""
 

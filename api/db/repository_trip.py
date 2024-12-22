@@ -117,9 +117,7 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
         print(f"Calculated fees: {fees}")
         return fees
 
-    async def end_trip(
-        self, params: TripEndRepoParams, is_available: bool = True
-    ) -> Optional[db_models.Trip]:
+    async def end_trip(self, params: TripEndRepoParams, is_available: bool = True) -> tuple[Optional[db_models.Trip], Optional[db_models.User], Optional[db_models.Transaction]]:
         async with self.session.begin():
             stmt = select(*self._get_trip_columns()).where(self.model.id == params.trip_id)
             result = await self.session.execute(stmt)
@@ -151,20 +149,23 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
             )
             updated_trip = updated_trip_result.mappings().first()
 
-            updated_user_balance = await self.session.execute(
+            updated_user_balance_result = await self.session.execute(
                 update(db_models.User)
                 .where(db_models.User.id == params.user_id)
                 .values(balance=db_models.User.balance - fees["total_fee"])
                 .returning(db_models.User)
             )
-            created_transaction = await self.session.execute(
+            updated_user_balance = updated_user_balance_result.mappings().first()
+
+            created_transaction_result = await self.session.execute(
                 insert(db_models.Transaction).values(
                     trip_id=params.trip_id,
                     user_id=params.user_id,
                     amount=fees["total_fee"],
                     transaction_type="trip",
-                )
+                ).returning(db_models.Transaction)
             )
+            created_transaction = created_transaction_result.mappings().first()
 
             # Check if the bike is_available has changed and update if it has
             if is_available:
@@ -175,4 +176,4 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
                 )
 
             await self.session.commit()
-            return updated_trip
+            return updated_trip, updated_user_balance, created_transaction
