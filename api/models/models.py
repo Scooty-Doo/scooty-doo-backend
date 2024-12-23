@@ -17,13 +17,13 @@ def validate_wkt_point(value: str | None) -> str | None:
     if value is None:
         return None
 
-    point_pattern = r"^POINT\(\s*(-?\d+(\.\d+)?|-?\d+\.\d+)\s+(-?\d+(\.\d+)?|-?\d+\.\d+)\s*\)$"
+    point_pattern = r"^POINT\(\s*(-?\d+\.\d+?|-?\d+\.\d+)\s+(-?\d+\.\d+?|-?\d+\.\d+)\s*\)$"
     match = re.match(point_pattern, str(value))
 
     if not match:
         raise ValueError(f"Invalid WKT POINT format: {value}")
 
-    longitude, latitude = float(match.group(1)), float(match.group(3))
+    longitude, latitude = map(float, match.groups()[0:2])
     if not -180 <= latitude <= 180:
         raise ValueError(f"Longitude {latitude} out of range [-180, 180]")
     if not -90 <= longitude <= 90:
