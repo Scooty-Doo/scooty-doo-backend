@@ -1,0 +1,98 @@
+"""Module with pydantic user models
+"""
+
+# pylint: disable=too-few-public-methods
+import re
+from datetime import datetime
+from typing import Annotated, Any, Generic, Optional, TypeVar
+
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, EmailStr
+from api.models.models import JsonApiLinks, JsonApiResponse
+
+class UserAttributes(BaseModel):
+    """User attributes for JSON:API response."""
+
+    full_name: str
+    email: EmailStr
+    balance: Optional[float] = 0.00
+    use_prepay: bool = False
+    meta_data: Optional[dict] = None
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+class UserRelationships(BaseModel):
+    """User relationships for JSON:API response."""
+
+    payment_methods: Optional[dict[str, Any]] = None
+    trips: Optional[dict[str, Any]] = None
+    transactions: Optional[dict[str, Any]] = None
+
+class UserResource(BaseModel):
+    """JSON:API resource object for users."""
+
+    id: int
+    type: str = "users"
+    attributes: UserAttributes
+    relationships: Optional[UserRelationships] = None
+    links: Optional[JsonApiLinks] = None
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    @classmethod
+    def from_db_model(cls, user: Any, request_url: str) -> "UserResource":
+        """Create a UserResource from a database model."""
+        relationships = {
+            "payment_methods": {
+                "data": [
+                    {"type": "payment_methods", "id": str(pm.id)}
+                    for pm in user.payment_methods
+                ]
+            },
+            "trips": {
+                "data": [
+                    {"type": "trips", "id": str(trip.id)} 
+                    for trip in user.trips
+                ]
+            },
+            "transactions": {
+                "data": [
+                    {"type": "transactions", "id": str(txn.id)}
+                    for txn in user.transactions
+                ]
+            }
+        }
+
+        return cls(
+            id=str(user.id),
+            attributes=UserAttributes.model_validate(user),
+            relationships=UserRelationships(**relationships),
+            links=JsonApiLinks(self_link=f"{request_url}")
+        )
+
+class UserGetRequestParams(BaseModel):
+    """Model for getting a user"""
+    name_search: Optional[str] = None
+    email_search: Optional[str] = None
+    balance_gt: Optional[float] = None
+    balance_lt: Optional[float] = None
+    created_at_gt: Optional[datetime] = None
+    created_at_lt: Optional[datetime] = None
+    updated_at_gt: Optional[datetime] = None
+    updated_at_lt: Optional[datetime] = None
+
+class UserCreate(BaseModel):
+    """Model for creating a user"""
+    full_name: str
+    email: EmailStr
+    use_prepay: Optional[bool] = False
+    meta_data: Optional[dict] = None
+
+class UserUpdate(BaseModel):
+    """Model for updating a user"""
+    id: int
+    full_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    use_prepay: Optional[bool] = None
+    meta_data: Optional[dict] = None

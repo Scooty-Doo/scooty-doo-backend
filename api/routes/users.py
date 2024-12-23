@@ -1,6 +1,22 @@
 """Module for the /users routes"""
+from datetime import datetime
+import random
+from typing import Annotated, Optional
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Depends, Query, Request, status, Path, Body
+from api.db.repository_user import UserRepository as UserRepoClass
+from api.dependencies.repository_factory import get_repository
+from api.models import db_models
+from api.models.models import (
+    JsonApiLinks,
+    JsonApiResponse,
+)
+from api.models.user_models import (
+    UserResource,
+    UserCreate,
+    UserUpdate,
+    UserGetRequestParams,
+)
 
 router = APIRouter(
     prefix="/v1/users",
@@ -8,71 +24,34 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+UserRepository = Annotated[
+    UserRepoClass,
+    Depends(get_repository(db_models.User, repository_class=UserRepoClass)),
+]
 
-@router.get("/")
-def get_users():
-    """Gets all users in admin format."""
-    return {"users": []}
-
-
-@router.post("/")
-def create_user(user):
-    """Creates a user."""
-    return {user}
-
-
-@router.get("/{user_id}")
-def get_user(user_id):
-    """Gets a specific user from the database."""
-    return {user_id}
-
-
-# Used to get a users trips
-@router.get("/trips/{user_id}")
-def get_users_trips(user_id):
-    """Gets all of a users trips."""
-    return {user_id}
-
-
-@router.put("/{user_id}")
-def update_user(user_id):
-    """Updates a user."""
-    return {user_id}
-
-
-@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-def remove_user(user_id):
-    """Removes a user."""
-    return {"Message": "Removed user {user_id}"}
-
-
-# More info https://fastapi.tiangolo.com/tutorial/security/simple-oauth2/#oauth2passwordrequestform
-@router.post("/login")
-def login(form_data):
-    """Logs in a user with oauth2 and returns a token on success."""
-    return {"access_token": "omg, it's so secret!", "token_type": "bearer"}
-
-
-@router.get("/me")
-def get_me(current_user):
-    """Gets the current users details."""
-    return {current_user}
-
-
-@router.put("/me")
-def update_me(current_user):
-    """Updates the current users account."""
-    return {"Message": "Updated your account"}
-
-
-@router.delete("/me")
-def delete_me(current_user):
-    """Deletes a user account and logs them out."""
-    # Logout as well
-    return {"Message": "Deleted your account"}
-
-
-@router.post("/logout")
-def logout():
-    """Logs a user out."""
-    return {"Message": "Logged out."}
+@router.get("/", response_model=JsonApiResponse[UserResource])
+async def get_users(
+    request: Request,
+    user_repository: UserRepository,
+    name_search: str | None = Query(None),
+    email_search: str | None = Query(None),
+    balance_gt: float | None = Query(None),
+    balance_lt: float | None = Query(None),
+    created_at_gt: datetime | None = Query(None),
+    created_at_lt: datetime | None = Query(None),
+    updated_at_gt: datetime | None = Query(None),
+    updated_at_lt: datetime | None = Query(None),
+) -> JsonApiResponse[UserResource]:
+    """Get all users from the database."""
+    users = await user_repository.get_users_with_relations()
+    
+    base_url = str(request.base_url).rstrip("/")
+    collection_url = f"{base_url}/v1/users"
+    
+    return JsonApiResponse(
+        data=[
+            UserResource.from_db_model(user, f"{collection_url}/{user.id}")
+            for user in users
+        ],
+        links=JsonApiLinks(self=collection_url),
+    )

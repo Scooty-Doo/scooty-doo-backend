@@ -6,6 +6,7 @@ from typing import Any, Optional
 from geoalchemy2.functions import ST_AsText
 from geoalchemy2.shape import to_shape
 from sqlalchemy import BinaryExpression, and_, select, update
+from sqlalchemy.orm import joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.db.repository_base import DatabaseRepository
@@ -29,3 +30,16 @@ class UserRepository(DatabaseRepository[db_models.User]):
             raise UserNotFoundException(f"User with ID {user_id} not found.")
         if user.use_prepay and user.balance <= 0:
             raise UserNotEligibleException(f"User with ID {user_id} is not eligible due to insufficient balance.")
+
+    async def get_users_with_relations(self) -> list[db_models.User]:
+        """Get all users with their relationships."""
+        stmt = (
+            select(self.model)
+            .options(
+                joinedload(self.model.payment_methods),
+                joinedload(self.model.trips),
+                joinedload(self.model.transactions)
+            )
+        )
+        result = await self.session.execute(stmt)
+        return list(result.unique().scalars())
