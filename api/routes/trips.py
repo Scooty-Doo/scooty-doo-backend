@@ -99,6 +99,7 @@ async def start_trip(
 
     await user_repository.check_user_eligibility(trip.user_id)
 
+    # TODO: Proper SLID generation
     trip_id = random.randint(1, 1000000)
 
     # Get bike data first

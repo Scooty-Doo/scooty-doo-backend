@@ -33,18 +33,12 @@ UserRepository = Annotated[
 async def get_users(
     request: Request,
     user_repository: UserRepository,
-    name_search: str | None = Query(None),
-    email_search: str | None = Query(None),
-    balance_gt: float | None = Query(None),
-    balance_lt: float | None = Query(None),
-    created_at_gt: datetime | None = Query(None),
-    created_at_lt: datetime | None = Query(None),
-    updated_at_gt: datetime | None = Query(None),
-    updated_at_lt: datetime | None = Query(None),
+    query_params: Annotated[UserGetRequestParams, Query()]
 ) -> JsonApiResponse[UserResource]:
-    """Get all users from the database."""
-    users = await user_repository.get_users_with_relations()
-    
+    """Get users from the db. Defaults to showing first 100 users"""
+    users = await user_repository.get_users(
+        **query_params.model_dump(exclude_none=True)
+    )    
     base_url = str(request.base_url).rstrip("/")
     collection_url = f"{base_url}/v1/users"
     

@@ -4,7 +4,7 @@
 # pylint: disable=too-few-public-methods
 import re
 from datetime import datetime
-from typing import Annotated, Any, Generic, Optional, TypeVar
+from typing import Annotated, Any, Generic, Literal, Optional, TypeVar
 
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, EmailStr
 from api.models.models import JsonApiLinks, JsonApiResponse
@@ -73,8 +73,16 @@ class UserResource(BaseModel):
 
 class UserGetRequestParams(BaseModel):
     """Model for getting a user"""
-    name_search: Optional[str] = None
-    email_search: Optional[str] = None
+    # Pagination defaults to 100 users per page
+    limit: int = Field(100, gt=0)
+    offset: int = Field(0, ge=0)
+    
+    # Sorting
+    order_by: Literal["created_at", "updated_at", "full_name", "email", "balance"] = "created_at"
+    order_direction: Literal["asc", "desc"] = "desc"
+
+    name_search: Optional[str] = Field(None, min_length=3)
+    email_search: Optional[str] = Field(None, min_length=3)
     balance_gt: Optional[float] = None
     balance_lt: Optional[float] = None
     created_at_gt: Optional[datetime] = None
