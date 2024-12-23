@@ -81,12 +81,14 @@ class BikeTripReport(BaseModel):
 
 class BikeTripStartlog(BaseModel):
     """Trip log from bike service."""
+    bike_id: int
     trip_id: int
-    user_id: int
     start_time: datetime
     start_position: WKTPoint
+    path_taken: Optional[str] = None
 class BikeTripEndLog(BikeTripStartlog):
     """Trip log from bike service."""
+    user_id: int
     end_time: datetime
     end_position: WKTPoint
     path_taken: str
