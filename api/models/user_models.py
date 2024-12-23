@@ -91,7 +91,7 @@ class UserGetRequestParams(BaseModel):
     updated_at_lt: Optional[datetime] = None
 
 class UserCreate(BaseModel):
-    """Model for creating a user"""
+    """Model for payload to create a user"""
     full_name: str
     email: EmailStr
     use_prepay: Optional[bool] = False
@@ -99,7 +99,6 @@ class UserCreate(BaseModel):
 
 class UserUpdate(BaseModel):
     """Model for updating a user"""
-    id: int
     full_name: Optional[str] = None
     email: Optional[EmailStr] = None
     use_prepay: Optional[bool] = None

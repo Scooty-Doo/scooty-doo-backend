@@ -30,6 +30,11 @@ class UserNotEligibleException(ApiException):
     status_code = status.HTTP_403_FORBIDDEN
     title = "User Not Eligible"
 
+class UserEmailExistsException(ApiException):
+    """Exception raised when attempting to create user with existing email."""
+    status_code = status.HTTP_409_CONFLICT
+    title = "Email Already Exists"
+
 class ActiveTripExistsException(ApiException):
     """Exception raised when user already has an active trip."""
     status_code = status.HTTP_409_CONFLICT
