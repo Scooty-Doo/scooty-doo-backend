@@ -15,19 +15,19 @@ from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
 def validate_wkt_point(value: str | None) -> str | None:
     """Validate WKT POINT format and coordinates."""
     if value is None:
-        return None
+        raise ValueError("Value cannot be None")
 
-    point_pattern = r"^POINT\(\s*(-?\d+\.\d+?|-?\d+\.\d+)\s+(-?\d+\.\d+?|-?\d+\.\d+)\s*\)$"
+    point_pattern = r"^POINT\((-?\d+(\.\d+)?) (-?\d+(\.\d+)?)\)$"
     match = re.match(point_pattern, str(value))
 
     if not match:
         raise ValueError(f"Invalid WKT POINT format: {value}")
 
-    longitude, latitude = map(float, match.groups()[0:2])
-    if not -180 <= latitude <= 180:
-        raise ValueError(f"Longitude {latitude} out of range [-180, 180]")
-    if not -90 <= longitude <= 90:
-        raise ValueError(f"Latitude {longitude} out of range [-90, 90]")
+    longitude, latitude = float(match.group(1)), float(match.group(3))
+    if not -180 <= longitude <= 180:
+        raise ValueError(f"Longitude {longitude} out of range [-180, 180]")
+    if not -90 <= latitude <= 90:
+        raise ValueError(f"Latitude {latitude} out of range [-90, 90]")
 
     return value
 
