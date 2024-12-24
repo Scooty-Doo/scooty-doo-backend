@@ -17,10 +17,12 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.ext.asyncio import AsyncAttrs
+
 
 
 # pylint: disable=too-few-public-methods
-class Base(DeclarativeBase):
+class Base(AsyncAttrs, DeclarativeBase):
     """Base database model."""
 
     created_at: Mapped[datetime] = mapped_column(
@@ -63,9 +65,9 @@ class User(Base):
     meta_data: Mapped[dict] = mapped_column(JSONB, nullable=True)
 
     # Relationships
-    payment_methods: Mapped[list["PaymentMethod"]] = relationship(back_populates="user")
-    trips: Mapped[list["Trip"]] = relationship(back_populates="user")
-    transactions: Mapped[list["Transaction"]] = relationship(back_populates="user")
+    payment_methods: Mapped[list["PaymentMethod"]] = relationship(back_populates="user", lazy="raise")
+    trips: Mapped[list["Trip"]] = relationship(back_populates="user", lazy="raise")
+    transactions: Mapped[list["Transaction"]] = relationship(back_populates="user", lazy="raise")
 
 
 class PaymentProvider(Base):

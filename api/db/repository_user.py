@@ -1,19 +1,15 @@
 """Repository module for database operations."""
 
-import re
 from typing import Any, Optional
 
-from geoalchemy2.functions import ST_AsText
-from geoalchemy2.shape import to_shape
 from sqlalchemy import BinaryExpression, and_, select, update, desc, asc
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.db.repository_base import DatabaseRepository
 from api.models import db_models
 from api.exceptions import UserNotFoundException, UserNotEligibleException, UserEmailExistsException
-from api.models.user_models import UserCreate
 
 
 class UserRepository(DatabaseRepository[db_models.User]):
@@ -22,7 +18,6 @@ class UserRepository(DatabaseRepository[db_models.User]):
     def __init__(self, session: AsyncSession) -> None:
         """Initialize the repository with the Trip model."""
         super().__init__(db_models.User, session)
-
 
     async def check_user_eligibility(self, user_id: int) -> None:
         """Check if a user exists, and if they have prepay check that they have positive balance.
@@ -53,42 +48,38 @@ class UserRepository(DatabaseRepository[db_models.User]):
         ]
 
     async def get_users(self, **params) -> list[db_models.User]:
-        """Get all users with their relationships, applying filters, sorting, and pagination."""
-        stmt = select(self.model).options(
-            joinedload(self.model.payment_methods),
-            joinedload(self.model.trips),
-            joinedload(self.model.transactions)
-        )
+        """Get all users without their relationships, applying filters, sorting, and pagination."""
+        stmt = select(self.model)
         
-        # Apply filters
         filters = self._build_filters(**params)
         if filters:
             stmt = stmt.where(and_(*filters))
             
-        # Apply sorting
         order_column = getattr(self.model, params.get('order_by', 'created_at'))
         stmt = stmt.order_by(
             desc(order_column) if params.get('order_direction') == 'desc'
             else asc(order_column)
         )
         
-        # Apply pagination
         stmt = stmt.offset(params.get('offset', 0)).limit(params.get('limit', 100))
-            
+        
         result = await self.session.execute(stmt)
-        return list(result.unique().scalars())
+        users = list(result.unique().scalars())
 
-    async def get_user(self, user_id: int) -> Optional[db_models.User]:
-        """Get a user by ID."""
+        return users
+
+    async def get_user(self, user_id: int) -> db_models.User:
+        """Get a user by ID with relationships eagerly loaded."""
         stmt = (
             select(self.model)
             .options(
-                joinedload(self.model.payment_methods),
-                joinedload(self.model.trips),
-                joinedload(self.model.transactions)
+                selectinload(self.model.payment_methods),
+                selectinload(self.model.trips),
+                selectinload(self.model.transactions)
             )
             .where(self.model.id == user_id)
         )
+        
         result = await self.session.execute(stmt)
         user = result.unique().scalar_one_or_none()
         
@@ -96,51 +87,53 @@ class UserRepository(DatabaseRepository[db_models.User]):
             raise UserNotFoundException(f"User with ID {user_id} not found.")
         
         return user
-    
-    # async def create_user(self, user_data: dict[str, Any]) -> db_models.User:
-    #     """Create a new user."""
-    #     try:
-    #         user = db_models.User(**user_data)
-    #         self.session.add(user)
-    #         await self.session.commit()
-    #         stmt = (
-    #             select(self.model)
-    #             .options(
-    #                 joinedload(self.model.payment_methods),
-    #                 joinedload(self.model.trips),
-    #                 joinedload(self.model.transactions)
-    #             )
-    #             .where(self.model.id == user.id)
-    #         )
-    #         result = await self.session.execute(stmt)
-    #         return result.unique().scalar_one()
-    #     except IntegrityError as e:
-    #         await self.session.rollback()
-    #         if 'users_email_key' in str(e):
-    #             raise UserEmailExistsException(f"User with email {user_data['email']} already exists.")
-    #         raise
+
     async def create_user(self, user_data: dict[str, Any]) -> db_models.User:
-        """Create a new user."""
         try:
             user = db_models.User(**user_data)
             self.session.add(user)
             await self.session.commit()
+
             await self.session.refresh(user)
             return user
         except IntegrityError as e:
             await self.session.rollback()
-            if 'users_email_key' in str(e):
+            if "users_email_key" in str(e):
                 raise UserEmailExistsException(f"User with email {user_data['email']} already exists.")
             raise
+
     async def update_user(self, user_id: int, data: dict[str, Any]) -> Optional[db_models.User]:
         """Update a user by primary key."""
-        query = (
-            update(self.model)
-            .where(self.model.id == user_id)
-            .values(**data)
-            .returning(self.model)
-        )
+        try:
+            # Update user
+            update_stmt = (
+                update(self.model)
+                .where(self.model.id == user_id)
+                .values(**data)
+                .returning(self.model.id)  # Only return ID to check if update succeeded
+            )
+            
+            result = await self.session.execute(update_stmt)
+            if not result.scalar_one_or_none():
+                raise UserNotFoundException(f"User with ID {user_id} not found.")
 
-        result = await self.session.execute(query)
-        await self.session.commit()
-        return result.unique().scalar_one_or_none()
+            # Get updated user with relationships
+            select_stmt = (
+                select(self.model)
+                .options(
+                    joinedload(self.model.payment_methods),
+                    joinedload(self.model.trips),
+                    joinedload(self.model.transactions)
+                )
+                .where(self.model.id == user_id)
+            )
+            
+            result = await self.session.execute(select_stmt)
+            await self.session.commit()
+            return result.unique().scalar_one()
+            
+        except IntegrityError as e:
+            await self.session.rollback()
+            if 'users_email_key' in str(e):
+                raise UserEmailExistsException(f"Email {data.get('email')} already exists.")
+            raise

@@ -72,7 +72,7 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
 
         result = await self.session.execute(stmt)
         return list(result.mappings().all())
-
+    
     async def get_trip(self, pk: int) -> Optional[db_models.Trip]:
         """Get a trip by ID."""
         stmt = select(*self._get_trip_columns()).where(self.model.id == pk)

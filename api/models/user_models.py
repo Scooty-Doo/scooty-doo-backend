@@ -29,10 +29,30 @@ class UserRelationships(BaseModel):
     trips: Optional[dict[str, Any]] = None
     transactions: Optional[dict[str, Any]] = None
 
+    model_config = ConfigDict(populate_by_name=True)
+class UserResourceMinimal(BaseModel):
+    """JSON:API resource object for users without relationships."""
+    
+    id: str
+    type: str = "users"
+    attributes: UserAttributes
+    links: Optional[JsonApiLinks] = None
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    @classmethod
+    def from_db_model(cls, user: Any, request_url: str) -> "UserResourceMinimal":
+        """Create a minimal UserResource from a database model."""
+        return cls(
+            id=str(user.id),
+            attributes=UserAttributes.model_validate(user),
+            links=JsonApiLinks(self_link=f"{request_url}"),
+        )
+
 class UserResource(BaseModel):
     """JSON:API resource object for users."""
 
-    id: int
+    id: str
     type: str = "users"
     attributes: UserAttributes
     relationships: Optional[UserRelationships] = None
@@ -43,32 +63,37 @@ class UserResource(BaseModel):
     @classmethod
     def from_db_model(cls, user: Any, request_url: str) -> "UserResource":
         """Create a UserResource from a database model."""
-        relationships = {
-            "payment_methods": {
+        relationships = {}
+
+        if hasattr(user, "payment_methods") and user.payment_methods is not None:
+            relationships["payment_methods"] = {
                 "data": [
                     {"type": "payment_methods", "id": str(pm.id)}
                     for pm in user.payment_methods
                 ]
-            },
-            "trips": {
+            }
+
+        if hasattr(user, "trips") and user.trips is not None:
+            relationships["trips"] = {
                 "data": [
-                    {"type": "trips", "id": str(trip.id)} 
+                    {"type": "trips", "id": str(trip.id)}
                     for trip in user.trips
                 ]
-            },
-            "transactions": {
+            }
+
+        if hasattr(user, "transactions") and user.transactions is not None:
+            relationships["transactions"] = {
                 "data": [
                     {"type": "transactions", "id": str(txn.id)}
                     for txn in user.transactions
                 ]
             }
-        }
 
         return cls(
             id=str(user.id),
             attributes=UserAttributes.model_validate(user),
-            relationships=UserRelationships(**relationships),
-            links=JsonApiLinks(self_link=f"{request_url}")
+            relationships=UserRelationships(**relationships) if relationships else None,
+            links=JsonApiLinks(self_link=f"{request_url}"),
         )
 
 class UserGetRequestParams(BaseModel):
