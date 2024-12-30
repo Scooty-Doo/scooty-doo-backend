@@ -92,7 +92,6 @@ async def start_trip(
     trip: UserTripStart,
     trip_repository: TripRepository,
     user_repository: UserRepository,
-    bike_repository: BikeRepository,
 ) -> JsonApiResponse[TripResource]:
     """Endpoint for user to start a trip"""
     bike_start_trip, _ = get_bike_service()
@@ -120,7 +119,7 @@ async def start_trip(
     self_link = f"{base_url}/v1/trips/{created_trip.id}"
     return JsonApiResponse(
         data=TripResource.from_db_model(created_trip, self_link),
-        links=JsonApiLinks(self=self_link),
+        links=JsonApiLinks(self_link=self_link),
     )
 
 
@@ -171,41 +170,5 @@ async def end_trip(
     self_link = f"{base_url}/v1/trips/{updated_trip.id}"
     return JsonApiResponse(
         data=TripResource.from_db_model(updated_trip, self_link),
-        links=JsonApiLinks(self=self_link),
+        links=JsonApiLinks(self_link=self_link),
     )
-
-
-@router.patch("/end_test/{trip_id}")
-async def end_trip_test(
-    request: Request,
-    trip_repository: TripRepository,
-    user_trip_data: UserTripStart = Body(..., description="User trip data"),  # noqa: B008
-    trip_id: int = Path(..., description="ID of the trip to end"),
-) -> str:
-    """Test endpoint for trip ending"""
-    print("\n=== Test Endpoint Called ===")
-    print(f"Trip ID: {trip_id}")
-    print(f"User Trip Data: {user_trip_data.model_dump_json(indent=2)}")
-
-    try:
-        _, bike_end_trip = get_bike_service()
-        print("\n=== Calling Bike Service ===")
-        print(f"Bike ID: {user_trip_data.bike_id}")
-        print(f"User ID: {user_trip_data.user_id}")
-
-        bike_response = await bike_end_trip(
-            bike_id=user_trip_data.bike_id,
-            user_id=user_trip_data.user_id,
-            trip_id=trip_id,
-            maintenance=False,
-            ignore_zone=True,
-        )
-
-        print("\n=== Bike Response ===")
-        print(bike_response.model_dump_json(indent=2))
-        return {"status": "success", "response": bike_response.model_dump()}
-
-    except Exception as e:
-        print(f"\n=== Error ===\n{str(e)}")
-        print(f"Error type: {type(e)}")
-        raise

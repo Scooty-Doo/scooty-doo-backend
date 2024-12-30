@@ -90,6 +90,7 @@ class UserRepository(DatabaseRepository[db_models.User]):
         return user
 
     async def create_user(self, user_data: dict[str, Any]) -> db_models.User:
+        """Create a new user."""
         try:
             user = db_models.User(**user_data)
             self.session.add(user)

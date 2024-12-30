@@ -63,7 +63,7 @@ async def get_user(
 
     return JsonApiResponse(
         data=UserResource.from_db_model(user, resource_url),
-        links=JsonApiLinks(self=resource_url),
+        links=JsonApiLinks(self_link=resource_url),
     )
 
 
@@ -82,7 +82,7 @@ async def get_users(
         data=[
             UserResourceMinimal.from_db_model(user, f"{collection_url}/{user.id}") for user in users
         ],
-        links=JsonApiLinks(self=collection_url),
+        links=JsonApiLinks(self_link=collection_url),
     )
 
 
@@ -103,7 +103,7 @@ async def create_user(
 
     return JsonApiResponse(
         data=UserResourceMinimal.from_db_model(user, resource_url),
-        links=JsonApiLinks(self=resource_url),
+        links=JsonApiLinks(self_link=resource_url),
     )
 
 
@@ -123,7 +123,7 @@ async def update_user(
 
     return JsonApiResponse(
         data=UserResource.from_db_model(user, resource_url),
-        links=JsonApiLinks(self=resource_url),
+        links=JsonApiLinks(self_link=resource_url),
     )
 
 
@@ -142,7 +142,7 @@ async def get_user_trips(
 
     return JsonApiResponse(
         data=[TripResource.from_db_model(trip, resource_url) for trip in user],
-        links=JsonApiLinks(self=resource_url),
+        links=JsonApiLinks(self_link=resource_url),
     )
 
 
@@ -163,5 +163,5 @@ async def get_user_transactions(
             TransactionResourceMinimal.from_db_model(transaction, resource_url)
             for transaction in transactions
         ],
-        links=JsonApiLinks(self=resource_url),
+        links=JsonApiLinks(self_link=resource_url),
     )

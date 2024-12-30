@@ -118,6 +118,7 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
     async def end_trip(
         self, params: TripEndRepoParams, is_available: bool = True
     ) -> tuple[Optional[db_models.Trip], Optional[db_models.User], Optional[db_models.Transaction]]:
+        """End a trip and update user balance."""
         async with self.session.begin():
             stmt = select(*self._get_trip_columns()).where(self.model.id == params.trip_id)
             result = await self.session.execute(stmt)

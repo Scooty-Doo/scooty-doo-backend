@@ -142,10 +142,14 @@ class TripEndRepoParams(BaseModel):
 
 
 class BikeTripEndRequest(BaseModel):
+    """BIke end trip parameters"""
+
     maintenance: bool = False
     ignore_zone: bool = False
 
 
 class BikeTripStartRequest(BaseModel):
+    """BIke start trip parameters"""
+
     user_id: int
     trip_id: int
