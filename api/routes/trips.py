@@ -3,7 +3,7 @@
 import random
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, Request, status, Path, Body
+from fastapi import APIRouter, Body, Depends, Path, Query, Request, status
 
 from api.db.repository_bike import BikeRepository as BikeRepoClass
 from api.db.repository_trip import TripRepository as TripRepoClass
@@ -128,21 +128,24 @@ async def start_trip(
 async def end_trip(
     request: Request,
     trip_repository: TripRepository,
-    user_trip_data: UserTripStart = Body(..., description="User trip data"),
+    user_trip_data: UserTripStart = Body(..., description="User trip data"),  # noqa: B008
     trip_id: int = Path(..., description="ID of the trip to end"),
 ) -> JsonApiResponse[TripResource]:
-    """Endpoint for user to end a trip"""
-    # get bike (mocked atm)
-    # bike_response = await bike_end_trip(user_trip_data.bike_id, False, True)
-    # MOCKED CALL:
+    """Endpoint for user to end a trip
+    TODO: Return link to user and user's transaction?"""
     _, bike_end_trip = get_bike_service()
-    bike_response = await bike_end_trip(user_trip_data.bike_id, user_trip_data.user_id, trip_id, False, True)
+    bike_response = await bike_end_trip(
+        user_trip_data.bike_id, user_trip_data.user_id, trip_id, False, True
+    )
 
     #  validate that user, trip and bike match before calling db
     if bike_response.log.user_id != user_trip_data.user_id:
         print(bike_response.log.user_id, user_trip_data.user_id)
         raise UnauthorizedTripAccessException(
-            detail=f"User {user_trip_data.user_id} is not allowed to end trip {bike_response.log.user_id}"
+            detail=(
+                f"User {user_trip_data.user_id} "
+                f"is not allowed to end trip {bike_response.log.user_id}"
+            )
         )
 
     if bike_response.log.trip_id != trip_id:
@@ -171,36 +174,37 @@ async def end_trip(
         links=JsonApiLinks(self=self_link),
     )
 
+
 @router.patch("/end_test/{trip_id}")
 async def end_trip_test(
     request: Request,
     trip_repository: TripRepository,
-    user_trip_data: UserTripStart = Body(..., description="User trip data"),
+    user_trip_data: UserTripStart = Body(..., description="User trip data"),  # noqa: B008
     trip_id: int = Path(..., description="ID of the trip to end"),
 ) -> str:
     """Test endpoint for trip ending"""
     print("\n=== Test Endpoint Called ===")
     print(f"Trip ID: {trip_id}")
     print(f"User Trip Data: {user_trip_data.model_dump_json(indent=2)}")
-    
+
     try:
         _, bike_end_trip = get_bike_service()
         print("\n=== Calling Bike Service ===")
         print(f"Bike ID: {user_trip_data.bike_id}")
         print(f"User ID: {user_trip_data.user_id}")
-        
+
         bike_response = await bike_end_trip(
             bike_id=user_trip_data.bike_id,
             user_id=user_trip_data.user_id,
             trip_id=trip_id,
             maintenance=False,
-            ignore_zone=True
+            ignore_zone=True,
         )
-        
+
         print("\n=== Bike Response ===")
         print(bike_response.model_dump_json(indent=2))
         return {"status": "success", "response": bike_response.model_dump()}
-        
+
     except Exception as e:
         print(f"\n=== Error ===\n{str(e)}")
         print(f"Error type: {type(e)}")

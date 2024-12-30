@@ -1,13 +1,13 @@
-"""Module with pydantic user models
-"""
+"""Module with pydantic user models"""
 
 # pylint: disable=too-few-public-methods
-import re
 from datetime import datetime
-from typing import Annotated, Any, Generic, Literal, Optional, TypeVar
+from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, EmailStr
-from api.models.models import JsonApiLinks, JsonApiResponse
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
+
+from api.models.models import JsonApiLinks
+
 
 class UserAttributes(BaseModel):
     """User attributes for JSON:API response."""
@@ -22,6 +22,7 @@ class UserAttributes(BaseModel):
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
+
 class UserRelationships(BaseModel):
     """User relationships for JSON:API response."""
 
@@ -30,9 +31,11 @@ class UserRelationships(BaseModel):
     transactions: Optional[dict[str, Any]] = None
 
     model_config = ConfigDict(populate_by_name=True)
+
+
 class UserResourceMinimal(BaseModel):
     """JSON:API resource object for users without relationships."""
-    
+
     id: str
     type: str = "users"
     attributes: UserAttributes
@@ -48,6 +51,7 @@ class UserResourceMinimal(BaseModel):
             attributes=UserAttributes.model_validate(user),
             links=JsonApiLinks(self_link=f"{request_url}"),
         )
+
 
 class UserResource(BaseModel):
     """JSON:API resource object for users."""
@@ -68,25 +72,18 @@ class UserResource(BaseModel):
         if hasattr(user, "payment_methods") and user.payment_methods is not None:
             relationships["payment_methods"] = {
                 "data": [
-                    {"type": "payment_methods", "id": str(pm.id)}
-                    for pm in user.payment_methods
+                    {"type": "payment_methods", "id": str(pm.id)} for pm in user.payment_methods
                 ]
             }
 
         if hasattr(user, "trips") and user.trips is not None:
             relationships["trips"] = {
-                "data": [
-                    {"type": "trips", "id": str(trip.id)}
-                    for trip in user.trips
-                ]
+                "data": [{"type": "trips", "id": str(trip.id)} for trip in user.trips]
             }
 
         if hasattr(user, "transactions") and user.transactions is not None:
             relationships["transactions"] = {
-                "data": [
-                    {"type": "transactions", "id": str(txn.id)}
-                    for txn in user.transactions
-                ]
+                "data": [{"type": "transactions", "id": str(txn.id)} for txn in user.transactions]
             }
 
         return cls(
@@ -96,12 +93,14 @@ class UserResource(BaseModel):
             links=JsonApiLinks(self_link=f"{request_url}"),
         )
 
+
 class UserGetRequestParams(BaseModel):
     """Model for getting a user"""
+
     # Pagination defaults to 100 users per page
     limit: int = Field(100, gt=0)
     offset: int = Field(0, ge=0)
-    
+
     # Sorting
     order_by: Literal["created_at", "updated_at", "full_name", "email", "balance"] = "created_at"
     order_direction: Literal["asc", "desc"] = "desc"
@@ -115,15 +114,19 @@ class UserGetRequestParams(BaseModel):
     updated_at_gt: Optional[datetime] = None
     updated_at_lt: Optional[datetime] = None
 
+
 class UserCreate(BaseModel):
     """Model for payload to create a user"""
+
     full_name: str
     email: EmailStr
     use_prepay: Optional[bool] = False
     meta_data: Optional[dict] = None
 
+
 class UserUpdate(BaseModel):
     """Model for updating a user"""
+
     full_name: Optional[str] = None
     email: Optional[EmailStr] = None
     use_prepay: Optional[bool] = None

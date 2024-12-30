@@ -1,13 +1,10 @@
 """Module for the /users routes"""
 
-import random
-from datetime import datetime
-from typing import Annotated, Optional
+from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Path, Query, Request, status
+from fastapi import APIRouter, Depends, Query, Request
 
 from api.db.repository_transaction import TransactionRepository as TransactionRepoClass
-from api.db.repository_trip import TripRepository as TripRepoClass
 from api.dependencies.repository_factory import get_repository
 from api.models import db_models
 from api.models.models import (

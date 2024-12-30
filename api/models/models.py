@@ -33,7 +33,7 @@ def validate_wkt_point(value: str | None) -> str | None:
 
 
 WKTPoint = Annotated[
-    str, 
+    str,
     BeforeValidator(validate_wkt_point),
     Field(
         description="WKT POINT format with longitude (-180 to 180) and latitude (-90 to 90)",
@@ -41,8 +41,8 @@ WKTPoint = Annotated[
         json_schema_extra={
             "format": "WKT POINT",
             "examples": ["POINT(11.9746 57.7089)"],
-        }
-    )
+        },
+    ),
 ]
 
 
@@ -154,6 +154,7 @@ class BikeUpdate(BaseModel):
     meta_data: Optional[dict[str, Any]] = None
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
 
 # class PaymentProvider(BaseModel):
 #     """Model for payment provider table in database"""

@@ -1,8 +1,9 @@
 """Module for creating tables from sqlalchemy models"""
 
+from sqlalchemy import text
+
 from api.db.database import sessionmanager
 from api.models.db_models import Base
-from sqlalchemy import text
 
 
 async def load_tables():
@@ -14,10 +15,8 @@ async def load_tables():
 
     async with sessionmanager.connect() as conn:
         # Drop then create unique index so that a user can only have one active trip at a time
-        await conn.execute(
-            text("DROP INDEX IF EXISTS idx_one_active_trip_per_user;")
-        )
-        
+        await conn.execute(text("DROP INDEX IF EXISTS idx_one_active_trip_per_user;"))
+
         await conn.execute(
             text("""
                 CREATE UNIQUE INDEX idx_one_active_trip_per_user 
@@ -36,4 +35,5 @@ async def main():
 
 if __name__ == "__main__":
     import asyncio
+
     asyncio.run(main())

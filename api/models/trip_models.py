@@ -1,9 +1,12 @@
 """Module for trip models"""
 
 from datetime import datetime
-from typing import Annotated, Any, Generic, Optional, TypeVar
-from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
-from api.models.models import WKTPoint, JsonApiLinks, JsonApiResponse
+from typing import Annotated, Any, Optional
+
+from pydantic import BaseModel, ConfigDict, Field
+
+from api.models.models import JsonApiLinks, WKTPoint
+
 
 class TripAttributes(BaseModel):
     """Trip attributes for JSON:API response."""
@@ -15,7 +18,7 @@ class TripAttributes(BaseModel):
     path_taken: Optional[str] = None
     start_time: datetime
     end_time: Optional[datetime] = None
-    #Confloat deprecated, see: https://docs.pydantic.dev/2.10/api/types/#pydantic.types.confloat
+    # Confloat deprecated, see: https://docs.pydantic.dev/2.10/api/types/#pydantic.types.confloat
     start_fee: Optional[Annotated[float, Field(ge=0)]] = None
     time_fee: Optional[Annotated[float, Field(ge=0)]] = None
     end_fee: Optional[Annotated[float, Field(ge=0)]] = None
@@ -24,6 +27,7 @@ class TripAttributes(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
 
 class TripRelationships(BaseModel):
     """Trip relationships for JSON:API response."""
@@ -54,7 +58,7 @@ class TripResource(BaseModel):
         }
 
         # Add transaction only if it exists
-        if hasattr(trip, 'transaction') and trip.transaction is not None:
+        if hasattr(trip, "transaction") and trip.transaction is not None:
             relationships["transaction"] = {
                 "data": {"type": "transactions", "id": str(trip.transaction.id)}
             }
@@ -67,50 +71,68 @@ class TripResource(BaseModel):
             links=JsonApiLinks(self_link=f"{request_url}"),
         )
 
+
 class UserTripStart(BaseModel):
     """Model for starting a trip"""
+
     user_id: int
     bike_id: int
 
+
 class BikeTripReport(BaseModel):
     """Bike status report from bike service."""
+
     city_id: int
     last_position: WKTPoint
     battery_lvl: float
     is_available: bool
 
+
 class BikeTripStartlog(BaseModel):
     """Trip log from bike service."""
+
     bike_id: int
     trip_id: int
     start_time: datetime
     start_position: WKTPoint
     path_taken: Optional[str] = None
+
+
 class BikeTripEndLog(BikeTripStartlog):
     """Trip log from bike service."""
+
     user_id: int
     end_time: datetime
     end_position: WKTPoint
     path_taken: str
 
+
 class BikeTripStartData(BaseModel):
     """Combined bike data from service."""
+
     report: BikeTripReport
     log: BikeTripStartlog
+
+
 class BikeTripEndData(BaseModel):
     """Combined bike data from service."""
+
     report: BikeTripReport
     log: BikeTripEndLog
 
+
 class TripCreate(BaseModel):
     """Data required to create a new trip."""
+
     id: int
     user_id: int
     bike_id: int
     start_position: WKTPoint
 
+
 class TripEndRepoParams(BaseModel):
     """Model for ending a trip"""
+
     end_position: WKTPoint
     path_taken: str
     end_time: datetime
@@ -118,9 +140,11 @@ class TripEndRepoParams(BaseModel):
     user_id: int
     bike_id: int
 
+
 class BikeTripEndRequest(BaseModel):
     maintenance: bool = False
     ignore_zone: bool = False
+
 
 class BikeTripStartRequest(BaseModel):
     user_id: int

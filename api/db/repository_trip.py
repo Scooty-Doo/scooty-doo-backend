@@ -1,12 +1,10 @@
 """Repository module for database operations."""
 
 import decimal
-import re
 from datetime import datetime
 from typing import Any, Optional
 
 from geoalchemy2.functions import ST_AsText
-from geoalchemy2.shape import to_shape
 from sqlalchemy import BinaryExpression, and_, insert, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -72,7 +70,7 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
 
         result = await self.session.execute(stmt)
         return list(result.mappings().all())
-    
+
     async def get_trip(self, pk: int) -> Optional[db_models.Trip]:
         """Get a trip by ID."""
         stmt = select(*self._get_trip_columns()).where(self.model.id == pk)
@@ -95,7 +93,7 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
             if "idx_one_active_trip_per_user" in str(e):
                 raise ActiveTripExistsException(
                     f"User {trip_data.user_id} already has an active trip"
-                )
+                ) from e
             raise e
 
     def _calculate_fees(
@@ -117,7 +115,9 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
         print(f"Calculated fees: {fees}")
         return fees
 
-    async def end_trip(self, params: TripEndRepoParams, is_available: bool = True) -> tuple[Optional[db_models.Trip], Optional[db_models.User], Optional[db_models.Transaction]]:
+    async def end_trip(
+        self, params: TripEndRepoParams, is_available: bool = True
+    ) -> tuple[Optional[db_models.Trip], Optional[db_models.User], Optional[db_models.Transaction]]:
         async with self.session.begin():
             stmt = select(*self._get_trip_columns()).where(self.model.id == params.trip_id)
             result = await self.session.execute(stmt)
@@ -149,23 +149,28 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
             )
             updated_trip = updated_trip_result.mappings().first()
 
-            updated_user_balance_result = await self.session.execute(
+            # Commented out code to use if we want to return more than just the trip data
+            # updated_user_balance_result =
+            await self.session.execute(
                 update(db_models.User)
                 .where(db_models.User.id == params.user_id)
                 .values(balance=db_models.User.balance - fees["total_fee"])
-                .returning(db_models.User)
+                # .returning(db_models.User)
             )
-            updated_user_balance = updated_user_balance_result.mappings().first()
+            # updated_user_balance = updated_user_balance_result.mappings().first()
 
-            created_transaction_result = await self.session.execute(
+            # Commented out code to use if we want to return more than just the trip data
+            # created_transaction_result =
+            await self.session.execute(
                 insert(db_models.Transaction).values(
                     trip_id=params.trip_id,
                     user_id=params.user_id,
                     amount=fees["total_fee"],
                     transaction_type="trip",
-                ).returning(db_models.Transaction)
+                )
+                # .returning(db_models.Transaction)
             )
-            created_transaction = created_transaction_result.mappings().first()
+            # created_transaction = created_transaction_result.mappings().first()
 
             # Check if the bike is_available has changed and update if it has
             if is_available:

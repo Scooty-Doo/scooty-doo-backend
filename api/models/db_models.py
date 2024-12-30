@@ -16,9 +16,8 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.ext.asyncio import AsyncAttrs
-
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 # pylint: disable=too-few-public-methods
@@ -65,7 +64,9 @@ class User(Base):
     meta_data: Mapped[dict] = mapped_column(JSONB, nullable=True)
 
     # Relationships
-    payment_methods: Mapped[list["PaymentMethod"]] = relationship(back_populates="user", lazy="raise")
+    payment_methods: Mapped[list["PaymentMethod"]] = relationship(
+        back_populates="user", lazy="raise"
+    )
     trips: Mapped[list["Trip"]] = relationship(back_populates="user", lazy="raise")
     transactions: Mapped[list["Transaction"]] = relationship(back_populates="user", lazy="raise")
 
@@ -135,7 +136,7 @@ class Trip(Base):
     start_time: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),  # pylint: disable=not-callable
-        nullable=False
+        nullable=False,
     )
     end_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     start_position: Mapped[Geometry] = mapped_column(Geometry("POINT", srid=4326), nullable=False)

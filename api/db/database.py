@@ -10,7 +10,6 @@ import contextlib
 
 # pylint: disable=E0401
 from collections.abc import AsyncGenerator, AsyncIterator
-from api.exceptions import ApiException
 
 from sqlalchemy.ext.asyncio import (
     AsyncConnection,
@@ -20,6 +19,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+from api.exceptions import ApiException
 from api.models.db_models import Base
 
 

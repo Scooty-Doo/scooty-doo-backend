@@ -5,6 +5,7 @@ import csv
 import json
 from datetime import datetime
 from decimal import Decimal as decimal
+
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,10 +19,10 @@ from api.models.db_models import (
     City,
     MapZone,
     PaymentProvider,
+    Transaction,
     Trip,
     User,
     ZoneType,
-    Transaction
 )
 
 
@@ -61,7 +62,6 @@ async def load_mock_data():
         await session.execute(
             text("SELECT setval('transactions_id_seq', (SELECT MAX(id) FROM transactions))")
         )
-
 
         await session.commit()
 
@@ -162,7 +162,9 @@ async def load_bikes(session: AsyncSession):
 
 async def load_trips(session: AsyncSession):
     """Load trips from CSV."""
-    with open("database/mock_data/data/generated/trip_data_with_ids.csv", encoding="utf-8") as csvfile:
+    with open(
+        "database/mock_data/data/generated/trip_data_with_ids.csv", encoding="utf-8"
+    ) as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             trip = Trip(
@@ -240,6 +242,7 @@ async def load_admins_and_roles(session: AsyncSession):
             session.add(admin_role)
     await session.flush()
 
+
 async def load_transactions(session: AsyncSession):
     """Load transactions from CSV."""
     with open("database/mock_data/data/generated/transactions.csv", encoding="utf-8") as csvfile:
@@ -248,10 +251,12 @@ async def load_transactions(session: AsyncSession):
             transaction = Transaction(
                 id=int(row["id"]),
                 user_id=int(row["user_id"]),
-                trip_id=int(row["trip_id"]) if row["trip_id"] and row["trip_id"].lower() != "null" else None,
+                trip_id=int(row["trip_id"])
+                if row["trip_id"] and row["trip_id"].lower() != "null"
+                else None,
                 amount=decimal(str(row["amount"])),  # Use Decimal for money
                 transaction_type=row["transaction_type"],
-                created_at=datetime.fromisoformat(row["created_at"].replace('Z', '+00:00'))
+                created_at=datetime.fromisoformat(row["created_at"].replace("Z", "+00:00")),
             )
             session.add(transaction)
         await session.flush()

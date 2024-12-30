@@ -1,7 +1,8 @@
 """Repository module for database operations."""
 
-from typing import Any, Generic, TypeVar
 import re
+from typing import Any, Generic, TypeVar
+
 from geoalchemy2.shape import to_shape
 from sqlalchemy import BinaryExpression, delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession

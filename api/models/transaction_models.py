@@ -1,22 +1,27 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Optional, Literal
-from api.models.models import JsonApiLinks
+from typing import Any, Literal, Optional
+
 from pydantic import BaseModel, ConfigDict, Field
+
+from api.models.models import JsonApiLinks
 
 
 class TransactionAttributes(BaseModel):
     """Attributes for a transaction."""
+
     amount: Decimal
     transaction_type: str
     transaction_description: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
-    
+
     model_config = ConfigDict(from_attributes=True)
+
 
 class TransactionResourceMinimal(BaseModel):
     """JSON:API resource object for transactions without relationships."""
+
     id: str
     type: str = "transactions"
     attributes: TransactionAttributes
@@ -30,15 +35,17 @@ class TransactionResourceMinimal(BaseModel):
         return cls(
             id=str(transaction.id),
             attributes=TransactionAttributes.model_validate(transaction),
-            links=JsonApiLinks(self_link=request_url)
+            links=JsonApiLinks(self_link=request_url),
         )
+
 
 class TransactionGetRequestParams(BaseModel):
     """Model for getting a transaction"""
+
     # Pagination defaults to 100 transactions per page
     limit: int = Field(100, gt=0)
     offset: int = Field(0, ge=0)
-    
+
     # Sorting
     order_by: Literal["created_at", "updated_at", "amount", "transaction_type"] = "created_at"
     order_direction: Literal["asc", "desc"] = "desc"
