@@ -70,7 +70,7 @@ async def update_zone_type(
     zone_type_id: int = Path(..., ge=1),
 ) -> JsonApiResponse[ZoneTypeResource]:
     """Update a zone type by ID"""
-    zone_type_data_dict = zone_type_data.model_dump()
+    zone_type_data_dict = zone_type_data.model_dump(exclude_unset=True)
     zone_type = await zone_type_repository.update_zone_type(zone_type_id, zone_type_data_dict)
 
     base_url = str(request.base_url).rstrip("/")
