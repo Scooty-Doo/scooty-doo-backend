@@ -22,6 +22,17 @@ class ApiException(Exception):
     def __str__(self):
         return self.detail
 
+class ZoneTypeNameExistsException(ApiException):
+    """Exception raised when attempting to create zone type with existing name."""
+
+    status_code = status.HTTP_409_CONFLICT
+    title = "Zone Type Name Already Exists"
+
+class ZoneTypeNotFoundException(ApiException):
+    """Exception raised when a zone type is not found."""
+
+    status_code = status.HTTP_404_NOT_FOUND
+    title = "Zone Type Not Found"
 
 class UserNotFoundException(ApiException):
     """Exception raised when a user is not found."""
