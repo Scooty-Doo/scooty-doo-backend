@@ -100,19 +100,14 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
         self, start_time: datetime, end_time: datetime
     ) -> dict[str, decimal.Decimal]:
         """Calculate trip fees."""
-        print(f"Calculating fees from {start_time} to {end_time}")
         time_fee = decimal.Decimal("0.5")
-        print("TIME_FEE", time_fee)
         minutes = decimal.Decimal(str((end_time - start_time).total_seconds() / 60))
-        print("MINUTES", minutes)
         fees = {
             "start_fee": decimal.Decimal("10"),
             "time_fee": time_fee * minutes,
             "end_fee": decimal.Decimal("0"),
         }
-        print("FEES:", fees)
         fees["total_fee"] = sum(fees.values())
-        print(f"Calculated fees: {fees}")
         return fees
 
     async def end_trip(
