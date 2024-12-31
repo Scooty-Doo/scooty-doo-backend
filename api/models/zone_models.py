@@ -17,6 +17,8 @@ class ZoneTypeAttributes(BaseModel):
     start_fee: float
     end_fee: float
     meta_data: Optional[dict] = None
+    created_at: datetime
+    updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
@@ -29,18 +31,11 @@ class ZoneTypeResource(BaseModel):
     type: str = "zone_types"
     attributes: ZoneTypeAttributes
     links: Optional[JsonApiLinks] = None
-    created_at: datetime
-    updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
     @classmethod
     def from_db_model(cls, zone_type: Any, request_url: str) -> "ZoneTypeResource":
-        relationships = {}
-        if hasattr(zone_type, "zones") and zone_type.zones is not None:
-            relationships["zones"] = {
-                "data": [{"type": "map_zones", "id": str(zone.id)} for zone in zone_type.zones]
-            }
         return cls(
             id=str(zone_type.id),
             attributes=ZoneTypeAttributes.model_validate(zone_type),
@@ -52,7 +47,7 @@ class ZoneTypeCreate(BaseModel):
     """Model for creating a zone type."""
 
     type_name: str
-    speed_limit: Optional[int] = None
+    speed_limit: int
     start_fee: float
     end_fee: float
     meta_data: Optional[dict] = None
