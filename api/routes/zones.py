@@ -2,9 +2,12 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path, Request, status
+from fastapi import APIRouter, Depends, Path, Request, status, Query
 
-from api.db.repository_zone import ZoneTypeRepository as ZoneTypeRepoClass
+from api.db.repository_zone import (
+    ZoneTypeRepository as ZoneTypeRepoClass,
+    MapZoneRepository as MapZoneRepoClass,
+)
 from api.dependencies.repository_factory import get_repository
 from api.models import db_models
 from api.models.models import (
@@ -15,6 +18,10 @@ from api.models.zone_models import (
     ZoneTypeCreate,
     ZoneTypeResource,
     ZoneTypeUpdate,
+    MapZoneGetRequestParams,
+    MapZoneCreate,
+    MapZoneResource,
+    MapZoneUpdate
 )
 
 router = APIRouter(
@@ -28,6 +35,28 @@ ZoneTypeRepository = Annotated[
     Depends(get_repository(db_models.ZoneType, repository_class=ZoneTypeRepoClass)),
 ]
 
+MapZoneRepository = Annotated[
+    MapZoneRepoClass,
+    Depends(get_repository(db_models.MapZone, repository_class=MapZoneRepoClass)),
+]
+
+@router.get("/", response_model=JsonApiResponse[MapZoneResource])
+async def get_zones(
+    request: Request,
+    map_zone_repository: MapZoneRepository,
+    query_params: Annotated[MapZoneGetRequestParams, Query()],
+) -> JsonApiResponse[MapZoneResource]:
+    """Get zones from the db. Defaults to showing first 100 zones"""
+    zones = await map_zone_repository.get_map_zones(**query_params.model_dump(exclude_none=True))
+    base_url = str(request.base_url).rstrip("/")
+    collection_url = f"{base_url}/v1/zones"
+
+    return JsonApiResponse(
+        data=[
+            MapZoneResource.from_db_model(zone, f"{collection_url}/{zone.id}") for zone in zones
+        ],
+        links=JsonApiLinks(self_link=collection_url),
+    )
 
 @router.get("/types", response_model=JsonApiResponse[ZoneTypeResource])
 async def get_zone_types(

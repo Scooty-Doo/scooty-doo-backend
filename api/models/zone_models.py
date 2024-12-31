@@ -92,13 +92,6 @@ class MapZoneResource(BaseModel):
     @classmethod
     def from_db_model(cls, map_zone: Any, request_url: str) -> "MapZoneResource":
         """Create a MapZoneResource from a database model."""
-        relationships = {}
-        if hasattr(map_zone, "zone_type") and map_zone.zone_type is not None:
-            relationships["zone_type"] = {
-                "data": {"type": "zone_types", "id": str(map_zone.zone_type.id)}
-            }
-        if hasattr(map_zone, "city") and map_zone.city is not None:
-            relationships["city"] = {"data": {"type": "cities", "id": str(map_zone.city.id)}}
         return cls(
             id=str(map_zone.id),
             attributes=MapZoneAttributes.model_validate(map_zone),

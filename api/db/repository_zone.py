@@ -2,7 +2,8 @@
 
 from typing import Any, Optional
 
-from sqlalchemy import select, update
+from geoalchemy2.functions import ST_AsText
+from sqlalchemy import select, update, and_, desc, asc, BinaryExpression
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -67,3 +68,57 @@ class ZoneTypeRepository(DatabaseRepository[db_models.ZoneType]):
             if "zone_types_name_key" in str(e):
                 raise ZoneTypeNameExistsException(f"Name {data.get('name')} already exists.") from e
             raise
+
+class MapZoneRepository(DatabaseRepository[db_models.MapZone]):
+    """Repository for map zone-specific operations."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        """Initialize the repository with the MapZone model."""
+        super().__init__(db_models.MapZone, session)
+    
+    def _get_map_zone_columns(self) -> list:
+        """Get columns for map zone queries."""
+        return [
+            self.model.id,
+            self.model.zone_name,
+            self.model.zone_type_id,
+            self.model.city_id,
+            ST_AsText(self.model.boundary).label("boundary"),
+            self.model.created_at,
+            self.model.updated_at,
+        ]
+    def _build_filters(self, **params: dict[str, Any]) -> list[BinaryExpression]:
+        """Filter builder for map zone queries."""
+        filter_map = {
+            "zone_name_search": lambda v: self.model.zone_name.ilike(f"%{v}%"),
+            "city_id": lambda v: self.model.city_id == v,
+            "zone_type_id": lambda v: self.model.zone_type_id == v,
+            "created_at_gt": lambda v: self.model.created_at > v,
+            "created_at_lt": lambda v: self.model.created_at < v,
+            "updated_at_gt": lambda v: self.model.updated_at > v,
+            "updated_at_lt": lambda v: self.model.updated_at < v,
+        }
+
+        return [
+            filter_map[key](value)
+            for key, value in params.items()
+            if key in filter_map and value is not None
+        ]
+
+    async def get_map_zones(self, **params: dict[str, Any]) -> list[db_models.MapZone]:
+        """Get all map zones from the database."""
+        stmt = select(*self._get_map_zone_columns())
+
+        filters = self._build_filters(**params)
+        if filters:
+            stmt = stmt.where(and_(*filters))
+
+        order_column = getattr(self.model, params.get("order_by", "created_at"))
+        stmt = stmt.order_by(
+            desc(order_column) if params.get("order_direction") == "desc" else asc(order_column)
+        )
+
+        stmt = stmt.offset(params.get("offset", 0)).limit(params.get("limit", 100))
+
+        result = await self.session.execute(stmt)
+        return list(result.mappings().all())
