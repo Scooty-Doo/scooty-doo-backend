@@ -66,13 +66,13 @@ async def welcome():
     return {"message": "Welcome to the Scooty Doo API!"}
 
 
-socket_app = socketio.ASGIApp(socket)
+# socket_app = socketio.ASGIApp(socket)
 
-app.mount("/", socket_app)
+# app.mount("/", socket_app)
 
 
-@socket.event
-async def connect(sid: int, _):
-    """Function for when client connects to socket."""
-    await socket.enter_room(sid, "bike_updates")
-    print("Client connected to bike update broadcast")
+# @socket.event
+# async def connect(sid: int, _):
+#     """Function for when client connects to socket."""
+#     await socket.enter_room(sid, "bike_updates")
+#     print("Client connected to bike update broadcast")
