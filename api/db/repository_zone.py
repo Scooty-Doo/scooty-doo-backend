@@ -2,14 +2,13 @@
 
 from typing import Any, Optional
 
-from sqlalchemy import BinaryExpression, and_, asc, desc, select, update
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload, selectinload
 
 from api.db.repository_base import DatabaseRepository
-from api.models import db_models
 from api.exceptions import ZoneTypeNameExistsException, ZoneTypeNotFoundException
+from api.models import db_models
 
 
 class ZoneTypeRepository(DatabaseRepository[db_models.ZoneType]):

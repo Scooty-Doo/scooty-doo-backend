@@ -2,7 +2,6 @@
 
 from contextlib import asynccontextmanager
 
-import socketio
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware

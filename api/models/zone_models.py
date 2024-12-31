@@ -2,7 +2,7 @@
 
 # TODO: Create pydantic model for boundaries (for now just strings)
 from datetime import datetime
-from typing import Any, Optional, Literal
+from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -36,6 +36,7 @@ class ZoneTypeResource(BaseModel):
 
     @classmethod
     def from_db_model(cls, zone_type: Any, request_url: str) -> "ZoneTypeResource":
+        """Create a ZoneTypeResource from a database model."""
         return cls(
             id=str(zone_type.id),
             attributes=ZoneTypeAttributes.model_validate(zone_type),
@@ -90,6 +91,7 @@ class MapZoneResource(BaseModel):
 
     @classmethod
     def from_db_model(cls, map_zone: Any, request_url: str) -> "MapZoneResource":
+        """Create a MapZoneResource from a database model."""
         relationships = {}
         if hasattr(map_zone, "zone_type") and map_zone.zone_type is not None:
             relationships["zone_type"] = {
@@ -102,6 +104,7 @@ class MapZoneResource(BaseModel):
             attributes=MapZoneAttributes.model_validate(map_zone),
             links=JsonApiLinks(self_link=f"{request_url}"),
         )
+
 
 class MapZoneGetRequestParams(BaseModel):
     """Model for request parameters for getting map zones."""
@@ -124,6 +127,7 @@ class MapZoneGetRequestParams(BaseModel):
     created_at_lt: Optional[datetime] = None
     updated_at_gt: Optional[datetime] = None
     updated_at_lt: Optional[datetime] = None
+
 
 class MapZoneCreate(BaseModel):
     """Model for creating a map zone."""
