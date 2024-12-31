@@ -166,8 +166,10 @@ class ZoneType(Base):
     meta_data: Mapped[dict] = mapped_column(JSONB, nullable=True)
 
     # Relationships
-    zones: Mapped[list["MapZone"]] = relationship(back_populates="zone_type")
-
+    zones: Mapped[list["MapZone"]] = relationship(
+        back_populates="zone_type", 
+        lazy="raise"
+    )
 
 class MapZone(Base):
     """Map zone database model."""
@@ -181,8 +183,14 @@ class MapZone(Base):
     boundary: Mapped[Geometry] = mapped_column(Geometry("POLYGON", srid=4326), nullable=False)
 
     # Relationships
-    zone_type: Mapped["ZoneType"] = relationship(back_populates="zones")
-    city: Mapped["City"] = relationship(back_populates="map_zones")
+    zone_type: Mapped["ZoneType"] = relationship(
+        back_populates="zones",
+        lazy="raise"
+    )
+    city: Mapped["City"] = relationship(
+        back_populates="map_zones",
+        lazy="raise"
+    )
 
 
 class Transaction(Base):
