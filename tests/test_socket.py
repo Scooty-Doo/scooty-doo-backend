@@ -1,5 +1,6 @@
 """Module for testing bike module"""
 
+import copy
 import json
 from unittest.mock import AsyncMock
 
@@ -28,7 +29,7 @@ class TestSocket:
         "last_position": "POINT(11.9746 57.7089)",
         "city_id": 1,
         "battery_lvl": 43,
-        "is_available": True,
+        "is_available": "true",
         "meta_data": None,
     }
 
@@ -37,7 +38,13 @@ class TestSocket:
         """Tests socket emitting"""
         # Mock database call
         mock_get_bike = AsyncMock(return_value=fake_bike_data[0])
-        monkeypatch.setattr(BikeRepository, "get_bike", mock_get_bike)
+        monkeypatch.setattr(BikeRepository, "get", mock_get_bike)
+        fake_updated_bike = copy.copy(fake_bike_data[0])
+        fake_updated_bike.battery_lvl = 43
+        fake_updated_bike.last_position = "POINT(11.9746 57.7089)"
+        fake_updated_bike.is_available = "true"
+        mock_update_bike = AsyncMock(return_value=fake_updated_bike)
+        monkeypatch.setattr(BikeRepository, "update_bike", mock_update_bike)
 
         # Mock socket emit function
         mock_socket_emit = AsyncMock()

@@ -19,4 +19,3 @@ async def emit_update(bike_id, updated_bike):
     }
     await socket.emit("bike_update", data=output_data, room="bike_updates")
     return
-  
