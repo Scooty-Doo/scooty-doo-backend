@@ -100,6 +100,24 @@ async def create_zone(
         links=JsonApiLinks(self_link=resource_url),
     )
 
+@router.patch("/{zone_id}", response_model=JsonApiResponse[MapZoneResource])
+async def update_zone(
+    map_zone_repository: MapZoneRepository,
+    request: Request,
+    zone_data: MapZoneUpdate,
+    zone_id: int = Path(..., ge=1),
+) -> JsonApiResponse[MapZoneResource]:
+    """Update a zone by ID"""
+    zone_data_dict = zone_data.model_dump(exclude_unset=True)
+    zone = await map_zone_repository.update_map_zone(zone_id, zone_data_dict)
+
+    base_url = str(request.base_url).rstrip("/")
+    resource_url = f"{base_url}/v1/zones/{zone_id}"
+
+    return JsonApiResponse(
+        data=MapZoneResource.from_db_model(zone, resource_url),
+        links=JsonApiLinks(self_link=resource_url),
+    )
 
 @router.get("/types", response_model=JsonApiResponse[ZoneTypeResource])
 async def get_zone_types(
@@ -138,7 +156,6 @@ async def create_zone_type(
         data=ZoneTypeResource.from_db_model(zone_type, resource_url),
         links=JsonApiLinks(self_link=resource_url),
     )
-
 
 @router.patch("/types/{zone_type_id}", response_model=JsonApiResponse[ZoneTypeResource])
 async def update_zone_type(

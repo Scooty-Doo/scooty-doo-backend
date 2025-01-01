@@ -180,4 +180,4 @@ class MapZoneUpdate(BaseModel):
     zone_name: Optional[str] = None
     zone_type_id: Optional[int] = None
     city_id: Optional[int] = None
-    boundary: Optional[str] = None
+    boundary: Optional[WKTPolygon] = None

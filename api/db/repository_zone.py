@@ -157,3 +157,26 @@ class MapZoneRepository(DatabaseRepository[db_models.MapZone]):
         except IntegrityError as e:
             await self.session.rollback()
             raise
+
+    async def update_map_zone(self, pk: int, data: dict[str, Any]) -> Optional[db_models.MapZone]:
+        """Update a map zone by primary key."""
+        try:
+            stmt = (
+                update(self.model)
+                .where(self.model.id == pk)
+                .values(**data)
+                .returning(*self._get_map_zone_columns())
+            )
+
+            result = await self.session.execute(stmt)
+            await self.session.commit()
+
+            updated_zone = result.mappings().one_or_none()
+            if not updated_zone:
+                raise MapZoneNotFoundException(f"Map zone with ID {pk} not found.")
+
+            return updated_zone
+
+        except IntegrityError as e:
+            await self.session.rollback()
+            raise
