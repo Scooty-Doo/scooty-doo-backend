@@ -1,10 +1,8 @@
 """Repository module for database operations."""
 
-import re
 from typing import Any, Optional
 
 from geoalchemy2.functions import ST_AsText
-from geoalchemy2.shape import to_shape
 from sqlalchemy import BinaryExpression, and_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -31,13 +29,6 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
             self.model.updated_at,
             ST_AsText(self.model.last_position).label("last_position"),
         ]
-
-    def _ewkb_to_wkt(self, ewkb) -> str:
-        """Converts EKWB to WKT via geoalchemy2 and shapely. Shapely formats POINT (x y),
-        and to conform to the pydantic models the space is removed.
-        TODO: Move this to the db"""
-        wkt = to_shape(ewkb).wkt
-        return re.sub(r"POINT \(", "POINT(", wkt)
 
     def _build_filters(self, filters: dict[str, Any]) -> list[BinaryExpression]:
         """Build SQLAlchemy filters from a dictionary of parameters."""

@@ -16,11 +16,12 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 # pylint: disable=too-few-public-methods
-class Base(DeclarativeBase):
+class Base(AsyncAttrs, DeclarativeBase):
     """Base database model."""
 
     created_at: Mapped[datetime] = mapped_column(
@@ -63,9 +64,11 @@ class User(Base):
     meta_data: Mapped[dict] = mapped_column(JSONB, nullable=True)
 
     # Relationships
-    payment_methods: Mapped[list["PaymentMethod"]] = relationship(back_populates="user")
-    trips: Mapped[list["Trip"]] = relationship(back_populates="user")
-    transactions: Mapped[list["Transaction"]] = relationship(back_populates="user")
+    payment_methods: Mapped[list["PaymentMethod"]] = relationship(
+        back_populates="user", lazy="raise"
+    )
+    trips: Mapped[list["Trip"]] = relationship(back_populates="user", lazy="raise")
+    transactions: Mapped[list["Transaction"]] = relationship(back_populates="user", lazy="raise")
 
 
 class PaymentProvider(Base):
@@ -130,7 +133,11 @@ class Trip(Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     bike_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("bikes.id"), nullable=False)
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), nullable=False)
-    start_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    start_time: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),  # pylint: disable=not-callable
+        nullable=False,
+    )
     end_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     start_position: Mapped[Geometry] = mapped_column(Geometry("POINT", srid=4326), nullable=False)
     end_position: Mapped[Geometry] = mapped_column(Geometry("POINT", srid=4326), nullable=True)
@@ -143,7 +150,7 @@ class Trip(Base):
     # Relationships
     bike: Mapped["Bike"] = relationship(back_populates="trips")
     user: Mapped["User"] = relationship(back_populates="trips")
-    transactions: Mapped[list["Transaction"]] = relationship(back_populates="trip")
+    transaction: Mapped["Transaction"] = relationship(back_populates="trip")
 
 
 class ZoneType(Base):
@@ -190,13 +197,13 @@ class Transaction(Base):
         Text, CheckConstraint("transaction_type IN ('trip', 'deposit', 'refund')"), nullable=False
     )
     transaction_description: Mapped[str] = mapped_column(Text, nullable=True)
-    trip_id: Mapped[int] = mapped_column(ForeignKey("trips.id"), nullable=True)
+    trip_id: Mapped[int] = mapped_column(ForeignKey("trips.id"), nullable=True, unique=True)
     payment_method_id: Mapped[int] = mapped_column(ForeignKey("payment_methods.id"), nullable=True)
     meta_data: Mapped[dict] = mapped_column(JSONB, nullable=True)
 
     # Relationships
     user: Mapped["User"] = relationship(back_populates="transactions")
-    trip: Mapped["Trip"] = relationship(back_populates="transactions")
+    trip: Mapped["Trip"] = relationship(back_populates="transaction")
     payment_method: Mapped["PaymentMethod"] = relationship(back_populates="transactions")
 
 

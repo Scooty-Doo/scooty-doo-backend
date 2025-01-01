@@ -1,6 +1,31 @@
 """Module for the /users routes"""
 
-from fastapi import APIRouter, status
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Path, Query, Request, status
+
+from api.db.repository_transaction import TransactionRepository as TransactionRepoClass
+from api.db.repository_trip import TripRepository as TripRepoClass
+from api.db.repository_user import UserRepository as UserRepoClass
+from api.dependencies.repository_factory import get_repository
+from api.models import db_models
+from api.models.models import (
+    JsonApiLinks,
+    JsonApiResponse,
+)
+from api.models.transaction_models import (
+    TransactionResourceMinimal,
+)
+from api.models.trip_models import (
+    TripResource,
+)
+from api.models.user_models import (
+    UserCreate,
+    UserGetRequestParams,
+    UserResource,
+    UserResourceMinimal,
+    UserUpdate,
+)
 
 router = APIRouter(
     prefix="/v1/users",
@@ -8,71 +33,135 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+UserRepository = Annotated[
+    UserRepoClass,
+    Depends(get_repository(db_models.User, repository_class=UserRepoClass)),
+]
 
-@router.get("/")
-def get_users():
-    """Gets all users in admin format."""
-    return {"users": []}
+TripRepository = Annotated[
+    TripRepoClass,
+    Depends(get_repository(db_models.Trip, repository_class=TripRepoClass)),
+]
 
-
-@router.post("/")
-def create_user(user):
-    """Creates a user."""
-    return {user}
-
-
-@router.get("/{user_id}")
-def get_user(user_id):
-    """Gets a specific user from the database."""
-    return {user_id}
+TransactionRepository = Annotated[
+    TransactionRepoClass,
+    Depends(get_repository(db_models.Transaction, repository_class=TransactionRepoClass)),
+]
 
 
-# Used to get a users trips
-@router.get("/trips/{user_id}")
-def get_users_trips(user_id):
-    """Gets all of a users trips."""
-    return {user_id}
+@router.get("/{user_id}", response_model=JsonApiResponse[UserResource])
+async def get_user(
+    user_repository: UserRepository,
+    request: Request,
+    user_id: int = Path(..., ge=1),
+) -> JsonApiResponse[UserResource]:
+    """Get a user by ID"""
+    user = await user_repository.get_user(user_id)
+
+    base_url = str(request.base_url).rstrip("/")
+    resource_url = f"{base_url}/v1/users/{user_id}"
+
+    return JsonApiResponse(
+        data=UserResource.from_db_model(user, resource_url),
+        links=JsonApiLinks(self_link=resource_url),
+    )
 
 
-@router.put("/{user_id}")
-def update_user(user_id):
-    """Updates a user."""
-    return {user_id}
+@router.get("/", response_model=JsonApiResponse[UserResourceMinimal])
+async def get_users(
+    request: Request,
+    user_repository: UserRepository,
+    query_params: Annotated[UserGetRequestParams, Query()],
+) -> JsonApiResponse[UserResourceMinimal]:
+    """Get users from the db. Defaults to showing first 100 users"""
+    users = await user_repository.get_users(**query_params.model_dump(exclude_none=True))
+    base_url = str(request.base_url).rstrip("/")
+    collection_url = f"{base_url}/v1/users"
+
+    return JsonApiResponse(
+        data=[
+            UserResourceMinimal.from_db_model(user, f"{collection_url}/{user.id}") for user in users
+        ],
+        links=JsonApiLinks(self_link=collection_url),
+    )
 
 
-@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-def remove_user(user_id):
-    """Removes a user."""
-    return {"Message": "Removed user {user_id}"}
+@router.post(
+    "/", response_model=JsonApiResponse[UserResourceMinimal], status_code=status.HTTP_201_CREATED
+)
+async def create_user(
+    user_repository: UserRepository,
+    request: Request,
+    user_data: UserCreate,
+) -> JsonApiResponse[UserResourceMinimal]:
+    """Create a new user"""
+    user_data_dict = user_data.model_dump()
+    user = await user_repository.create_user(user_data_dict)
+
+    base_url = str(request.base_url).rstrip("/")
+    resource_url = f"{base_url}/v1/users/{user.id}"
+
+    return JsonApiResponse(
+        data=UserResourceMinimal.from_db_model(user, resource_url),
+        links=JsonApiLinks(self_link=resource_url),
+    )
 
 
-# More info https://fastapi.tiangolo.com/tutorial/security/simple-oauth2/#oauth2passwordrequestform
-@router.post("/login")
-def login(form_data):
-    """Logs in a user with oauth2 and returns a token on success."""
-    return {"access_token": "omg, it's so secret!", "token_type": "bearer"}
+@router.patch("/{user_id}", response_model=JsonApiResponse[UserResource])
+async def update_user(
+    user_repository: UserRepository,
+    request: Request,
+    user_data: UserUpdate,
+    user_id: int = Path(..., ge=1),
+) -> JsonApiResponse[UserResource]:
+    """Update a user by ID"""
+    user_data_dict = user_data.model_dump()
+    user = await user_repository.update_user(user_id, user_data_dict)
+
+    base_url = str(request.base_url).rstrip("/")
+    resource_url = f"{base_url}/v1/users/{user_id}"
+
+    return JsonApiResponse(
+        data=UserResource.from_db_model(user, resource_url),
+        links=JsonApiLinks(self_link=resource_url),
+    )
 
 
-@router.get("/me")
-def get_me(current_user):
-    """Gets the current users details."""
-    return {current_user}
+@router.get("/{user_id}/trips", response_model=JsonApiResponse[TripResource])
+async def get_user_trips(
+    trip_repository: TripRepository,
+    request: Request,
+    user_id: int = Path(..., ge=1),
+) -> JsonApiResponse[TripResource]:
+    """Get all trips for a user"""
+    filter_dict = {"user_id": user_id}
+    user = await trip_repository.get_trips(filter_dict)
+
+    base_url = str(request.base_url).rstrip("/")
+    resource_url = f"{base_url}/v1/users/{user_id}/trips"
+
+    return JsonApiResponse(
+        data=[TripResource.from_db_model(trip, resource_url) for trip in user],
+        links=JsonApiLinks(self_link=resource_url),
+    )
 
 
-@router.put("/me")
-def update_me(current_user):
-    """Updates the current users account."""
-    return {"Message": "Updated your account"}
+@router.get("/{user_id}/transactions", response_model=JsonApiResponse[TransactionResourceMinimal])
+async def get_user_transactions(
+    transaction_repository: TransactionRepository,
+    request: Request,
+    user_id: int = Path(..., ge=1),
+) -> JsonApiResponse[TransactionResourceMinimal]:
+    """Get all transactions for a user"""
+    transactions = await transaction_repository.get_transactions(user_id=user_id)
 
+    base_url = str(request.base_url).rstrip("/")
+    resource_url = f"{base_url}/v1/users/{user_id}/transactions"
 
-@router.delete("/me")
-def delete_me(current_user):
-    """Deletes a user account and logs them out."""
-    # Logout as well
-    return {"Message": "Deleted your account"}
-
-
-@router.post("/logout")
-def logout():
-    """Logs a user out."""
-    return {"Message": "Logged out."}
+    return JsonApiResponse(
+        data=[
+            TransactionResourceMinimal.from_db_model(transaction, resource_url)
+            for transaction in transactions
+        ],
+        links=JsonApiLinks(self_link=resource_url),
+    )

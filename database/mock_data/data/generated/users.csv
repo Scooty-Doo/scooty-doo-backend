@@ -99,3 +99,5 @@ id,full_name,email,balance,use_prepay,created_at
 652134919185249816,Taher Zetterström,taher.zetterström@example.com,397.65,True,2024-08-10T23:54:03.275231
 652134919185249817,Semso Larsson,semso.larsson@example.com,296.93,True,2024-09-11T05:24:48.388626
 652134919185249818,Nderim Ljungdahl,nderim.ljungdahl@example.com,270.54,False,2024-02-02T21:48:17.472407
+1, Scooty Prepaidson, scooty@doot.com, 65.00, True, 2024-11-03T07:15:11.131054
+2, Scooty Subscriptson, scooty@subscript.com, -30.00, False, 2024-11-03T07:15:11.131

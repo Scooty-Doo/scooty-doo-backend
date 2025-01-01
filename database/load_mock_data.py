@@ -4,6 +4,7 @@ import asyncio
 import csv
 import json
 from datetime import datetime
+from decimal import Decimal as decimal
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,6 +19,7 @@ from api.models.db_models import (
     City,
     MapZone,
     PaymentProvider,
+    Transaction,
     Trip,
     User,
     ZoneType,
@@ -36,20 +38,20 @@ async def load_mock_data():
 
         # Load data in order of dependencies
         await load_cities(session)
+        await load_bikes(session)
         await load_users(session)
         await load_payment_providers(session)
-        # await load_bike_status(session)
-        await load_bikes(session)
-        # await load_bike2bike_status(session)
         await load_trips(session)
         await load_zone_types(session)
         await load_map_zones(session)
         await load_admins_and_roles(session)
+        await load_transactions(session)
 
         # Update all sequences to continue from the highest IDs
         await session.execute(text("SELECT setval('cities_id_seq', (SELECT MAX(id) FROM cities))"))
         await session.execute(text("SELECT setval('users_id_seq', (SELECT MAX(id) FROM users))"))
         await session.execute(text("SELECT setval('bikes_id_seq', (SELECT MAX(id) FROM bikes))"))
+        await session.execute(text("SELECT setval('trips_id_seq', (SELECT MAX(id) FROM trips))"))
         await session.execute(
             text("SELECT setval('zone_types_id_seq', (SELECT MAX(id) FROM zone_types))")
         )
@@ -57,6 +59,9 @@ async def load_mock_data():
             text("SELECT setval('admin_roles_id_seq', (SELECT MAX(id) FROM admin_roles))")
         )
         await session.execute(text("SELECT setval('admins_id_seq', (SELECT MAX(id) FROM admins))"))
+        await session.execute(
+            text("SELECT setval('transactions_id_seq', (SELECT MAX(id) FROM transactions))")
+        )
 
         await session.commit()
 
@@ -77,6 +82,7 @@ async def truncate_tables(session: AsyncSession):
         "admins",
         "admin_roles",
         "admin_2_admin_roles",
+        "transactions",
     ]
 
     for table in tables:
@@ -102,7 +108,7 @@ async def load_cities(session: AsyncSession):
 
 async def load_users(session: AsyncSession):
     """Load users from CSV."""
-    with open("database/mock_data/data/generated/users.csv", encoding="utf-8") as csvfile:
+    with open("database/mock_data/data/generated/users_cleaned.csv", encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             user = User(
@@ -134,7 +140,7 @@ async def load_payment_providers(session: AsyncSession):
 async def load_bikes(session: AsyncSession):
     """Load bikes from CSV."""
     with open(
-        "database/mock_data/data/generated/bikes_with_availability.csv", encoding="utf-8"
+        "database/mock_data/data/generated/bikes_with_updated_positions.csv", encoding="utf-8"
     ) as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
@@ -156,10 +162,13 @@ async def load_bikes(session: AsyncSession):
 
 async def load_trips(session: AsyncSession):
     """Load trips from CSV."""
-    with open("database/mock_data/data/generated/trip_data.csv", encoding="utf-8") as csvfile:
+    with open(
+        "database/mock_data/data/generated/trip_data_with_ids.csv", encoding="utf-8"
+    ) as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             trip = Trip(
+                id=int(row["id"]),
                 bike_id=int(row["bike_id"]),
                 user_id=int(row["user_id"]),
                 start_time=datetime.fromisoformat(row["start_time"]),
@@ -232,6 +241,25 @@ async def load_admins_and_roles(session: AsyncSession):
             admin_role = Admin2AdminRole(admin_id=int(row["admin_id"]), role_id=int(row["role_id"]))
             session.add(admin_role)
     await session.flush()
+
+
+async def load_transactions(session: AsyncSession):
+    """Load transactions from CSV."""
+    with open("database/mock_data/data/generated/transactions.csv", encoding="utf-8") as csvfile:
+        reader = csv.DictReader(csvfile, skipinitialspace=True)  # Skip spaces after commas
+        for row in reader:
+            transaction = Transaction(
+                id=int(row["id"]),
+                user_id=int(row["user_id"]),
+                trip_id=int(row["trip_id"])
+                if row["trip_id"] and row["trip_id"].lower() != "null"
+                else None,
+                amount=decimal(str(row["amount"])),  # Use Decimal for money
+                transaction_type=row["transaction_type"],
+                created_at=datetime.fromisoformat(row["created_at"].replace("Z", "+00:00")),
+            )
+            session.add(transaction)
+        await session.flush()
 
 
 if __name__ == "__main__":

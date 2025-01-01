@@ -19,6 +19,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+from api.exceptions import ApiException
 from api.models.db_models import Base
 
 
@@ -125,6 +126,8 @@ class DatabaseSessionManager:
             yield session
         except Exception as e:
             await session.rollback()
+            if isinstance(e, ApiException):
+                raise e
             raise DatabaseError(f"Database session error: {str(e)}") from e
         finally:
             await session.close()
