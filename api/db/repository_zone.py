@@ -143,3 +143,17 @@ class MapZoneRepository(DatabaseRepository[db_models.MapZone]):
             raise MapZoneNotFoundException(f"Map zone with ID {pk} not found.")
         
         return zone
+    
+    async def create_map_zone(self, map_zone_data: dict[str, Any]) -> db_models.MapZone:
+        """Create a new map zone."""
+        try:
+            map_zone = db_models.MapZone(**map_zone_data)
+            self.session.add(map_zone)
+            await self.session.commit()
+            
+            await self.session.refresh(map_zone)
+            map_zone.boundary = self._ewkb_to_wkt(map_zone.boundary)
+            return map_zone
+        except IntegrityError as e:
+            await self.session.rollback()
+            raise

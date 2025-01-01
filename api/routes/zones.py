@@ -22,7 +22,7 @@ from api.models.zone_models import (
     MapZoneCreate,
     MapZoneResource,
     MapZoneUpdate,
-    MapZoneResourceMinimal
+    MapZoneResourceMinimal,
 )
 
 router = APIRouter(
@@ -41,6 +41,7 @@ MapZoneRepository = Annotated[
     Depends(get_repository(db_models.MapZone, repository_class=MapZoneRepoClass)),
 ]
 
+
 @router.get("/", response_model=JsonApiResponse[MapZoneResourceMinimal])
 async def get_zones(
     request: Request,
@@ -54,10 +55,12 @@ async def get_zones(
 
     return JsonApiResponse(
         data=[
-            MapZoneResourceMinimal.from_db_model(zone, f"{collection_url}/{zone.id}") for zone in zones
+            MapZoneResourceMinimal.from_db_model(zone, f"{collection_url}/{zone.id}")
+            for zone in zones
         ],
         links=JsonApiLinks(self_link=collection_url),
     )
+
 
 @router.get("/{zone_id}", response_model=JsonApiResponse[MapZoneResource])
 async def get_zone(
@@ -75,6 +78,28 @@ async def get_zone(
         data=MapZoneResource.from_db_model(zone, resource_url),
         links=JsonApiLinks(self_link=resource_url),
     )
+
+
+@router.post(
+    "/", response_model=JsonApiResponse[MapZoneResource], status_code=status.HTTP_201_CREATED
+)
+async def create_zone(
+    map_zone_repository: MapZoneRepository,
+    request: Request,
+    zone_data: MapZoneCreate,
+) -> JsonApiResponse[MapZoneResource]:
+    """Create a new zone"""
+    zone_data_dict = zone_data.model_dump()
+    zone = await map_zone_repository.create_map_zone(zone_data_dict)
+
+    base_url = str(request.base_url).rstrip("/")
+    resource_url = f"{base_url}/v1/zones/{zone.id}"
+
+    return JsonApiResponse(
+        data=MapZoneResource.from_db_model(zone, resource_url),
+        links=JsonApiLinks(self_link=resource_url),
+    )
+
 
 @router.get("/types", response_model=JsonApiResponse[ZoneTypeResource])
 async def get_zone_types(
@@ -98,7 +123,9 @@ async def get_zone_types(
     "/types", response_model=JsonApiResponse[ZoneTypeResource], status_code=status.HTTP_201_CREATED
 )
 async def create_zone_type(
-    zone_type_repository: ZoneTypeRepository, request: Request, zone_type_data: ZoneTypeCreate
+    zone_type_repository: ZoneTypeRepository,
+    request: Request,
+    zone_type_data: ZoneTypeCreate
 ) -> JsonApiResponse[ZoneTypeResource]:
     """Create a new zone type"""
     zone_type_data_dict = zone_type_data.model_dump()

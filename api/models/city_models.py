@@ -4,9 +4,10 @@
 from datetime import datetime
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
-from api.models.models import JsonApiLinks, WKTPoint
+from api.models.models import JsonApiLinks
+from api.models.wkt_models import WKTPoint
 
 class CityAttributes(BaseModel):
     """City attributes for JSON:API response."""

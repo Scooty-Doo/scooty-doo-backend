@@ -5,8 +5,8 @@ from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from api.models.models import JsonApiLinks, WKTPolygon
-from api.models.city_models import CityResource, CityAttributes
+from api.models.models import JsonApiLinks
+from api.models.wkt_models import WKTPolygon
 
 
 class ZoneTypeAttributes(BaseModel):

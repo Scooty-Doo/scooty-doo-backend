@@ -22,7 +22,6 @@ class ApiException(Exception):
     def __str__(self):
         return self.detail
 
-
 class ZoneTypeNameExistsException(ApiException):
     """Exception raised when attempting to create zone type with existing name."""
 

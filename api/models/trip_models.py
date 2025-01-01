@@ -5,7 +5,8 @@ from typing import Annotated, Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from api.models.models import JsonApiLinks, WKTPoint, WKTLineString
+from api.models.models import JsonApiLinks
+from api.models.wkt_models import WKTLineString, WKTPoint
 
 
 class TripAttributes(BaseModel):
