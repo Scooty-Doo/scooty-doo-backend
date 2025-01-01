@@ -6,9 +6,10 @@ from geoalchemy2.functions import ST_AsText
 from sqlalchemy import select, update, and_, desc, asc, BinaryExpression
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload, joinedload, with_expression
 
 from api.db.repository_base import DatabaseRepository
-from api.exceptions import ZoneTypeNameExistsException, ZoneTypeNotFoundException
+from api.exceptions import ZoneTypeNameExistsException, ZoneTypeNotFoundException, MapZoneNotFoundException
 from api.models import db_models
 
 
@@ -122,3 +123,23 @@ class MapZoneRepository(DatabaseRepository[db_models.MapZone]):
 
         result = await self.session.execute(stmt)
         return list(result.mappings().all())
+    
+    async def get_map_zone(self, pk: int) -> Optional[db_models.MapZone]:
+        """Get a map zone by ID with relationships."""
+        stmt = (
+            select(self.model)
+            .options(
+                selectinload(self.model.city),
+                selectinload(self.model.zone_type),
+                with_expression(self.model.boundary, ST_AsText(self.model.boundary))
+            )
+            .where(self.model.id == pk)
+        )
+        
+        result = await self.session.execute(stmt)
+        zone = result.unique().scalar_one_or_none()
+        
+        if zone is None:
+            raise MapZoneNotFoundException(f"Map zone with ID {pk} not found.")
+        
+        return zone

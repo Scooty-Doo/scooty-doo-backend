@@ -7,6 +7,7 @@ from typing import Any, Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 from api.models.models import JsonApiLinks
+from api.models.city_models import CityResource, CityAttributes
 
 
 class ZoneTypeAttributes(BaseModel):
@@ -78,9 +79,17 @@ class MapZoneAttributes(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
-# Should relationships be included? (for now not included)
-class MapZoneResource(BaseModel):
-    """JSON:API resource object for map zones."""
+class MapZoneRelationships(BaseModel):
+    """MapZone relationships for JSON:API response."""
+
+    city: Optional[dict[str, Any]] = None
+    zone_type: Optional[dict[str, Any]] = None
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class MapZoneResourceMinimal(BaseModel):
+    """JSON:API resource object for map zones without relationships."""
 
     id: str
     type: str = "map_zones"
@@ -90,14 +99,49 @@ class MapZoneResource(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
     @classmethod
-    def from_db_model(cls, map_zone: Any, request_url: str) -> "MapZoneResource":
-        """Create a MapZoneResource from a database model."""
+    def from_db_model(cls, map_zone: Any, request_url: str) -> "MapZoneResourceMinimal":
+        """Create a minimal MapZoneResource from a database model."""
         return cls(
             id=str(map_zone.id),
             attributes=MapZoneAttributes.model_validate(map_zone),
             links=JsonApiLinks(self_link=f"{request_url}"),
         )
 
+
+class MapZoneResource(BaseModel):
+    """JSON:API resource object for map zones."""
+    id: str
+    type: str = "map_zones"
+    attributes: MapZoneAttributes
+    relationships: MapZoneRelationships
+    links: Optional[JsonApiLinks] = None
+
+    @classmethod
+    def from_db_model(cls, map_zone: Any, request_url: str) -> "MapZoneResource":
+        """Create a MapZoneResource from a database model."""
+        base_url = str(request_url).rsplit("/v1/zones/", 1)[0]
+        
+        relationships = {
+            "city": {
+                "data": {"type": "cities", "id": str(map_zone.city_id)},
+                "links": {
+                    "self": f"{base_url}/v1/cities/{map_zone.city_id}"
+                }
+            },
+            "zone_type": {
+                "data": {"type": "zone_types", "id": str(map_zone.zone_type_id)},
+                "links": {
+                    "self": f"{base_url}/v1/zone-types/{map_zone.zone_type_id}"
+                }
+            }
+        }
+
+        return cls(
+            id=str(map_zone.id),
+            attributes=MapZoneAttributes.model_validate(map_zone),
+            relationships=relationships,
+            links=JsonApiLinks(self_link=request_url)
+        )
 
 class MapZoneGetRequestParams(BaseModel):
     """Model for request parameters for getting map zones."""

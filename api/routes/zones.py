@@ -21,7 +21,8 @@ from api.models.zone_models import (
     MapZoneGetRequestParams,
     MapZoneCreate,
     MapZoneResource,
-    MapZoneUpdate
+    MapZoneUpdate,
+    MapZoneResourceMinimal
 )
 
 router = APIRouter(
@@ -40,12 +41,12 @@ MapZoneRepository = Annotated[
     Depends(get_repository(db_models.MapZone, repository_class=MapZoneRepoClass)),
 ]
 
-@router.get("/", response_model=JsonApiResponse[MapZoneResource])
+@router.get("/", response_model=JsonApiResponse[MapZoneResourceMinimal])
 async def get_zones(
     request: Request,
     map_zone_repository: MapZoneRepository,
     query_params: Annotated[MapZoneGetRequestParams, Query()],
-) -> JsonApiResponse[MapZoneResource]:
+) -> JsonApiResponse[MapZoneResourceMinimal]:
     """Get zones from the db. Defaults to showing first 100 zones"""
     zones = await map_zone_repository.get_map_zones(**query_params.model_dump(exclude_none=True))
     base_url = str(request.base_url).rstrip("/")
@@ -53,9 +54,26 @@ async def get_zones(
 
     return JsonApiResponse(
         data=[
-            MapZoneResource.from_db_model(zone, f"{collection_url}/{zone.id}") for zone in zones
+            MapZoneResourceMinimal.from_db_model(zone, f"{collection_url}/{zone.id}") for zone in zones
         ],
         links=JsonApiLinks(self_link=collection_url),
+    )
+
+@router.get("/{zone_id}", response_model=JsonApiResponse[MapZoneResource])
+async def get_zone(
+    map_zone_repository: MapZoneRepository,
+    request: Request,
+    zone_id: int = Path(..., ge=1),
+) -> JsonApiResponse[MapZoneResource]:
+    """Get a zone by ID"""
+    zone = await map_zone_repository.get_map_zone(zone_id)
+
+    base_url = str(request.base_url).rstrip("/")
+    resource_url = f"{base_url}/v1/zones/{zone_id}"
+
+    return JsonApiResponse(
+        data=MapZoneResource.from_db_model(zone, resource_url),
+        links=JsonApiLinks(self_link=resource_url),
     )
 
 @router.get("/types", response_model=JsonApiResponse[ZoneTypeResource])
