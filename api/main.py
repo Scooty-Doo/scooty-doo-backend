@@ -2,6 +2,7 @@
 
 from contextlib import asynccontextmanager
 
+import socketio
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,6 +15,7 @@ from api.exceptions import (
     validation_exception_handler,
 )
 from api.routes import bikes, oauth, transactions, trips, users, zones
+from api.socket.socket import socket
 
 sessionmanager.init("postgresql+asyncpg://user:pass@localhost:5432/sddb")
 
@@ -65,13 +67,13 @@ async def welcome():
     return {"message": "Welcome to the Scooty Doo API!"}
 
 
-# socket_app = socketio.ASGIApp(socket)
+socket_app = socketio.ASGIApp(socket)
 
-# app.mount("/", socket_app)
+app.mount("/", socket_app)
 
 
-# @socket.event
-# async def connect(sid: int, _):
-#     """Function for when client connects to socket."""
-#     await socket.enter_room(sid, "bike_updates")
-#     print("Client connected to bike update broadcast")
+@socket.event
+async def connect(sid: int, _):
+    """Function for when client connects to socket."""
+    await socket.enter_room(sid, "bike_updates")
+    print("Client connected to bike update broadcast")
