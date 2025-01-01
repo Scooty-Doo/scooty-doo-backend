@@ -1,6 +1,5 @@
 """Models for zone types and map zones."""
 
-# TODO: Create pydantic model for boundaries (for now just strings)
 from datetime import datetime
 from typing import Any, Literal, Optional
 
