@@ -31,26 +31,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Format with ruff
+        uses: actions/checkout@v4
+      - name: Run ruff format
         run: |
           ruff format
+
   ruff_check:
     needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Check with ruff
+        uses: actions/checkout@v4
+      - name: Run ruff check
         run: |
           ruff check
+
   pylint:
     needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Lint with pylint
+        uses: actions/checkout@v4
+      - name: Runs pylint
         run: |
           pylint --fail-under=9 .
+
   pytest:
     needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Test with pytest
+        uses: actions/checkout@v4
+      - name: Runs pytest
         run: |
           pytest
