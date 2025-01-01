@@ -36,7 +36,11 @@ class ZoneTypeNotFoundException(ApiException):
     status_code = status.HTTP_404_NOT_FOUND
     title = "Zone Type Not Found"
 
+class MapZoneNotFoundException(ApiException):
+    """Exception raised when a map zone is not found."""
 
+    status_code = status.HTTP_404_NOT_FOUND
+    title = "Map Zone Not Found"
 class UserNotFoundException(ApiException):
     """Exception raised when a user is not found."""
 
