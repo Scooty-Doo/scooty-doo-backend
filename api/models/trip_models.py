@@ -5,7 +5,7 @@ from typing import Annotated, Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from api.models.models import JsonApiLinks, WKTPoint
+from api.models.models import JsonApiLinks, WKTPoint, WKTLineString
 
 
 class TripAttributes(BaseModel):
@@ -15,7 +15,7 @@ class TripAttributes(BaseModel):
     # Set Optional and a default value for any nullable field in db
     start_position: WKTPoint
     end_position: Optional[WKTPoint] = None
-    path_taken: Optional[str] = None
+    path_taken: Optional[WKTLineString] = None
     start_time: datetime
     end_time: Optional[datetime] = None
     # Confloat deprecated, see: https://docs.pydantic.dev/2.10/api/types/#pydantic.types.confloat
@@ -95,7 +95,7 @@ class BikeTripStartlog(BaseModel):
     trip_id: int
     start_time: datetime
     start_position: WKTPoint
-    path_taken: Optional[str] = None
+    path_taken: Optional[WKTLineString] = None
 
 
 class BikeTripEndLog(BikeTripStartlog):
@@ -104,7 +104,7 @@ class BikeTripEndLog(BikeTripStartlog):
     user_id: int
     end_time: datetime
     end_position: WKTPoint
-    path_taken: str
+    path_taken: WKTLineString
 
 
 class BikeTripStartData(BaseModel):
@@ -134,7 +134,7 @@ class TripEndRepoParams(BaseModel):
     """Model for ending a trip"""
 
     end_position: WKTPoint
-    path_taken: str
+    path_taken: WKTLineString
     end_time: datetime
     trip_id: int
     user_id: int

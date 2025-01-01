@@ -8,43 +8,103 @@ https://fastapi-jsonapi.readthedocs.io/en/latest/
 import re
 from datetime import datetime
 from typing import Annotated, Any, Generic, Optional, TypeVar
-
+from shapely import wkt
+from shapely.errors import ShapelyError
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
 
+from shapely import wkt
+from shapely.errors import ShapelyError
+from typing import ClassVar
 
-def validate_wkt_point(value: str | None) -> str | None:
-    """Validate WKT POINT format and coordinates."""
-    if value is None:
-        raise ValueError("Value cannot be None")
+class WKTGeometry(str):
+    """Base class for WKT geometry validation"""
+    geometry_type: ClassVar[str] = ""
+    
+    @classmethod
+    def validate_coordinates(cls, coords):
+        """Validate coordinate bounds"""
+        for x, y in coords:
+            if not (-180 <= x <= 180 and -90 <= y <= 90):
+                raise ValueError(
+                    f'Invalid coordinates ({x}, {y}). '
+                    'Longitude must be between -180 and 180, '
+                    'Latitude must be between -90 and 90'
+                )
+    @classmethod
+    def clean_wkt_format(cls, value: str) -> str:
+        """Remove extra whitespace from WKT format"""
+        pattern = rf'\b({cls.geometry_type})\s+\('
+        cleaned = re.sub(pattern, r'LINESTRING(', value, flags=re.IGNORECASE)
+        return cleaned
 
-    point_pattern = r"^POINT\((-?\d+(\.\d+)?) (-?\d+(\.\d+)?)\)$"
-    match = re.match(point_pattern, str(value))
+class WKTPoint(WKTGeometry):
+    """Custom type for WKT Point validation"""
+    geometry_type = "Point"
+    
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+    
+    @classmethod
+    def validate(cls, value, info):
+        try:
+            geom = wkt.loads(value)
+            if geom.geom_type != cls.geometry_type:
+                raise ValueError(f'Geometry must be a {cls.geometry_type}')
+            cls.validate_coordinates([geom.coords[0]])
+            return cls.clean_wkt_format(value)
+        except ShapelyError as e:
+            raise ValueError(f'Invalid WKT format: {str(e)}') from e
+        except Exception as e:
+            raise ValueError(f'Invalid {cls.geometry_type}: {str(e)}') from e
 
-    if not match:
-        raise ValueError(f"Invalid WKT POINT format: {value}")
+class WKTLineString(WKTGeometry):
+    """Custom type for WKT LineString validation"""
+    geometry_type = "LineString"
+    
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+    
+    @classmethod
+    def validate(cls, value, info):
+        try:
+            geom = wkt.loads(value)
+            if geom.geom_type != cls.geometry_type:
+                raise ValueError(f'Geometry must be a {cls.geometry_type}')
+            cls.validate_coordinates(geom.coords)
+            cleaned_value = cls.clean_wkt_format(value)
+            return cleaned_value    
+        except ShapelyError as e:
+            raise ValueError(f'Invalid WKT format: {str(e)}') from e
+        except Exception as e:
+            raise ValueError(f'Invalid {cls.geometry_type}: {str(e)}') from e
 
-    longitude, latitude = float(match.group(1)), float(match.group(3))
-    if not -180 <= longitude <= 180:
-        raise ValueError(f"Longitude {longitude} out of range [-180, 180]")
-    if not -90 <= latitude <= 90:
-        raise ValueError(f"Latitude {latitude} out of range [-90, 90]")
+class WKTPolygon(WKTGeometry):
+    """Custom type for WKT Polygon validation"""
+    geometry_type = "Polygon"
+    
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+    
+    @classmethod
+    def validate(cls, value, info):
+        try:
+            geom = wkt.loads(value)
+            if geom.geom_type != cls.geometry_type:
+                raise ValueError(f'Geometry must be a {cls.geometry_type}')
 
-    return value
-
-
-WKTPoint = Annotated[
-    str,
-    BeforeValidator(validate_wkt_point),
-    Field(
-        description="WKT POINT format with longitude (-180 to 180) and latitude (-90 to 90)",
-        example="POINT(11.9746 57.7089)",
-        json_schema_extra={
-            "format": "WKT POINT",
-            "examples": ["POINT(11.9746 57.7089)"],
-        },
-    ),
-]
-
+            # in case of more complex polygons with holes (interiors)
+            for ring in geom.exterior.coords:
+                cls.validate_coordinates([ring])
+            for interior in geom.interiors:
+                cls.validate_coordinates(interior.coords)
+            return cls.clean_wkt_format(value)
+        except ShapelyError as e:
+            raise ValueError(f'Invalid WKT format: {str(e)}') from e
+        except Exception as e:
+            raise ValueError(f'Invalid {cls.geometry_type}: {str(e)}') from e
 
 class JsonApiLinks(BaseModel):
     """JSON:API links object."""

@@ -6,7 +6,7 @@ from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from api.models.models import JsonApiLinks
+from api.models.models import JsonApiLinks, WKTPolygon
 from api.models.city_models import CityResource, CityAttributes
 
 
@@ -70,7 +70,7 @@ class MapZoneAttributes(BaseModel):
 
     zone_name: str
     # WKT POLYGON format
-    boundary: str
+    boundary: WKTPolygon
     city_id: int
     zone_type_id: int
     created_at: datetime
@@ -172,7 +172,7 @@ class MapZoneCreate(BaseModel):
     zone_name: str
     zone_type_id: int
     city_id: int
-    boundary: str
+    boundary: WKTPolygon
 
 
 class MapZoneUpdate(BaseModel):
