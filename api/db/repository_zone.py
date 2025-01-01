@@ -3,13 +3,17 @@
 from typing import Any, Optional
 
 from geoalchemy2.functions import ST_AsText
-from sqlalchemy import select, update, and_, desc, asc, BinaryExpression
+from sqlalchemy import BinaryExpression, and_, asc, desc, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload, joinedload, with_expression
+from sqlalchemy.orm import selectinload, with_expression
 
 from api.db.repository_base import DatabaseRepository
-from api.exceptions import ZoneTypeNameExistsException, ZoneTypeNotFoundException, MapZoneNotFoundException
+from api.exceptions import (
+    MapZoneNotFoundException,
+    ZoneTypeNameExistsException,
+    ZoneTypeNotFoundException,
+)
 from api.models import db_models
 
 
@@ -70,13 +74,14 @@ class ZoneTypeRepository(DatabaseRepository[db_models.ZoneType]):
                 raise ZoneTypeNameExistsException(f"Name {data.get('name')} already exists.") from e
             raise
 
+
 class MapZoneRepository(DatabaseRepository[db_models.MapZone]):
     """Repository for map zone-specific operations."""
 
     def __init__(self, session: AsyncSession) -> None:
         """Initialize the repository with the MapZone model."""
         super().__init__(db_models.MapZone, session)
-    
+
     def _get_map_zone_columns(self) -> list:
         """Get columns for map zone queries."""
         return [
@@ -88,6 +93,7 @@ class MapZoneRepository(DatabaseRepository[db_models.MapZone]):
             self.model.created_at,
             self.model.updated_at,
         ]
+
     def _build_filters(self, **params: dict[str, Any]) -> list[BinaryExpression]:
         """Filter builder for map zone queries."""
         filter_map = {
@@ -123,7 +129,7 @@ class MapZoneRepository(DatabaseRepository[db_models.MapZone]):
 
         result = await self.session.execute(stmt)
         return list(result.mappings().all())
-    
+
     async def get_map_zone(self, pk: int) -> Optional[db_models.MapZone]:
         """Get a map zone by ID with relationships."""
         stmt = (
@@ -131,30 +137,30 @@ class MapZoneRepository(DatabaseRepository[db_models.MapZone]):
             .options(
                 selectinload(self.model.city),
                 selectinload(self.model.zone_type),
-                with_expression(self.model.boundary, ST_AsText(self.model.boundary))
+                with_expression(self.model.boundary, ST_AsText(self.model.boundary)),
             )
             .where(self.model.id == pk)
         )
-        
+
         result = await self.session.execute(stmt)
         zone = result.unique().scalar_one_or_none()
-        
+
         if zone is None:
             raise MapZoneNotFoundException(f"Map zone with ID {pk} not found.")
-        
+
         return zone
-    
+
     async def create_map_zone(self, map_zone_data: dict[str, Any]) -> db_models.MapZone:
         """Create a new map zone."""
         try:
             map_zone = db_models.MapZone(**map_zone_data)
             self.session.add(map_zone)
             await self.session.commit()
-            
+
             await self.session.refresh(map_zone)
             map_zone.boundary = self._ewkb_to_wkt(map_zone.boundary)
             return map_zone
-        except IntegrityError as e:
+        except IntegrityError:
             await self.session.rollback()
             raise
 
@@ -177,6 +183,6 @@ class MapZoneRepository(DatabaseRepository[db_models.MapZone]):
 
             return updated_zone
 
-        except IntegrityError as e:
+        except IntegrityError:
             await self.session.rollback()
             raise

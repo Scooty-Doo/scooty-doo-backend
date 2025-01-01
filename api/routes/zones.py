@@ -2,11 +2,13 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path, Request, status, Query
+from fastapi import APIRouter, Depends, Path, Query, Request, status
 
 from api.db.repository_zone import (
-    ZoneTypeRepository as ZoneTypeRepoClass,
     MapZoneRepository as MapZoneRepoClass,
+)
+from api.db.repository_zone import (
+    ZoneTypeRepository as ZoneTypeRepoClass,
 )
 from api.dependencies.repository_factory import get_repository
 from api.models import db_models
@@ -15,14 +17,14 @@ from api.models.models import (
     JsonApiResponse,
 )
 from api.models.zone_models import (
+    MapZoneCreate,
+    MapZoneGetRequestParams,
+    MapZoneResource,
+    MapZoneResourceMinimal,
+    MapZoneUpdate,
     ZoneTypeCreate,
     ZoneTypeResource,
     ZoneTypeUpdate,
-    MapZoneGetRequestParams,
-    MapZoneCreate,
-    MapZoneResource,
-    MapZoneUpdate,
-    MapZoneResourceMinimal,
 )
 
 router = APIRouter(
@@ -100,6 +102,7 @@ async def create_zone(
         links=JsonApiLinks(self_link=resource_url),
     )
 
+
 @router.patch("/{zone_id}", response_model=JsonApiResponse[MapZoneResource])
 async def update_zone(
     map_zone_repository: MapZoneRepository,
@@ -118,6 +121,7 @@ async def update_zone(
         data=MapZoneResource.from_db_model(zone, resource_url),
         links=JsonApiLinks(self_link=resource_url),
     )
+
 
 @router.get("/types", response_model=JsonApiResponse[ZoneTypeResource])
 async def get_zone_types(
@@ -141,9 +145,7 @@ async def get_zone_types(
     "/types", response_model=JsonApiResponse[ZoneTypeResource], status_code=status.HTTP_201_CREATED
 )
 async def create_zone_type(
-    zone_type_repository: ZoneTypeRepository,
-    request: Request,
-    zone_type_data: ZoneTypeCreate
+    zone_type_repository: ZoneTypeRepository, request: Request, zone_type_data: ZoneTypeCreate
 ) -> JsonApiResponse[ZoneTypeResource]:
     """Create a new zone type"""
     zone_type_data_dict = zone_type_data.model_dump()
@@ -156,6 +158,7 @@ async def create_zone_type(
         data=ZoneTypeResource.from_db_model(zone_type, resource_url),
         links=JsonApiLinks(self_link=resource_url),
     )
+
 
 @router.patch("/types/{zone_type_id}", response_model=JsonApiResponse[ZoneTypeResource])
 async def update_zone_type(
