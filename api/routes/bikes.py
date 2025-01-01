@@ -1,4 +1,5 @@
 """Module for the /bikes routes"""
+
 # Filtering with query params seems clunky. Could it be done easier? Perhaps one of these:
 # https://github.com/arthurio/fastapi-filter
 # https://github.com/OleksandrZhydyk/FastAPI-SQLAlchemy-Filters
@@ -151,7 +152,7 @@ async def get_bike(
     if bike is None:
         raise_not_found(f"Bike with ID {bike_id} not found")
 
-    base_url = str(request.base_url).rstrip("/") + request.url.path.rsplit("/", 1)[0]
+    base_url = str(request.base_url).rstrip("/") + request.url.path
 
     return JsonApiResponse(
         data=BikeResource.from_db_model(bike, base_url), links=JsonApiLinks(self_link=base_url)

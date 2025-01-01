@@ -1,7 +1,9 @@
 """Repository module for database operations."""
 
+import re
 from typing import Any, Generic, TypeVar
 
+from geoalchemy2.shape import to_shape
 from sqlalchemy import BinaryExpression, delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,6 +19,13 @@ class DatabaseRepository(Generic[Model]):
         self.model = model
         self.session = session
 
+    def _ewkb_to_wkt(self, ewkb) -> str:
+        """Converts EKWB to WKT via geoalchemy2 and shapely. Shapely formats POINT (x y),
+        and to conform to the pydantic models the space is removed.
+        TODO: Move this to the db"""
+        wkt = to_shape(ewkb).wkt
+        return re.sub(r"POINT \(", "POINT(", wkt)
+
     async def add(self, instance: Model) -> Model:
         """Add a new instance to the database."""
         self.session.add(instance)
@@ -26,6 +35,7 @@ class DatabaseRepository(Generic[Model]):
 
     async def get(self, pk: int) -> Model | None:
         """Get an instance by primary key."""
+        print("INSIDE REPOBASE GET:", pk)
         return await self.session.get(self.model, pk)
 
     async def get_all(self) -> list[Model]:

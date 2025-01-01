@@ -9,8 +9,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
 
 from api.db.database import sessionmanager
-from api.exceptions import validation_exception_handler
-from api.routes import bikes, oauth, trips, users, zones
+from api.exceptions import (
+    ApiException,
+    api_exception_handler,
+    validation_exception_handler,
+)
+from api.routes import bikes, oauth, transactions, trips, users, zones
 from api.socket.socket import socket
 
 sessionmanager.init("postgresql+asyncpg://user:pass@localhost:5432/sddb")
@@ -49,8 +53,10 @@ app.include_router(zones.router)
 app.include_router(users.router)
 app.include_router(trips.router)
 app.include_router(oauth.router)
+app.include_router(transactions.router)
 
 # Add exception handlers
+app.add_exception_handler(ApiException, api_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(ValidationError, validation_exception_handler)
 

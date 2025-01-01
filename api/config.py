@@ -29,9 +29,10 @@ class Settings(BaseSettings):
     debug: bool = False
     environment: str = "local"
     database_url: str = "postgresql+asyncpg://user:pass@localhost:5432/sddb"
-    github_client_id: str
-    github_client_secret: str
-    github_redirect_uri: str
+    github_client_id: str = "secretid"
+    github_client_secret: str = "secret"
+    github_redirect_uri: str = "sercret"
+    use_mocked_bike_call: bool = True
 
     class Config:
         """Pydantic model config.

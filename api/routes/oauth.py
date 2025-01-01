@@ -1,3 +1,5 @@
+"""OAuth routes"""
+
 from fastapi import APIRouter, HTTPException
 
 from api.models.oauth_models import GitHubCode
@@ -12,6 +14,7 @@ router = APIRouter(
 
 @router.post("/github")
 async def login_github(code: GitHubCode):
+    """Login with GitHub"""
     try:
         access_token = await get_github_access_token(code.code)
         user_info = await get_github_user(access_token)
