@@ -119,7 +119,7 @@ class BikeResource(BaseModel):
             relationships=BikeRelationships(
                 city={"data": {"type": "cities", "id": str(bike.city_id)}}
             ),
-            links=JsonApiLinks(self_link=f"{request_url}"),
+            links=JsonApiLinks(self_link=f"{request_url}{bike.id}"),
         )
 
 
