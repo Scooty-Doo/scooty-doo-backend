@@ -143,9 +143,7 @@ async def get_available_bikes(
     )
 
 
-@router.get(
-    "/{bike_id}", response_model=JsonApiResponse[BikeResource], response_model_exclude_none=True
-)
+@router.get("/{bike_id}", response_model=JsonApiResponse[BikeResource])
 async def get_bike(
     request: Request, bike_id: int, bike_repository: BikeRepository
 ) -> JsonApiResponse[BikeResource]:
@@ -156,8 +154,11 @@ async def get_bike(
 
     base_url = str(request.base_url).rstrip("/") + request.url.path
     base_url = base_url.rsplit("/", 1)[0] + "/"
+    self_link = base_url + str(bike_id)
 
-    return JsonApiResponse(data=BikeResource.from_db_model(bike, base_url))
+    return JsonApiResponse(
+        data=BikeResource.from_db_model(bike, base_url), links=JsonApiLinks(self_link=self_link)
+    )
 
 
 @router.post("/", response_model=JsonApiResponse[BikeResource], status_code=status.HTTP_201_CREATED)

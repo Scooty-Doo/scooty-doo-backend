@@ -20,5 +20,8 @@
                     }
                 }
             }
-        }
+        },
+     "links": {
+         "self": "http://localhost:8000/v1/bikes/1"
+     }
 }
