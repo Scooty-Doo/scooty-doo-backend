@@ -75,7 +75,7 @@ class JsonApiResponse(BaseModel, Generic[T]):
     """JSON:API response wrapper."""
 
     data: T | list[T]
-    links: JsonApiLinks
+    links: Optional[JsonApiLinks] = None
 
 
 class BikeAttributes(BaseModel):
