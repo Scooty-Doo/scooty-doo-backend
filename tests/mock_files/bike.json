@@ -1,0 +1,27 @@
+{
+    "data": {
+            "type": "bikes",
+            "id": "1",
+            "attributes": {
+                "battery_lvl": 45,
+                "is_available": false,
+                "last_position": "POINT(13.06782 55.577859)",
+                "created_at": "2024-07-13T07:56:50.758246Z",
+                "updated_at": "2024-12-17T14:21:44.610901Z"
+            },
+            "links": {
+                  "self": "http://localhost:8000/v1/bikes/1"
+                    },
+            "relationships": {
+                "city": {
+                    "data": {
+                        "id": "1",
+                        "type": "cities"
+                    }
+                }
+            }
+        },
+     "links": {
+         "self": "http://localhost:8000/v1/bikes/1"
+     }
+}
