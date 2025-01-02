@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     github_client_secret: str = "secret"
     github_redirect_uri: str = "sercret"
     use_mocked_bike_call: bool = True
+    stripe_api_key: str = "secret"
 
     class Config:
         """Pydantic model config.
