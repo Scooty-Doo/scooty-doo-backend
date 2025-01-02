@@ -7,6 +7,7 @@ fake_bike_data = [
         id=1,
         battery_lvl=45,
         city_id=1,
+        last_position="POINT(13.06782 55.577859)",
         is_available=False,
         meta_data=None,
         created_at=datetime.datetime(2024, 7, 13, 7, 56, 50, 758246, tzinfo=datetime.timezone.utc),

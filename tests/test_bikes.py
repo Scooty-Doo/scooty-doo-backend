@@ -54,3 +54,20 @@ class TestBikeRoute:
         assert response.status_code == 200
 
         mock_get_bikes.assert_called_with(filters)
+
+    @pytest.mark.asyncio
+    async def test_get_bike(self, monkeypatch):
+        """Tests v1/bikes/{bike_id} route"""
+
+        # Mock database call
+        mock_get_bike = AsyncMock(return_value=fake_bike_data[0])
+        monkeypatch.setattr(BikeRepository, "get_bike", mock_get_bike)
+
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://localhost:8000/"
+        ) as ac:
+            response = await ac.get("v1/bikes/1")
+
+        assert response.status_code == 200
+        expected_response = self.get_fake_json_data("bike")
+        assert response.json() == expected_response
