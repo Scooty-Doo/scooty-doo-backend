@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     github_redirect_uri: str = "sercret"
     use_mocked_bike_call: bool = True
     stripe_api_key: str = "secret"
+    frontend_url: str = "http://localhost:3000"
 
     class Config:
         """Pydantic model config.

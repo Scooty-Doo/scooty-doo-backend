@@ -5,7 +5,8 @@ from typing import Annotated
 
 
 class StripeModel(BaseModel):
-    """Model for the stripe checkout screen."""
+    """Model for incoming data to the stripe checkout screen."""
+    frontend_url: str = Field(example="http://www.scootydoo.com/#homeclient")
     amount: Annotated[int, Field(ge=3)]
 
 class PaymentUrlResponse(BaseModel):
