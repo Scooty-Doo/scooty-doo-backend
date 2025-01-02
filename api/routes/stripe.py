@@ -4,19 +4,21 @@ import os
 import stripe
 from fastapi import APIRouter, Request
 from dotenv import load_dotenv
+from api.models.stripe_models import StripeModel, StripeResponse, PaymentUrlResponse
+from fastapi.encoders import jsonable_encoder
 
-from starlette.responses import RedirectResponse
-from api.models.stripe_models import StripeModel
 router = APIRouter(
     prefix="/v1/stripe",
     tags=["stripe"],
     responses={404: {"description": "Not found"}},
 )
 
+
+
 load_dotenv()
 
-@router.post("/stripe-checkout")
-async def stripe_checkout(request: Request, stripe_model: StripeModel):
+@router.post("/")
+async def stripe_checkout(request: Request, stripe_model: StripeModel) -> StripeResponse:
     """Creates a stripe checkout session"""
     stripe.api_key = os.getenv("STRIPE_API_KEY")
     try:
@@ -35,4 +37,6 @@ async def stripe_checkout(request: Request, stripe_model: StripeModel):
     except Exception as e:
         return str(e)
 
-    return RedirectResponse(url=checkout_session.url, status_code=303)
+    return StripeResponse(data=PaymentUrlResponse(url=checkout_session.url))
+    #return jsonable_encoder(checkout_session.url)
+    #return JsonApiResponse(data={"url": checkout_session.url}, links=JsonApiLinks(self_link=checkout_session.url))
