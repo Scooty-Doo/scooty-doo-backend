@@ -18,3 +18,7 @@ class StripeResponse(BaseModel):
     """JSON:API resource for the payment URL."""
 
     data: PaymentUrlResponse
+
+class StripeSuccess(BaseModel):
+    """Model for incoming data on stripe success"""
+    session_id: str
