@@ -1,11 +1,13 @@
 """Stripe routes"""
 
 import os
+
 import stripe
-from fastapi import APIRouter
 from dotenv import load_dotenv
-from api.models.stripe_models import StripeModel, StripeResponse, PaymentUrlResponse, StripeSuccess
+from fastapi import APIRouter
+
 from api.models.models import JsonApiResponse
+from api.models.stripe_models import PaymentUrlResponse, StripeModel, StripeResponse, StripeSuccess
 from api.models.user_models import UserResource
 
 router = APIRouter(
@@ -16,6 +18,7 @@ router = APIRouter(
 
 load_dotenv()
 
+
 @router.post("/")
 async def stripe_checkout(stripe_model: StripeModel) -> StripeResponse:
     """Creates a stripe checkout session"""
@@ -24,13 +27,11 @@ async def stripe_checkout(stripe_model: StripeModel) -> StripeResponse:
     try:
         checkout_session = stripe.checkout.Session.create(
             line_items=[
-                {
-                    "price": "price_1Qcs7RKjM6yxgCD0ZwvITka8",
-                    "quantity": stripe_model.amount
-                },
+                {"price": "price_1Qcs7RKjM6yxgCD0ZwvITka8", "quantity": stripe_model.amount},
             ],
             mode="payment",
-            success_url=stripe_model.frontend_url + "?success=true&session_id={CHECKOUT_SESSION_ID}",
+            success_url=stripe_model.frontend_url
+            + "?success=true&session_id={CHECKOUT_SESSION_ID}",
             cancel_url=stripe_model.frontend_url + "?canceled=true",
         )
     except Exception as e:
@@ -38,11 +39,12 @@ async def stripe_checkout(stripe_model: StripeModel) -> StripeResponse:
 
     return StripeResponse(data=PaymentUrlResponse(url=checkout_session.url))
 
+
 @router.post("/success", response_model=JsonApiResponse[UserResource])
 async def stripe_success(success_data: StripeSuccess) -> JsonApiResponse[UserResource]:
     """Creates a transaction in the database on succesful stripe payment."""
     session = stripe.checkout.Session.retrieve(success_data.session_id)
-    print(session.amount_subtotal / 100) # Så här mycket fick vi in!
+    print(session.amount_subtotal / 100)  # Så här mycket fick vi in!
     # Skapa transaction
     # Uppdatera user
     # Hämta uppdaterad user

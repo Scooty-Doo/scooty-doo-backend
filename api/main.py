@@ -14,7 +14,7 @@ from api.exceptions import (
     api_exception_handler,
     validation_exception_handler,
 )
-from api.routes import bikes, oauth, transactions, trips, users, zones, stripe
+from api.routes import bikes, oauth, stripe, transactions, trips, users, zones
 from api.socket.socket import socket
 
 sessionmanager.init("postgresql+asyncpg://user:pass@localhost:5432/sddb")
