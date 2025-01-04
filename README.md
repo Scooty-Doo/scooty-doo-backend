@@ -1,3 +1,7 @@
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Scooty-Doo/scooty-doo-backend/badges/quality-score.png?b=main)](https://scrutinizer-ci.com/g/Scooty-Doo/scooty-doo-backend/?branch=main)
+[![Code Coverage](https://scrutinizer-ci.com/g/Scooty-Doo/scooty-doo-backend/badges/coverage.png?b=main)](https://scrutinizer-ci.com/g/Scooty-Doo/scooty-doo-backend/?branch=main)
+[![Build Status](https://scrutinizer-ci.com/g/Scooty-Doo/scooty-doo-backend/badges/build.png?b=main)](https://scrutinizer-ci.com/g/Scooty-Doo/scooty-doo-backend/build-status/main)
+
 # scooty-doo-backend
 Backend for the Scooty Doo web application
 
