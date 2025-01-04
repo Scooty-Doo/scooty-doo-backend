@@ -118,6 +118,7 @@ async def load_users(session: AsyncSession):
                 balance=row["balance"],
                 use_prepay=row["use_prepay"].lower() == "true",
                 created_at=datetime.fromisoformat(row["created_at"]),
+                github_login=row["github_login"],
             )
             session.add(user)
     await session.flush()
