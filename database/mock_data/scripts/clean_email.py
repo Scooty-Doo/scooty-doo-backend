@@ -1,5 +1,5 @@
 import csv
-
+import re
 
 def clean_email(email: str) -> str:
     """Clean email by replacing spaces and Swedish characters."""
@@ -26,8 +26,36 @@ def add_github_login():
         writer.writeheader()
         writer.writerows(rows)
 
-def dots_to_hyphen_login():
-    """Update github_login column to use dashes instead of dots."""
+def clean_github_login(login: str) -> str:
+    """Clean GitHub login to match requirements:
+    - Only alphanumeric and single hyphens
+    - Cannot start/end with hyphen
+    - Length 1-39 chars
+    """
+    # Remove special characters and spaces
+    cleaned = login.lower()
+    cleaned = re.sub(r'[åäáàâã]', 'a', cleaned)
+    cleaned = re.sub(r'[ëéèêẽ]', 'e', cleaned)
+    cleaned = re.sub(r'[ïíìîĩ]', 'i', cleaned)
+    cleaned = re.sub(r'[öóòôõ]', 'o', cleaned)
+    cleaned = re.sub(r'[üúùûũ]', 'u', cleaned)
+    
+    # Replace remaining non-alphanumeric chars with hyphen
+    cleaned = re.sub(r'[^a-z0-9-]', '-', cleaned)
+    
+    # Remove consecutive hyphens
+    cleaned = re.sub(r'-+', '-', cleaned)
+    
+    # Remove leading/trailing hyphens
+    cleaned = cleaned.strip('-')
+    
+    # Ensure valid length
+    cleaned = cleaned[:39]
+    
+    return cleaned
+
+def clean_all_github_logins():
+    """Update github_login column to use valid GitHub usernames."""
     rows = []
 
     with open("../data/generated/users_cleaned.csv", encoding="utf-8") as file:
@@ -35,7 +63,7 @@ def dots_to_hyphen_login():
         fieldnames = reader.fieldnames
 
         for row in reader:
-            row["github_login"] = row["github_login"].replace(".", "-")
+            row["github_login"] = clean_github_login(row["github_login"])
             rows.append(row)
 
     with open("../data/generated/users_cleaned.csv", "w", newline="", encoding="utf-8") as file:
@@ -65,4 +93,4 @@ def clean_csv():
 if __name__ == "__main__":
     # clean_csv()
     # add_github_login()
-    dots_to_hyphen_login()
+    clean_all_github_logins()
