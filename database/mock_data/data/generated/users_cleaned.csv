@@ -5,7 +5,7 @@ id,full_name,email,balance,use_prepay,created_at,github_login
 652134919185249722,ViljaHolmlund,vilja.holmlund@example.com,0.0,True,2024-10-04T21:01:07.828151,vilja-holmlund
 652134919185249723,TobhiasRosander,tobhias.rosander@example.com,0.0,True,2024-05-18T01:39:21.317803,tobhias-rosander
 652134919185249724,FilippaLindvall,filippa.lindvall@example.com,247.94,True,2024-04-30T19:08:45.325532,filippa-lindvall
-652134919185249725,FiaSundén,fia.sundén@example.com,208.54,True,2024-02-20T00:35:03.218952,fia-sundén
+652134919185249725,FiaSundén,fia.sundén@example.com,208.54,True,2024-02-20T00:35:03.218952,fia-sunden
 652134919185249726,SigridThomasson,sigrid.thomasson@example.com,82.9,True,2023-12-19T16:42:29.494523,sigrid-thomasson
 652134919185249727,Ann-KristinWester,ann-kristin.wester@example.com,284.85,True,2024-08-31T09:06:55.720683,ann-kristin-wester
 652134919185249728,KreshnikHermansson,kreshnik.hermansson@example.com,55.42,True,2024-05-16T12:04:55.883965,kreshnik-hermansson
@@ -17,7 +17,7 @@ id,full_name,email,balance,use_prepay,created_at,github_login
 652134919185249734,BrittSandahl,britt.sandahl@example.com,0.0,False,2024-04-02T00:50:40.004086,britt-sandahl
 652134919185249735,IngwarÅström,ingwar.astrom@example.com,0.0,True,2024-09-20T10:13:10.574847,ingwar-astrom
 652134919185249736,GregoriusBergvall,gregorius.bergvall@example.com,139.15,True,2023-12-17T07:13:31.307034,gregorius-bergvall
-652134919185249737,Lars-JörgenNylén,lars-jorgen.nylén@example.com,89.44,True,2024-04-10T12:51:43.102363,lars-jorgen-nylén
+652134919185249737,Lars-JörgenNylén,lars-jorgen.nylén@example.com,89.44,True,2024-04-10T12:51:43.102363,lars-jorgen-nylen
 652134919185249738,MadelenSimonsson,madelen.simonsson@example.com,0.0,False,2024-02-09T13:14:07.246933,madelen-simonsson
 652134919185249739,ElezBoström,elez.bostrom@example.com,0.0,True,2024-03-24T05:02:53.124026,elez-bostrom
 652134919185249740,HodaGrahn,hoda.grahn@example.com,0.0,True,2024-02-23T19:22:53.021674,hoda-grahn
@@ -30,7 +30,7 @@ id,full_name,email,balance,use_prepay,created_at,github_login
 652134919185249747,MineaLiljegren,minea.liljegren@example.com,0.0,False,2024-11-17T02:34:23.633671,minea-liljegren
 652134919185249748,ZandraForslund,zandra.forslund@example.com,24.96,True,2024-08-25T19:34:20.540836,zandra-forslund
 652134919185249749,AmelieÅkerblom,amelie.akerblom@example.com,334.04,False,2024-01-08T08:00:46.319872,amelie-akerblom
-652134919185249750,DezsöÅhlén,dezso.ahlén@example.com,375.0,False,2024-06-05T22:58:49.552185,dezso-ahlén
+652134919185249750,DezsöÅhlén,dezso.ahlén@example.com,375.0,False,2024-06-05T22:58:49.552185,dezso-ahlen
 652134919185249751,CatrinSandahl,catrin.sandahl@example.com,182.8,False,2024-09-16T06:58:25.974113,catrin-sandahl
 652134919185249752,MuhudinWik,muhudin.wik@example.com,231.13,False,2024-07-11T23:38:01.305150,muhudin-wik
 652134919185249753,KrutBernhardsson,krut.bernhardsson@example.com,47.43,False,2024-07-13T23:09:35.695292,krut-bernhardsson
@@ -48,7 +48,7 @@ id,full_name,email,balance,use_prepay,created_at,github_login
 652134919185249765,LavinWiberg,lavin.wiberg@example.com,387.01,False,2024-06-06T04:56:34.536488,lavin-wiberg
 652134919185249766,AntoninoForsman,antonino.forsman@example.com,276.94,False,2024-05-07T22:59:17.373644,antonino-forsman
 652134919185249767,AlphonsSörensen,alphons.sorensen@example.com,0.0,True,2024-04-05T12:36:14.443494,alphons-sorensen
-652134919185249768,JürgBergendahl,jürg.bergendahl@example.com,0.0,True,2024-11-19T12:20:29.560612,jürg-bergendahl
+652134919185249768,JürgBergendahl,jürg.bergendahl@example.com,0.0,True,2024-11-19T12:20:29.560612,jurg-bergendahl
 652134919185249769,MelodySteen,melody.steen@example.com,113.99,False,2024-03-22T01:59:44.479876,melody-steen
 652134919185249770,LillemorFilipsson,lillemor.filipsson@example.com,0.0,False,2024-04-22T19:25:39.609507,lillemor-filipsson
 652134919185249771,Carl-ÅkeNyström,carl-ake.nystrom@example.com,210.84,True,2024-05-13T01:01:17.588100,carl-ake-nystrom
@@ -74,7 +74,7 @@ id,full_name,email,balance,use_prepay,created_at,github_login
 652134919185249791,KrystianFritz,krystian.fritz@example.com,220.16,True,2024-04-14T03:17:57.189625,krystian-fritz
 652134919185249792,SkovSvantesson,skov.svantesson@example.com,259.86,False,2024-08-05T03:12:34.293091,skov-svantesson
 652134919185249793,PetrusCarlsson,petrus.carlsson@example.com,0.0,True,2024-10-05T02:22:42.426131,petrus-carlsson
-652134919185249794,AdriánErsson,adrián.ersson@example.com,0.0,False,2024-11-08T13:57:25.469098,adrián-ersson
+652134919185249794,AdriánErsson,adrián.ersson@example.com,0.0,False,2024-11-08T13:57:25.469098,adrian-ersson
 652134919185249795,ZeinabGranath,zeinab.granath@example.com,285.17,False,2024-03-05T22:27:19.468832,zeinab-granath
 652134919185249796,NourNiemi,nour.niemi@example.com,300.22,False,2024-02-08T02:07:15.837616,nour-niemi
 652134919185249797,AlgisCarlström,algis.carlstrom@example.com,247.97,True,2024-01-23T17:52:59.958816,algis-carlstrom
