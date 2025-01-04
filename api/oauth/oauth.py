@@ -1,36 +1,4 @@
-"""
-const CLIENT_ID = 'YOUR_GITHUB_CLIENT_ID';
-const CLIENT_SECRET = 'YOUR_GITHUB_CLIENT_SECRET';
-
-app.post('/auth/github/callback', async (req, res) => {
-    const { code } = req.body;
-
-    // Exchange code for access token
-    const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-
-        },
-        body: JSON.stringify({
-            client_id: CLIENT_ID,
-            client_secret: CLIENT_SECRET,
-            code,
-        }),
-    });
-    const tokenData = await tokenResponse.json();
-    const accessToken = tokenData.access_token;
-
-    if (accessToken) {
-        // Use this access token to fetch user details or other tasks.
-        // Maybe generate a JWT and send it to the frontend for session management.
-        res.json({ success: true });
-    } else {
-        res.json({ success: false });
-    }
-});
-"""
+"""Module for Oauth"""
 
 import os
 
