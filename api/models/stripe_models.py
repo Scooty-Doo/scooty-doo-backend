@@ -32,3 +32,15 @@ class StripeSuccess(BaseModel):
     """Model for incoming data on stripe success"""
 
     session_id: str
+
+
+class NewBalance(BaseModel):
+    """Contains balance for stripe success call."""
+
+    balance: float = 0.00
+
+
+class StripeSuccessResponse(BaseModel):
+    """JSON:API resource for the payment URL."""
+
+    data: NewBalance

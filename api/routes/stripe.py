@@ -6,9 +6,14 @@ import stripe
 from dotenv import load_dotenv
 from fastapi import APIRouter
 
-from api.models.models import JsonApiResponse
-from api.models.stripe_models import PaymentUrlResponse, StripeModel, StripeResponse, StripeSuccess
-from api.models.user_models import UserResource
+from api.models.stripe_models import (
+    NewBalance,
+    PaymentUrlResponse,
+    StripeModel,
+    StripeResponse,
+    StripeSuccess,
+    StripeSuccessResponse,
+)
 
 router = APIRouter(
     prefix="/v1/stripe",
@@ -40,13 +45,13 @@ async def stripe_checkout(stripe_model: StripeModel) -> StripeResponse:
     return StripeResponse(data=PaymentUrlResponse(url=checkout_session.url))
 
 
-@router.post("/success", response_model=JsonApiResponse[UserResource])
-async def stripe_success(success_data: StripeSuccess) -> JsonApiResponse[UserResource]:
+@router.post("/success", response_model=StripeSuccessResponse)
+async def stripe_success(success_data: StripeSuccess) -> StripeSuccessResponse:
     """Creates a transaction in the database on succesful stripe payment."""
     session = stripe.checkout.Session.retrieve(success_data.session_id)
-    print(session.amount_subtotal / 100)  # Så här mycket fick vi in!
+    amount_in_kr = session.amount_subtotal / 100  # Så här mycket fick vi in!
     # Skapa transaction
     # Uppdatera user
     # Hämta uppdaterad user
 
-    return  # Returnera uppdaterad user
+    return StripeSuccessResponse(data=NewBalance(balance=amount_in_kr))
