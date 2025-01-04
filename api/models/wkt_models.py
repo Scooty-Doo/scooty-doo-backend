@@ -25,9 +25,6 @@ def validate_coordinates(coords: list[tuple[float, float]]) -> None:
 
 def validate_wkt_base(value: Optional[str], geom_type: str) -> Optional[str]:
     """Base WKT geometry validator"""
-    if value is None or value == "":
-        return None
-
     try:
         geom = wkt.loads(value)
         if geom.geom_type != geom_type:
