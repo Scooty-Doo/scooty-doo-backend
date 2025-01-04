@@ -101,7 +101,7 @@ async def start_trip(bike_id: int, user_id: int, trip_id: int) -> BikeTripStartD
                 trip_id=trip_id,
             ).model_dump()
             response = await client.post(
-                f"{EXAMPLE_BASE_URL}/start_trip",
+                f"{EXAMPLE_BASE_URL}/start_tri?bike_id={bike_id}",
                 json=request_data,
                 timeout=30,
             )
@@ -145,7 +145,7 @@ async def end_trip(
             print(json.dumps(request_data, indent=2))
 
             response = await client.post(
-                f"{EXAMPLE_BASE_URL}/end_trip",
+                f"{EXAMPLE_BASE_URL}/end_trip?bike_id={bike_id}",
                 json=request_data,
                 timeout=30,
             )
