@@ -14,7 +14,6 @@ from api.exceptions import (
     UserNotFoundException,
 )
 from api.models import db_models
-from api.models.oauth_models import UserId
 
 
 class UserRepository(DatabaseRepository[db_models.User]):
