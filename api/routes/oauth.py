@@ -2,6 +2,8 @@
 from typing import Annotated
 from fastapi import APIRouter, HTTPException, Depends
 
+import os
+import jwt
 from api.models.oauth_models import GitHubCode
 from api.oauth.oauth import get_github_access_token, get_github_user
 from api.db.repository_user import UserRepository as UserRepoClass
@@ -38,6 +40,17 @@ async def login_github(
             user = await user_repository.create_user(user_create.model_dump())
             user_id = UserId(id=user.id)
 
-        return user_id
-    except HTTPException:
-        raise 
+        token = jwt.encode({'user_id': user_id.id}, os.getenv("JWT_SECRET"), algorithm="HS256")
+        print("-----------------------------------\n")
+        print("-----------------------------------\n")
+        print("-----------------------------------\n")
+        print("-----------------------------------\n")
+        print("TOKEN: ", token)
+        # print("USER ID: ", user_id)
+        print("-----------------------------------\n")
+        print("-----------------------------------\n")
+        print("-----------------------------------\n")
+        return {'token': token}
+        # return user_id
+    except HTTPException as e:
+        raise e
