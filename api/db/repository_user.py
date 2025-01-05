@@ -35,7 +35,7 @@ class UserRepository(DatabaseRepository[db_models.User]):
                 f"User with ID {user_id} is not eligible due to insufficient balance."
             )
 
-    async def get_user_id_from_github_login(self, github_login: str) -> UserId:
+    async def get_user_id_from_github_login(self, github_login: str) -> int:
         """Get user ID by GitHub login.
 
         Returns:
@@ -50,7 +50,7 @@ class UserRepository(DatabaseRepository[db_models.User]):
         if user_id is None:
             raise UserNotFoundException(f"User with GitHub login {github_login} not found.")
 
-        return UserId(id=user_id)
+        return user_id
 
     def _build_filters(self, **params: dict[str, Any]) -> list[BinaryExpression]:
         """Filter builder for user queries."""

@@ -29,12 +29,18 @@ async def login_github(
     user_repository: UserRepository,):
     """Login with GitHub"""
     try:
+        print("-----------------------------------\n")
+        print("-----------------------------------\n")
+        print("GITHUBCODE: ", code)
+        print("-----------------------------------\n")
+        print("-----------------------------------\n")
         access_token = await get_github_access_token(code.code)
         github_user_data = await get_github_user(access_token)
         github_user = GitHubUserResponse.model_validate(github_user_data)
         
         try:
             user_id = await user_repository.get_user_id_from_github_login(github_user.login)
+            user_id = UserId(id=user_id)
         except UserNotFoundException:
             user_create = github_user.to_user_create()
             user = await user_repository.create_user(user_create.model_dump())
