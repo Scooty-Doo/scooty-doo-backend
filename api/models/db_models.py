@@ -57,8 +57,9 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    full_name: Mapped[str] = mapped_column(Text, nullable=False)
-    email: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
+    full_name: Mapped[str] = mapped_column(Text, nullable=True)
+    email: Mapped[str] = mapped_column(Text, nullable=True, unique=True)
+    github_login: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     balance: Mapped[float] = mapped_column(Numeric(10, 2), default=0.00)
     use_prepay: Mapped[bool] = mapped_column(Boolean, default=False)
     meta_data: Mapped[dict] = mapped_column(JSONB, nullable=True)

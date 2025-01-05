@@ -35,6 +35,7 @@ class UserRepository(DatabaseRepository[db_models.User]):
         filter_map = {
             "name_search": lambda v: self.model.full_name.ilike(f"%{v}%"),
             "email_search": lambda v: self.model.email.ilike(f"%{v}%"),
+            "github_login_search": lambda v: self.model.github_login.ilike(f"%{v}%"),
             "balance_gt": lambda v: self.model.balance > v,
             "balance_lt": lambda v: self.model.balance < v,
             "created_at_gt": lambda v: self.model.created_at > v,
