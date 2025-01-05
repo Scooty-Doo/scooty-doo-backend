@@ -34,9 +34,10 @@ async def login_github(
         try:
             user_id = await user_repository.get_user_id_from_github_login(github_user.login)
         except UserNotFoundException:
-            user = await user_repository.create_user(github_user.to_user_create())
+            user_create = github_user.to_user_create()
+            user = await user_repository.create_user(user_create.model_dump())
             user_id = UserId(id=user.id)
-            
+
         return user_id
     except HTTPException:
         raise 
