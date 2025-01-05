@@ -17,7 +17,7 @@ GitHubUsername = Annotated[
 class UserAttributes(BaseModel):
     """User attributes for JSON:API response."""
 
-    full_name: str
+    full_name: Optional[str] = None
     email: Optional[EmailStr] = None
     github_login: GitHubUsername
     balance: Optional[float] = 0.00
@@ -125,7 +125,7 @@ class UserGetRequestParams(BaseModel):
 class UserCreate(BaseModel):
     """Model for payload to create a user"""
 
-    full_name: str
+    full_name: Optional[str] = None
     email: Optional[EmailStr] = None
     use_prepay: Optional[bool] = False
     github_login: GitHubUsername

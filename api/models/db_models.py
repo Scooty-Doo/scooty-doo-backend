@@ -57,7 +57,7 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    full_name: Mapped[str] = mapped_column(Text, nullable=False)
+    full_name: Mapped[str] = mapped_column(Text, nullable=True)
     email: Mapped[str] = mapped_column(Text, nullable=True, unique=True)
     github_login: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     balance: Mapped[float] = mapped_column(Numeric(10, 2), default=0.00)
