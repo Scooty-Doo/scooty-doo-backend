@@ -2,15 +2,17 @@
 
 # pylint: disable=too-few-public-methods
 from datetime import datetime
-from typing import Any, Literal, Optional, Annotated
+from typing import Annotated, Any, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
+
 from api.models.models import JsonApiLinks
 
 GitHubUsername = Annotated[
     str,
-    Field(..., min_length=1, max_length=39, pattern=r"^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$")
+    Field(..., min_length=1, max_length=39, pattern=r"^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$"),
 ]
+
 
 class UserAttributes(BaseModel):
     """User attributes for JSON:API response."""
@@ -128,7 +130,6 @@ class UserCreate(BaseModel):
     use_prepay: Optional[bool] = False
     github_login: GitHubUsername
     meta_data: Optional[dict] = None
-
 
 
 class UserUpdate(BaseModel):

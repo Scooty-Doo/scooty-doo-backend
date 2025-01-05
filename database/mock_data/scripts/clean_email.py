@@ -1,13 +1,16 @@
 import csv
 import re
 
+
 def clean_email(email: str) -> str:
     """Clean email by replacing spaces and Swedish characters."""
     return email.lower().replace(" ", ".").replace("å", "a").replace("ä", "a").replace("ö", "o")
 
+
 def extract_github_login(email: str) -> str:
     """Extract the part before @ as github login."""
     return email.split("@")[0].replace(".", "-")
+
 
 def add_github_login():
     """Add github_login column based on email."""
@@ -26,6 +29,7 @@ def add_github_login():
         writer.writeheader()
         writer.writerows(rows)
 
+
 def clean_github_login(login: str) -> str:
     """Clean GitHub login to match requirements:
     - Only alphanumeric and single hyphens
@@ -34,25 +38,26 @@ def clean_github_login(login: str) -> str:
     """
     # Remove special characters and spaces
     cleaned = login.lower()
-    cleaned = re.sub(r'[åäáàâã]', 'a', cleaned)
-    cleaned = re.sub(r'[ëéèêẽ]', 'e', cleaned)
-    cleaned = re.sub(r'[ïíìîĩ]', 'i', cleaned)
-    cleaned = re.sub(r'[öóòôõ]', 'o', cleaned)
-    cleaned = re.sub(r'[üúùûũ]', 'u', cleaned)
-    
+    cleaned = re.sub(r"[åäáàâã]", "a", cleaned)
+    cleaned = re.sub(r"[ëéèêẽ]", "e", cleaned)
+    cleaned = re.sub(r"[ïíìîĩ]", "i", cleaned)
+    cleaned = re.sub(r"[öóòôõ]", "o", cleaned)
+    cleaned = re.sub(r"[üúùûũ]", "u", cleaned)
+
     # Replace remaining non-alphanumeric chars with hyphen
-    cleaned = re.sub(r'[^a-z0-9-]', '-', cleaned)
-    
+    cleaned = re.sub(r"[^a-z0-9-]", "-", cleaned)
+
     # Remove consecutive hyphens
-    cleaned = re.sub(r'-+', '-', cleaned)
-    
+    cleaned = re.sub(r"-+", "-", cleaned)
+
     # Remove leading/trailing hyphens
-    cleaned = cleaned.strip('-')
-    
+    cleaned = cleaned.strip("-")
+
     # Ensure valid length
     cleaned = cleaned[:39]
-    
+
     return cleaned
+
 
 def clean_all_github_logins():
     """Update github_login column to use valid GitHub usernames."""
@@ -70,6 +75,7 @@ def clean_all_github_logins():
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
+
 
 def clean_csv():
     rows = []
