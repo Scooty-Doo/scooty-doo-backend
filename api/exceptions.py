@@ -58,11 +58,11 @@ class UserNotEligibleException(ApiException):
     title = "User Not Eligible"
 
 
-class UserEmailExistsException(ApiException):
-    """Exception raised when attempting to create user with existing email."""
+class UserGithubLoginExistsException(ApiException):
+    """Exception raised when attempting to create user with existing login username."""
 
     status_code = status.HTTP_409_CONFLICT
-    title = "Email Already Exists"
+    title = "GitHub login user name Already Exists"
 
 
 class ActiveTripExistsException(ApiException):
