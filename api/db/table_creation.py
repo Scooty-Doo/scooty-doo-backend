@@ -2,6 +2,7 @@
 
 from sqlalchemy import text
 
+from api.config import settings
 from api.db.database import sessionmanager
 from api.models.db_models import Base
 
@@ -28,7 +29,7 @@ async def load_tables():
 
 async def main():
     """Main function to init the session manager and load the tables."""
-    sessionmanager.init()
+    sessionmanager.init(settings.database_url)
     await load_tables()
     await sessionmanager.close()
 
