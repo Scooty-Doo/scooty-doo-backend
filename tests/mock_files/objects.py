@@ -1,6 +1,6 @@
 import datetime
 
-from api.models.db_models import Bike
+from api.models.db_models import Bike, User
 
 fake_bike_data = [
     Bike(
@@ -27,3 +27,5 @@ fake_bike_data = [
         ),
     ),
 ]
+
+fake_user_data = User(id=652134919185249719)

@@ -8,7 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
 from api.db.repository_base import DatabaseRepository
-from api.exceptions import UserEmailExistsException, UserNotEligibleException, UserNotFoundException
+from api.exceptions import (
+    UserGithubLoginExistsException,
+    UserNotEligibleException,
+    UserNotFoundException,
+)
 from api.models import db_models
 
 
@@ -29,6 +33,23 @@ class UserRepository(DatabaseRepository[db_models.User]):
             raise UserNotEligibleException(
                 f"User with ID {user_id} is not eligible due to insufficient balance."
             )
+
+    async def get_user_id_from_github_login(self, github_login: str) -> int:
+        """Get user ID by GitHub login.
+
+        Returns:
+            UserId: Model containing user ID
+        Raises:
+            UserNotFoundException: If user not found
+        """
+        stmt = select(self.model.id).where(self.model.github_login == github_login)
+        result = await self.session.execute(stmt)
+        user_id = result.scalar_one_or_none()
+
+        if user_id is None:
+            raise UserNotFoundException(f"User with GitHub login {github_login} not found.")
+
+        return user_id
 
     def _build_filters(self, **params: dict[str, Any]) -> list[BinaryExpression]:
         """Filter builder for user queries."""
@@ -101,9 +122,9 @@ class UserRepository(DatabaseRepository[db_models.User]):
             return user
         except IntegrityError as e:
             await self.session.rollback()
-            if "users_email_key" in str(e):
-                raise UserEmailExistsException(
-                    f"User with email {user_data['email']} already exists."
+            if "users_github_login_key" in str(e):
+                raise UserGithubLoginExistsException(
+                    f"User with GitHub username {user_data['github_login']} already exists."
                 ) from e
             raise
 
@@ -115,7 +136,7 @@ class UserRepository(DatabaseRepository[db_models.User]):
                 update(self.model)
                 .where(self.model.id == user_id)
                 .values(**data)
-                .returning(self.model.id)  # Only return ID to check if update succeeded
+                .returning(self.model.id)
             )
 
             result = await self.session.execute(update_stmt)
@@ -139,6 +160,8 @@ class UserRepository(DatabaseRepository[db_models.User]):
 
         except IntegrityError as e:
             await self.session.rollback()
-            if "users_email_key" in str(e):
-                raise UserEmailExistsException(f"Email {data.get('email')} already exists.") from e
+            if "users_github_login_key" in str(e):
+                raise UserGithubLoginExistsException(
+                    f"User with GitHub username {data.get('github_login')} already exists."
+                ) from e
             raise
