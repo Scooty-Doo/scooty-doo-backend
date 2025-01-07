@@ -3,8 +3,14 @@
 import os
 
 import httpx
+from typing import Annotated, Union
 from dotenv import load_dotenv
-from fastapi import HTTPException
+from fastapi import HTTPException, Depends
+from api.models import db_models
+from api.models.oauth_models import UserId, GitHubUserResponse
+from api.exceptions import UserNotFoundException
+from api.dependencies.repository_factory import get_repository
+
 
 load_dotenv()
 
@@ -47,3 +53,27 @@ async def get_github_user(access_token: str):
         raise HTTPException(status_code=400, detail="Failed to fetch user info")
 
     return response.json()
+
+async def get_id(github_user: GitHubUserResponse, role: str, admin_repository, user_repository) -> UserId:
+    """Gets the id of the user or admin from the github_login.
+    
+    If the user isn't in the database it is created.
+    If the admin isn't in the database a UserNotFoundException is raised.
+    """
+    if role == "admin":
+        try:
+            user_id = await admin_repository.get_admin_id_from_github_login(github_user.login)
+            user_id = UserId(id=user_id)
+            return user_id
+        except UserNotFoundException:
+            raise UserNotFoundException
+    try:
+        user_id = await user_repository.get_user_id_from_github_login(github_user.login)
+        user_id = UserId(id=user_id)
+    except UserNotFoundException:
+        if role == "admin":
+            raise UserNotFoundException
+        user_create = github_user.to_user_create()
+        user = await user_repository.create_user(user_create.model_dump())
+        user_id = UserId(id=user.id)
+    return user_id

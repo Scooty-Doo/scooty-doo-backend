@@ -2,16 +2,15 @@
 
 import os
 from typing import Annotated
-
 import jwt
-from fastapi import APIRouter, Depends, HTTPException
-
-from api.db.repository_user import UserRepository as UserRepoClass
-from api.dependencies.repository_factory import get_repository
-from api.exceptions import UserNotFoundException
+from fastapi import APIRouter, HTTPException, Depends
 from api.models import db_models
-from api.models.oauth_models import GitHubCode, GitHubUserResponse, UserId
-from api.oauth.oauth import get_github_access_token, get_github_user
+from api.db.repository_user import UserRepository as UserRepoClass
+from api.db.repository_admin import AdminRepository as AdminRepoClass
+from api.exceptions import UserNotFoundException
+from api.models.oauth_models import GitHubRequest, GitHubUserResponse
+from api.dependencies.repository_factory import get_repository
+from api.oauth.oauth import get_github_access_token, get_github_user, get_id
 
 router = APIRouter(
     prefix="/v1/oauth",
@@ -24,25 +23,24 @@ UserRepository = Annotated[
     Depends(get_repository(db_models.User, repository_class=UserRepoClass)),
 ]
 
+AdminRepository = Annotated[
+    AdminRepoClass,
+    Depends(get_repository(db_models.Admin, repository_class=AdminRepoClass)),
+]
 
 @router.post("/github")
-async def login_github(code: GitHubCode, user_repository: UserRepository):
+async def login_github(request: GitHubRequest, admin_repository: AdminRepository, user_repository: UserRepository):
     """Login with GitHub"""
     try:
-        access_token = await get_github_access_token(code.code)
+        access_token = await get_github_access_token(request.code)
         github_user_data = await get_github_user(access_token)
         github_user = GitHubUserResponse.model_validate(github_user_data)
-
         try:
-            user_id = await user_repository.get_user_id_from_github_login(github_user.login)
-            user_id = UserId(id=user_id)
+            user_id = await get_id(github_user, request.role, admin_repository, user_repository)
         except UserNotFoundException:
-            user_create = github_user.to_user_create()
-            user = await user_repository.create_user(user_create.model_dump())
-            user_id = UserId(id=user.id)
+            raise HTTPException
 
         token = jwt.encode({"user_id": user_id.id}, os.getenv("JWT_SECRET"), algorithm="HS256")
         return {"token": token}
-        # return user_id
     except HTTPException as e:
         raise e
