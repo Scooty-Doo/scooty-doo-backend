@@ -41,7 +41,7 @@ class AdminRepository(DatabaseRepository[db_models.Admin]):
         filter_map = {
             "name_search": lambda v: self.model.full_name.ilike(f"%{v}%"),
             "email_search": lambda v: self.model.email.ilike(f"%{v}%"),
-            "github_login_search": lambda v: self.model.github_login.ilike(f"%{v}%")
+            "github_login_search": lambda v: self.model.github_login.ilike(f"%{v}%"),
         }
 
         return [
@@ -52,10 +52,7 @@ class AdminRepository(DatabaseRepository[db_models.Admin]):
 
     async def get_user(self, user_id: int) -> db_models.Admin:
         """Get a admin by ID."""
-        stmt = (
-            select(self.model)
-            .where(self.model.id == user_id)
-        )
+        stmt = select(self.model).where(self.model.id == user_id)
 
         result = await self.session.execute(stmt)
         admin = result.unique().scalar_one_or_none()

@@ -2,14 +2,16 @@
 
 import os
 from typing import Annotated
+
 import jwt
-from fastapi import APIRouter, HTTPException, Depends
-from api.models import db_models
-from api.db.repository_user import UserRepository as UserRepoClass
+from fastapi import APIRouter, Depends, HTTPException
+
 from api.db.repository_admin import AdminRepository as AdminRepoClass
-from api.exceptions import UserNotFoundException
-from api.models.oauth_models import GitHubRequest, GitHubUserResponse
+from api.db.repository_user import UserRepository as UserRepoClass
 from api.dependencies.repository_factory import get_repository
+from api.exceptions import UserNotFoundException
+from api.models import db_models
+from api.models.oauth_models import GitHubRequest, GitHubUserResponse
 from api.oauth.oauth import get_github_access_token, get_github_user, get_id
 
 router = APIRouter(
@@ -28,8 +30,11 @@ AdminRepository = Annotated[
     Depends(get_repository(db_models.Admin, repository_class=AdminRepoClass)),
 ]
 
+
 @router.post("/github")
-async def login_github(request: GitHubRequest, admin_repository: AdminRepository, user_repository: UserRepository):
+async def login_github(
+    request: GitHubRequest, admin_repository: AdminRepository, user_repository: UserRepository
+):
     """Login with GitHub"""
     try:
         access_token = await get_github_access_token(request.code)
@@ -37,8 +42,8 @@ async def login_github(request: GitHubRequest, admin_repository: AdminRepository
         github_user = GitHubUserResponse.model_validate(github_user_data)
         try:
             user_id = await get_id(github_user, request.role, admin_repository, user_repository)
-        except UserNotFoundException:
-            raise HTTPException
+        except UserNotFoundException as e:
+            raise HTTPException(status_code=404, detail="Admin not found") from e
 
         token = jwt.encode({"user_id": user_id.id}, os.getenv("JWT_SECRET"), algorithm="HS256")
         return {"token": token}
