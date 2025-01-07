@@ -28,7 +28,7 @@ from api.models.models import (
     JsonApiLinks,
     JsonApiResponse,
 )
-from api.socket.socket import emit_update
+from api.services.socket import emit_update
 
 router = APIRouter(
     prefix="/v1/bikes",

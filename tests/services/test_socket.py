@@ -9,7 +9,7 @@ from httpx import ASGITransport, AsyncClient
 
 from api.db.repository_bike import BikeRepository
 from api.main import app
-from api.socket.socket import socket
+from api.services.socket import socket
 from tests.mock_files.objects import fake_bike_data
 
 
