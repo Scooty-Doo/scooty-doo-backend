@@ -16,7 +16,7 @@ from api.exceptions import (
     validation_exception_handler,
 )
 from api.routes import bikes, oauth, transactions, trips, users, zones
-from api.socket.socket import socket
+from api.services.socket import socket
 
 sessionmanager.init(settings.database_url)
 

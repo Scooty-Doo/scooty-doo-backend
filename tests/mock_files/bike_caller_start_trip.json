@@ -1,0 +1,21 @@
+{
+    "message": "Trip started.",
+    "data": {
+        "report": {
+            "city_id": 1,
+            "last_position": "POINT(13.10005 55.55034)",
+            "battery_lvl": 85.5,
+            "is_available": false
+        },
+        "log": {
+            "user_id": 652134919185249719,
+            "bike_id": 1,
+            "trip_id": 123,
+            "start_time": "2024-12-23T13:22:28.506298+00:00",
+            "start_position": "POINT(13.06782 55.577859)",
+            "start_zone_id": null,
+            "start_zone_type": null,
+            "path_taken": null
+        }
+    }
+}

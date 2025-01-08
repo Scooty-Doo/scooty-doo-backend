@@ -1,6 +1,5 @@
 """Module for testing bike module"""
 
-import json
 from unittest.mock import AsyncMock
 
 import pytest
@@ -9,16 +8,11 @@ from httpx import ASGITransport, AsyncClient
 from api.db.repository_bike import BikeRepository
 from api.main import app
 from tests.mock_files.objects import fake_bike_data
+from tests.utils import get_fake_json_data
 
 
 class TestBikeRoute:
     """Class to test bike routes"""
-
-    def get_fake_json_data(self, filename):
-        """Gets fake data from json-file"""
-        with open(f"tests/mock_files/{filename}.json", encoding="utf-8") as file:
-            data = json.load(file)
-        return data
 
     @pytest.mark.asyncio
     async def test_get_all_bikes(self, monkeypatch):
@@ -34,7 +28,7 @@ class TestBikeRoute:
             response = await ac.get("v1/bikes/")
 
         assert response.status_code == 200
-        expected_response = self.get_fake_json_data("bikes")
+        expected_response = get_fake_json_data("bikes")
         assert response.json() == expected_response
 
     @pytest.mark.asyncio
@@ -69,5 +63,5 @@ class TestBikeRoute:
             response = await ac.get("v1/bikes/1")
 
         assert response.status_code == 200
-        expected_response = self.get_fake_json_data("bike")
+        expected_response = get_fake_json_data("bike")
         assert response.json() == expected_response
