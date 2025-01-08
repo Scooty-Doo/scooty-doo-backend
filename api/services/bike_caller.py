@@ -12,7 +12,6 @@ from api.models.trip_models import (
     BikeTripStartRequest,
 )
 
-EXAMPLE_BASE_URL = "http://localhost:8001"
 MOCK_DATA = {
     "message": "Trip ended successfully",
     "data": {
@@ -94,6 +93,7 @@ async def mock_end_trip(
 
 async def start_trip(bike_id: int, user_id: int, trip_id: int) -> BikeTripStartData:
     """Call bike service to start trip."""
+    print(settings.bike_url)
     async with httpx.AsyncClient() as client:
         try:
             request_data = BikeTripStartRequest(
@@ -101,8 +101,9 @@ async def start_trip(bike_id: int, user_id: int, trip_id: int) -> BikeTripStartD
                 trip_id=trip_id,
             ).model_dump()
             response = await client.post(
-                f"{EXAMPLE_BASE_URL}/start_trip?bike_id={bike_id}",
+                f"{settings.bike_url}/start_trip",
                 json=request_data,
+                params={"bike_id": bike_id},
                 timeout=30,
             )
 
@@ -145,8 +146,9 @@ async def end_trip(
             print(json.dumps(request_data, indent=2))
 
             response = await client.post(
-                f"{EXAMPLE_BASE_URL}/end_trip?bike_id={bike_id}",
+                f"{settings.bike_url}/end_trip",
                 json=request_data,
+                params={"bike_id": bike_id},
                 timeout=30,
             )
 

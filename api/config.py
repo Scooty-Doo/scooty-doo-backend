@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     github_client_secret: str = "secret"
     github_redirect_uri: str = "sercret"
     use_mocked_bike_call: bool = False
+    bike_url: str = "http://localhost:8001"
 
     class Config:
         """Pydantic model config.
