@@ -1,5 +1,5 @@
 id,full_name,email,balance,use_prepay,created_at,github_login
-652134919185249719,YngvessonNordberg,yngvesson.nordberg@example.com,24.47,False,2024-11-03T07:15:11.131054,yngvesson-nordberg
+652134919185249719,Yngvesson Nordberg,yngvesson.nordberg@example.com,24.47,False,2024-11-03T07:15:11.131054,yngvesson-nordberg
 652134919185249720,ElisaStenberg,elisa.stenberg@example.com,24.3,True,2024-08-04T11:38:59.816240,elisa-stenberg
 652134919185249721,ZuhirFriberg,zuhir.friberg@example.com,270.14,False,2024-06-09T00:55:07.717833,zuhir-friberg
 652134919185249722,ViljaHolmlund,vilja.holmlund@example.com,0.0,True,2024-10-04T21:01:07.828151,vilja-holmlund

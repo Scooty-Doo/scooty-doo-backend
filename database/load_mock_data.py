@@ -108,7 +108,7 @@ async def load_cities(session: AsyncSession):
 
 async def load_users(session: AsyncSession):
     """Load users from CSV."""
-    with open("database/mock_data/data/generated/users_cleaned.csv", encoding="utf-8") as csvfile:
+    with open("database/mock_data/data/generated/users.csv", encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             user = User(
