@@ -216,6 +216,7 @@ class Admin(Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     full_name: Mapped[str] = mapped_column(Text, nullable=False)
     email: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
+    github_login: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     meta_data: Mapped[dict] = mapped_column(JSONB, nullable=True)
 
     roles: Mapped[list["AdminRole"]] = relationship(

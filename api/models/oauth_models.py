@@ -7,10 +7,11 @@ from pydantic import BaseModel
 from api.models.user_models import UserCreate
 
 
-class GitHubCode(BaseModel):
+class GitHubRequest(BaseModel):
     """Model for the GitHub OAuth2 code."""
 
     code: str
+    role: Optional[str] = "user"
 
 
 class UserId(BaseModel):
