@@ -139,7 +139,6 @@ async def end_trip(
 
     #  validate that user, trip and bike match before calling db
     if bike_response.log.user_id != user_trip_data.user_id:
-        print(bike_response.log.user_id, user_trip_data.user_id)
         raise UnauthorizedTripAccessException(
             detail=(
                 f"User {user_trip_data.user_id} "
@@ -148,7 +147,6 @@ async def end_trip(
         )
 
     if bike_response.log.trip_id != trip_id:
-        print(bike_response.log.id, trip_id)
         raise UnauthorizedTripAccessException(
             detail=f"Trip {trip_id} does not match bike trip {bike_response.log.id}"
         )

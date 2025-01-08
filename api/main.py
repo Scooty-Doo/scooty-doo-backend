@@ -78,4 +78,3 @@ app.mount("/", socket_app)
 async def connect(sid: int, _):
     """Function for when client connects to socket."""
     await socket.enter_room(sid, "bike_updates")
-    print("Client connected to bike update broadcast")

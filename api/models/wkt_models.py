@@ -29,7 +29,6 @@ def validate_wkt_base(value: Optional[str], geom_type: str) -> Optional[str]:
         geom = wkt.loads(value)
         if geom.geom_type != geom_type:
             raise ValueError(f"Geometry must be a {geom_type}")
-        print(value)
         return value
     except ShapelyError as e:
         raise ValueError(f"Invalid WKT format: {str(e)}") from e

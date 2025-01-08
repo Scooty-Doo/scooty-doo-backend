@@ -19,6 +19,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+from api.config import settings
 from api.exceptions import ApiException
 from api.models.db_models import Base
 
@@ -63,7 +64,7 @@ class DatabaseSessionManager:
             pool_pre_ping=True,  # Verify connection before using from pool
             pool_size=10,  # Number of connections to maintain
             max_overflow=10,  # max extra connections to create
-            echo=True,  # SQL logging
+            echo=settings.debug,  # SQL logging
         )
         self._sessionmaker = async_sessionmaker(
             autocommit=False,

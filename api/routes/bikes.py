@@ -185,9 +185,7 @@ async def update_bike(
     if bike is None:
         raise_not_found(f"Bike with ID {bike_id} not found")
     update_data = bike_update.model_dump(exclude_unset=True)
-    print("DATA:", update_data)
     updated_bike = await bike_repository.update_bike(bike_id, update_data)
-    print("UPDATED BIKE:", updated_bike)
     if updated_bike is None:
         raise_not_found(f"Failed to update bike with ID {bike_id}")
 
