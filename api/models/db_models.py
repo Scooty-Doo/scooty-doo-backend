@@ -198,6 +198,7 @@ class Transaction(Base):
         Text, CheckConstraint("transaction_type IN ('trip', 'deposit', 'refund')"), nullable=False
     )
     transaction_description: Mapped[str] = mapped_column(Text, nullable=True)
+    payment_intent_id: Mapped[str] = mapped_column(Text, nullable=True)
     trip_id: Mapped[int] = mapped_column(ForeignKey("trips.id"), nullable=True, unique=True)
     payment_method_id: Mapped[int] = mapped_column(ForeignKey("payment_methods.id"), nullable=True)
     meta_data: Mapped[dict] = mapped_column(JSONB, nullable=True)

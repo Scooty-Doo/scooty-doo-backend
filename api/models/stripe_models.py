@@ -1,6 +1,7 @@
 """MOdule with models for OAuth2"""
 
 from typing import Annotated
+from decimal import Decimal
 
 from pydantic import BaseModel, Field
 
@@ -31,13 +32,12 @@ class StripeResponse(BaseModel):
 class StripeSuccess(BaseModel):
     """Model for incoming data on stripe success"""
 
-    session_id: str
-
+    user_id: str
 
 class NewBalance(BaseModel):
     """Contains balance for stripe success call."""
 
-    balance: float = 0.00
+    balance: Decimal = 0.00
 
 
 class StripeSuccessResponse(BaseModel):

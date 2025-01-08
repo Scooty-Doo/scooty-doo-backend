@@ -60,3 +60,21 @@ class TransactionRepository(DatabaseRepository[db_models.Transaction]):
         transactions = result.unique().scalars()
 
         return transactions
+
+    async def add_transaction(self, transaction_data: dict ) -> tuple[db_models.Transaction, float]:
+        """Add a transaction to the database."""
+        async with self.session.begin():
+            transaction = db_models.Transaction(**transaction_data)
+            self.session.add(transaction)
+
+            result = await self.session.execute(
+                update(db_models.User)
+                .where(db_models.User.id == transaction_data.user_id)
+                .values(balance=db_models.User.balance + transaction_data.amount)
+                .returning(db_models.User.balance)
+            )
+            
+            user_balance = result.scalar_one()
+            await self.session.flush()
+
+            return transaction, user_balance
