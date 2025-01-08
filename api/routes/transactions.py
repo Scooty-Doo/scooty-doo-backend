@@ -51,22 +51,7 @@ async def get_transactions(
         ],
         links=JsonApiLinks(self_links=collection_url),
     )
-# @router.post("/")
-# async def add_transaction(
-#     request: Request,
-#     session_data: dict,
-#     transaction_repository: TransactionRepository,
-# ) -> str:
-#     """Add a transaction to the db"""
-#     print("-----------------\n")
-#     print(session_data)
-#     print("-----------------\n")
-#     stripe_session = stripe.checkout.Session.retrieve(session_data["session_id"])
-#     print("-----------------\n")
-#     print(stripe_session)
-#     print("-----------------\n")
-#     return "hej"
-# )
+
 @router.post("/", response_model=JsonApiResponse[TransactionResourceWithBalance])
 async def add_transaction(
     request: Request,
