@@ -109,12 +109,10 @@ async def start_trip(bike_id: int, user_id: int, trip_id: int) -> BikeTripStartD
             if response.content:
                 try:
                     json_content = response.json()
-                    print("\nResponse JSON:", json.dumps(json_content, indent=4))
                 except json.JSONDecodeError as e:
-                    print("\nRaw Response Content:", response.text)
-                    print("JSON Parse Error:", str(e))
+                    raise BikeServiceUnavailableError("Failed to decode response") from e
             else:
-                print("\nEmpty Response Content")
+                raise BikeServiceUnavailableError("Failed to decode response") from e
 
             trip_data = json_content.get("data")
             return BikeTripStartData(**trip_data)
@@ -127,7 +125,6 @@ async def start_trip(bike_id: int, user_id: int, trip_id: int) -> BikeTripStartD
                 f"Could not connect to bike service: {str(exc)}"
             ) from exc
         except Exception as e:
-            print(f"Unexpected error: {str(e)}")
             raise
 
 
@@ -140,29 +137,16 @@ async def end_trip(
             request_data = BikeTripEndRequest(
                 user_id=user_id, trip_id=trip_id, maintenance=maintenance, ignore_zone=ignore_zone
             ).model_dump()
-
-            print("\n=== Request Data ===")
-            print(json.dumps(request_data, indent=2))
-
             response = await client.post(
                 f"{EXAMPLE_BASE_URL}/end_trip?bike_id={bike_id}",
                 json=request_data,
                 timeout=30,
             )
-
-            print("\n=== Response Details ===")
-            print(f"Status: {response.status_code}")
-            print(f"Headers: {dict(response.headers)}")
-
             try:
                 json_content = response.json()
-                print("\n=== Response JSON ===")
-                print(json.dumps(json_content, indent=2))
                 trip_data = json_content.get("data")
                 return BikeTripEndData(**trip_data)
             except json.JSONDecodeError as e:
-                print(f"\nFailed to decode JSON: {e}")
-                print(f"Raw content: {response.text}")
                 raise BikeServiceUnavailableError("Failed to decode response") from e
 
         except httpx.HTTPStatusError as exc:
@@ -173,7 +157,6 @@ async def end_trip(
                 f"Could not connect to bike service: {str(exc)}"
             ) from exc
         except Exception as e:
-            print(f"Unexpected error: {str(e)}")
             raise BikeServiceUnavailableError("Unexpected error during bike service call") from e
 
 
