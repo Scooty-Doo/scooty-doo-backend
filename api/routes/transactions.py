@@ -1,7 +1,9 @@
 """Module for the /users routes"""
 
+from decimal import Decimal
 from typing import Annotated
 
+import stripe
 from fastapi import APIRouter, Depends, Query, Request
 
 from api.db.repository_transaction import TransactionRepository as TransactionRepoClass
@@ -11,7 +13,11 @@ from api.models.models import (
     JsonApiLinks,
     JsonApiResponse,
 )
-from api.models.transaction_models import TransactionGetRequestParams, TransactionResourceMinimal
+from api.models.transaction_models import (
+    TransactionGetRequestParams,
+    TransactionResourceMinimal,
+    TransactionResourceWithBalance,
+)
 
 router = APIRouter(
     prefix="/v1/transactions",
@@ -46,4 +52,36 @@ async def get_transactions(
             for transaction in transactions
         ],
         links=JsonApiLinks(self_links=collection_url),
+    )
+
+
+@router.post("/", response_model=JsonApiResponse[TransactionResourceWithBalance])
+async def add_transaction(
+    request: Request,
+    session_data: dict,
+    transaction_repository: TransactionRepository,
+) -> JsonApiResponse[TransactionResourceWithBalance]:
+    """Add a transaction to the db"""
+    stripe_session = stripe.checkout.Session.retrieve(session_data["session_id"])
+    amount_in_kr = stripe_session.amount_subtotal / 100
+    payment_intent = stripe_session.payment_intent
+
+    transaction_data = {
+        "user_id": int(session_data["user_id"]),
+        "amount": amount_in_kr,
+        "payment_intent_id": payment_intent,
+        "transaction_type": "deposit",
+        "transaction_description": "Stripe payment",
+    }
+    transaction, user_balance = await transaction_repository.add_transaction(transaction_data)
+    user_balance_decimal = Decimal(str(user_balance))
+    base_url = str(request.base_url).rstrip("/")
+    collection_url = f"{base_url}/v1/transactions"
+    transaction_url = f"{collection_url}/{transaction.id}"
+
+    return JsonApiResponse(
+        data=TransactionResourceWithBalance.from_db_model(
+            transaction=transaction, request_url=transaction_url, user_balance=user_balance_decimal
+        ),
+        links=JsonApiLinks(self_link=collection_url),
     )

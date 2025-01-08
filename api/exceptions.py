@@ -107,6 +107,13 @@ class TripAlreadyEndedException(ApiException):
     title = "Trip Already Ended"
 
 
+class TransactionFailedException(ApiException):
+    """Exception raised when a transaction fails."""
+
+    status_code = status.HTTP_400_BAD_REQUEST
+    title = "Transaction Failed"
+
+
 async def api_exception_handler(
     request: Request,  # pylint: disable=unused-argument
     exc: ApiException,

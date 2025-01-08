@@ -4,8 +4,10 @@ from typing import Any
 
 from sqlalchemy import BinaryExpression, and_, asc, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.expression import update
 
 from api.db.repository_base import DatabaseRepository
+from api.exceptions import TransactionFailedException, UserNotFoundException
 from api.models import db_models
 
 
@@ -60,3 +62,30 @@ class TransactionRepository(DatabaseRepository[db_models.Transaction]):
         transactions = result.unique().scalars()
 
         return transactions
+
+    async def add_transaction(self, transaction_data: dict) -> tuple[db_models.Transaction, float]:
+        """Add a transaction to the database."""
+        async with self.session.begin():
+            try:
+                transaction = db_models.Transaction(**transaction_data)
+                self.session.add(transaction)
+
+                result = await self.session.execute(
+                    update(db_models.User)
+                    .where(db_models.User.id == transaction_data["user_id"])
+                    .values(balance=db_models.User.balance + transaction_data["amount"])
+                    .returning(db_models.User.balance)
+                )
+
+                user_balance = result.scalar_one()
+
+                if user_balance is None:
+                    raise UserNotFoundException(
+                        detail=f"User with ID {transaction_data['user_id']} not found."
+                    )
+
+                await self.session.commit()
+                return transaction, user_balance
+            except Exception as e:
+                print(f"Transaction failed: {str(e)}")
+                raise TransactionFailedException(detail=str(e)) from e
