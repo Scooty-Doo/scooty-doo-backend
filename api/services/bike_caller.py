@@ -112,7 +112,7 @@ async def start_trip(bike_id: int, user_id: int, trip_id: int) -> BikeTripStartD
                 except json.JSONDecodeError as e:
                     raise BikeServiceUnavailableError("Failed to decode response") from e
             else:
-                raise BikeServiceUnavailableError("Failed to decode response") from e
+                raise BikeServiceUnavailableError("Failed to decode response")
 
             trip_data = json_content.get("data")
             return BikeTripStartData(**trip_data)
@@ -124,7 +124,7 @@ async def start_trip(bike_id: int, user_id: int, trip_id: int) -> BikeTripStartD
             raise BikeServiceUnavailableError(
                 f"Could not connect to bike service: {str(exc)}"
             ) from exc
-        except Exception as e:
+        except Exception:
             raise
 
 
