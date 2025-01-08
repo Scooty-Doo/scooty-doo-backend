@@ -4,6 +4,7 @@ from typing import Any
 
 from sqlalchemy import BinaryExpression, and_, asc, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.expression import update
 
 from api.db.repository_base import DatabaseRepository
 from api.models import db_models
