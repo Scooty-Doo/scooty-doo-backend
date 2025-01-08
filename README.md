@@ -1,5 +1,14 @@
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Scooty-Doo/scooty-doo-backend/badges/quality-score.png?b=main)](https://scrutinizer-ci.com/g/Scooty-Doo/scooty-doo-backend/?branch=main)
+[![Code Coverage](https://scrutinizer-ci.com/g/Scooty-Doo/scooty-doo-backend/badges/coverage.png?b=main)](https://scrutinizer-ci.com/g/Scooty-Doo/scooty-doo-backend/?branch=main)
+[![Build Status](https://scrutinizer-ci.com/g/Scooty-Doo/scooty-doo-backend/badges/build.png?b=main)](https://scrutinizer-ci.com/g/Scooty-Doo/scooty-doo-backend/build-status/main)
+
 # scooty-doo-backend
 Backend for the Scooty Doo web application
+
+## Quick setup with docker containers
+```bash
+docker compose up
+```
 
 ## Development Setup
 
@@ -22,9 +31,9 @@ pip install -r requirements.txt
 
 ### Setup Database
 ```bash
-# Start PostgreSQL and pgAdmin containers. First go to /database
-cd database
-docker-compose up
+# Start PostgreSQL and pgAdmin containers.
+docker-compose up db
+docker-compose up adminer
 #If this doesn't work you probably haven't started docker service. Start it and try again.
 
 # Create database tables (from project root)

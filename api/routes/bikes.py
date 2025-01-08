@@ -28,7 +28,7 @@ from api.models.models import (
     JsonApiLinks,
     JsonApiResponse,
 )
-from api.socket.socket import socket
+from api.services.socket import emit_update
 
 router = APIRouter(
     prefix="/v1/bikes",
@@ -153,9 +153,11 @@ async def get_bike(
         raise_not_found(f"Bike with ID {bike_id} not found")
 
     base_url = str(request.base_url).rstrip("/") + request.url.path
+    base_url = base_url.rsplit("/", 1)[0] + "/"
+    self_link = base_url + str(bike_id)
 
     return JsonApiResponse(
-        data=BikeResource.from_db_model(bike, base_url), links=JsonApiLinks(self_link=base_url)
+        data=BikeResource.from_db_model(bike, base_url), links=JsonApiLinks(self_link=self_link)
     )
 
 
@@ -182,7 +184,6 @@ async def update_bike(
     bike = await bike_repository.get(bike_id)
     if bike is None:
         raise_not_found(f"Bike with ID {bike_id} not found")
-
     update_data = bike_update.model_dump(exclude_unset=True)
     print("DATA:", update_data)
     updated_bike = await bike_repository.update_bike(bike_id, update_data)
@@ -198,22 +199,6 @@ async def update_bike(
         data=BikeResource.from_db_model(updated_bike, base_url),
         links=JsonApiLinks(self_link=base_url),
     )
-
-
-async def emit_update(bike_id, updated_bike):
-    """Emits updated bike data to socket."""
-    # TODO: Pydantic model, maybe?
-    print("Emitting")
-    output_data = {
-        "bike_id": bike_id,
-        "last_position": updated_bike.last_position,
-        "city_id": updated_bike.city_id,
-        "battery_lvl": updated_bike.battery_lvl,
-        "is_available": updated_bike.is_available,
-        "meta_data": updated_bike.meta_data,
-    }
-    await socket.emit("bike_update", data=output_data, room="bike_updates")
-    return
 
 
 @router.delete("/{bike_id}", status_code=status.HTTP_204_NO_CONTENT)

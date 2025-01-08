@@ -23,6 +23,27 @@ class ApiException(Exception):
         return self.detail
 
 
+class ZoneTypeNameExistsException(ApiException):
+    """Exception raised when attempting to create zone type with existing name."""
+
+    status_code = status.HTTP_409_CONFLICT
+    title = "Zone Type Name Already Exists"
+
+
+class ZoneTypeNotFoundException(ApiException):
+    """Exception raised when a zone type is not found."""
+
+    status_code = status.HTTP_404_NOT_FOUND
+    title = "Zone Type Not Found"
+
+
+class MapZoneNotFoundException(ApiException):
+    """Exception raised when a map zone is not found."""
+
+    status_code = status.HTTP_404_NOT_FOUND
+    title = "Map Zone Not Found"
+
+
 class UserNotFoundException(ApiException):
     """Exception raised when a user is not found."""
 
@@ -37,11 +58,11 @@ class UserNotEligibleException(ApiException):
     title = "User Not Eligible"
 
 
-class UserEmailExistsException(ApiException):
-    """Exception raised when attempting to create user with existing email."""
+class UserGithubLoginExistsException(ApiException):
+    """Exception raised when attempting to create user with existing login username."""
 
     status_code = status.HTTP_409_CONFLICT
-    title = "Email Already Exists"
+    title = "GitHub login user name Already Exists"
 
 
 class ActiveTripExistsException(ApiException):

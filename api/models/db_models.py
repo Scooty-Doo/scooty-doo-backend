@@ -57,8 +57,9 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    full_name: Mapped[str] = mapped_column(Text, nullable=False)
-    email: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
+    full_name: Mapped[str] = mapped_column(Text, nullable=True)
+    email: Mapped[str] = mapped_column(Text, nullable=True, unique=True)
+    github_login: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     balance: Mapped[float] = mapped_column(Numeric(10, 2), default=0.00)
     use_prepay: Mapped[bool] = mapped_column(Boolean, default=False)
     meta_data: Mapped[dict] = mapped_column(JSONB, nullable=True)
@@ -166,7 +167,7 @@ class ZoneType(Base):
     meta_data: Mapped[dict] = mapped_column(JSONB, nullable=True)
 
     # Relationships
-    zones: Mapped[list["MapZone"]] = relationship(back_populates="zone_type")
+    zones: Mapped[list["MapZone"]] = relationship(back_populates="zone_type", lazy="raise")
 
 
 class MapZone(Base):
@@ -181,8 +182,8 @@ class MapZone(Base):
     boundary: Mapped[Geometry] = mapped_column(Geometry("POLYGON", srid=4326), nullable=False)
 
     # Relationships
-    zone_type: Mapped["ZoneType"] = relationship(back_populates="zones")
-    city: Mapped["City"] = relationship(back_populates="map_zones")
+    zone_type: Mapped["ZoneType"] = relationship(back_populates="zones", lazy="raise")
+    city: Mapped["City"] = relationship(back_populates="map_zones", lazy="raise")
 
 
 class Transaction(Base):
@@ -215,6 +216,7 @@ class Admin(Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     full_name: Mapped[str] = mapped_column(Text, nullable=False)
     email: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
+    github_login: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     meta_data: Mapped[dict] = mapped_column(JSONB, nullable=True)
 
     roles: Mapped[list["AdminRole"]] = relationship(

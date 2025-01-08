@@ -44,6 +44,7 @@ class Settings(BaseSettings):
         """
 
         env_file = ".env"
+        extra = "ignore"
 
 
 # Create global settings instance

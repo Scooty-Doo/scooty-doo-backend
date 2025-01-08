@@ -2,7 +2,7 @@
 
 import pytest
 
-from api.models.models import validate_wkt_point
+from api.models.wkt_models import validate_wkt_point
 
 
 class TestValidateWktPoint:

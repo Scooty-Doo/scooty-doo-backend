@@ -2,18 +2,24 @@
 
 # pylint: disable=too-few-public-methods
 from datetime import datetime
-from typing import Any, Literal, Optional
+from typing import Annotated, Any, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from api.models.models import JsonApiLinks
 
+GitHubUsername = Annotated[
+    str,
+    Field(..., min_length=1, max_length=39, pattern=r"^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$"),
+]
+
 
 class UserAttributes(BaseModel):
     """User attributes for JSON:API response."""
 
-    full_name: str
-    email: EmailStr
+    full_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    github_login: GitHubUsername
     balance: Optional[float] = 0.00
     use_prepay: bool = False
     meta_data: Optional[dict] = None
@@ -107,6 +113,7 @@ class UserGetRequestParams(BaseModel):
 
     name_search: Optional[str] = Field(None, min_length=3)
     email_search: Optional[str] = Field(None, min_length=3)
+    github_login_search: Optional[GitHubUsername] = None
     balance_gt: Optional[float] = None
     balance_lt: Optional[float] = None
     created_at_gt: Optional[datetime] = None
@@ -118,9 +125,10 @@ class UserGetRequestParams(BaseModel):
 class UserCreate(BaseModel):
     """Model for payload to create a user"""
 
-    full_name: str
-    email: EmailStr
+    full_name: Optional[str] = None
+    email: Optional[EmailStr] = None
     use_prepay: Optional[bool] = False
+    github_login: GitHubUsername
     meta_data: Optional[dict] = None
 
 
@@ -129,5 +137,6 @@ class UserUpdate(BaseModel):
 
     full_name: Optional[str] = None
     email: Optional[EmailStr] = None
+    github_login: Optional[GitHubUsername] = None
     use_prepay: Optional[bool] = None
     meta_data: Optional[dict] = None

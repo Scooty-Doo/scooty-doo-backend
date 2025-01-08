@@ -1,42 +1,13 @@
-"""
-const CLIENT_ID = 'YOUR_GITHUB_CLIENT_ID';
-const CLIENT_SECRET = 'YOUR_GITHUB_CLIENT_SECRET';
-
-app.post('/auth/github/callback', async (req, res) => {
-    const { code } = req.body;
-
-    // Exchange code for access token
-    const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-
-        },
-        body: JSON.stringify({
-            client_id: CLIENT_ID,
-            client_secret: CLIENT_SECRET,
-            code,
-        }),
-    });
-    const tokenData = await tokenResponse.json();
-    const accessToken = tokenData.access_token;
-
-    if (accessToken) {
-        // Use this access token to fetch user details or other tasks.
-        // Maybe generate a JWT and send it to the frontend for session management.
-        res.json({ success: true });
-    } else {
-        res.json({ success: false });
-    }
-});
-"""
+"""Module for Oauth"""
 
 import os
 
 import httpx
 from dotenv import load_dotenv
 from fastapi import HTTPException
+
+from api.exceptions import UserNotFoundException
+from api.models.oauth_models import GitHubUserResponse, UserId
 
 load_dotenv()
 
@@ -79,3 +50,28 @@ async def get_github_user(access_token: str):
         raise HTTPException(status_code=400, detail="Failed to fetch user info")
 
     return response.json()
+
+
+async def get_id(
+    github_user: GitHubUserResponse, role: str, admin_repository, user_repository
+) -> UserId:
+    """Gets the id of the user or admin from the github_login.
+
+    If the user isn't in the database it is created.
+    If the admin isn't in the database a UserNotFoundException is raised.
+    """
+    if role == "admin":
+        try:
+            user_id = await admin_repository.get_admin_id_from_github_login(github_user.login)
+            user_id = UserId(id=user_id)
+            return user_id
+        except UserNotFoundException as e:
+            raise HTTPException(status_code=404, detail="Admin not found") from e
+    try:
+        user_id = await user_repository.get_user_id_from_github_login(github_user.login)
+        user_id = UserId(id=user_id)
+    except UserNotFoundException:
+        user_create = github_user.to_user_create()
+        user = await user_repository.create_user(user_create.model_dump())
+        user_id = UserId(id=user.id)
+    return user_id
