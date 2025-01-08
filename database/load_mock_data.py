@@ -231,7 +231,12 @@ async def load_admins_and_roles(session: AsyncSession):
     with open("database/mock_data/data/generated/admins.csv", encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            admin = Admin(id=int(row["id"]), full_name=row["full_name"], email=row["email"])
+            admin = Admin(
+                id=int(row["id"]),
+                full_name=row["full_name"],
+                email=row["email"],
+                github_login=row["github_login"],
+            )
             session.add(admin)
     await session.flush()
 
