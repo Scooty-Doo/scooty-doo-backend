@@ -59,9 +59,15 @@ class TransactionResourceWithBalance(BaseModel):
     @classmethod
     def from_db_model(cls, transaction: Any, request_url: str, user_balance: Decimal) -> "TransactionResourceWithBalance":
         """Create a TransactionResource with user balance from a database model."""
+        transaction_attrs = TransactionAttributes.model_validate(transaction)
+        full_attrs = TransactionAttributesWithBalance(
+            **transaction_attrs.model_dump(),
+            user_balance=user_balance
+        )
+        
         return cls(
             id=str(transaction.id),
-            attributes=TransactionAttributesWithBalance.model_validate(transaction).model_copy(update={"user_balance": user_balance}),
+            attributes=full_attrs,
             links=JsonApiLinks(self_link=request_url),
         )
 

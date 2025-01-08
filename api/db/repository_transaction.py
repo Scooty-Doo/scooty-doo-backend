@@ -72,17 +72,18 @@ class TransactionRepository(DatabaseRepository[db_models.Transaction]):
 
                 result = await self.session.execute(
                     update(db_models.User)
-                    .where(db_models.User.id == transaction_data.user_id)
-                    .values(balance=db_models.User.balance + transaction_data.amount)
+                    .where(db_models.User.id == transaction_data['user_id'])
+                    .values(balance=db_models.User.balance + transaction_data['amount'])
                     .returning(db_models.User.balance)
                 )
                 
                 user_balance = result.scalar_one()
+
                 if user_balance is None:
                     raise UserNotFoundException(detail=f"User with ID {transaction_data['user_id']} not found.")
 
-                await self.session.flush()
-
+                await self.session.commit()
                 return transaction, user_balance
             except Exception as e:
+                print(f"Transaction failed: {str(e)}")
                 raise TransactionFailedException(detail=str(e))
