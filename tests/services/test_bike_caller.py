@@ -34,8 +34,9 @@ class TestBikeCaller:
         assert result.log.trip_id == mock_log["trip_id"]
         monkeypatch.assert_called_once()
         monkeypatch.assert_called_with(
-            "http://localhost:8001/start_trip?bike_id=1",
+            "http://localhost:8001/start_trip",
             json={"user_id": mock_log["user_id"], "trip_id": mock_log["trip_id"]},
+            params={'bike_id': mock_log["bike_id"]},
             timeout=30,
         )
 
@@ -59,8 +60,9 @@ class TestBikeCaller:
         assert result.log.trip_id == mock_log["trip_id"]
         monkeypatch.assert_called_once()
         monkeypatch.assert_called_with(
-            "http://localhost:8001/end_trip?bike_id=1",
+            "http://localhost:8001/end_trip",
             json={"maintenance": False, "ignore_zone": False},
+            params={'bike_id': mock_log["bike_id"]},
             timeout=30,
         )
 
@@ -82,8 +84,9 @@ class TestBikeCaller:
         assert "Could not connect to bike service: Internal server error" in str(error.value)
         monkeypatch.assert_called_once()
         monkeypatch.assert_called_with(
-            "http://localhost:8001/start_trip?bike_id=1",
+            "http://localhost:8001/start_trip",
             json={"user_id": mock_log["user_id"], "trip_id": mock_log["trip_id"]},
+            params={'bike_id': mock_log["bike_id"]},
             timeout=30,
         )
 
@@ -104,7 +107,8 @@ class TestBikeCaller:
         assert "Could not connect to bike service: Internal server error" in str(error.value)
         monkeypatch.assert_called_once()
         monkeypatch.assert_called_with(
-            "http://localhost:8001/end_trip?bike_id=1",
+            "http://localhost:8001/end_trip",
             json={"maintenance": False, "ignore_zone": False},
+            params={'bike_id': mock_log["bike_id"]},
             timeout=30,
         )
