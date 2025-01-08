@@ -7,12 +7,9 @@ from dotenv import load_dotenv
 from fastapi import APIRouter
 
 from api.models.stripe_models import (
-    NewBalance,
     PaymentUrlResponse,
     StripeModel,
     StripeResponse,
-    StripeSuccess,
-    StripeSuccessResponse,
 )
 
 router = APIRouter(
