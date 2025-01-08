@@ -8,7 +8,6 @@ socket = socketio.AsyncServer(cors_allowed_origins=[], async_mode="asgi")
 async def emit_update(bike_id, updated_bike):
     """Emits updated bike data to socket."""
     # TODO: Pydantic model, maybe?
-    print("Emitting")
     output_data = {
         "bike_id": bike_id,
         "last_position": updated_bike.last_position,
