@@ -86,6 +86,14 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
                 .returning(*self._get_trip_columns())
             )
             result = await self.session.execute(stmt)
+
+            # set bike to unavailable
+            await self.session.execute(
+                update(db_models.Bike)
+                .where(db_models.Bike.id == trip_data.bike_id)
+                .values(is_available=False)
+            )
+
             await self.session.commit()
             return result.mappings().one()
         except IntegrityError as e:

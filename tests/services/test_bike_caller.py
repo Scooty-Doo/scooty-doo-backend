@@ -36,7 +36,7 @@ class TestBikeCaller:
         monkeypatch.assert_called_with(
             "http://localhost:8001/start_trip",
             json={"user_id": mock_log["user_id"], "trip_id": mock_log["trip_id"]},
-            params={'bike_id': mock_log["bike_id"]},
+            params={"bike_id": mock_log["bike_id"]},
             timeout=30,
         )
 
@@ -62,7 +62,7 @@ class TestBikeCaller:
         monkeypatch.assert_called_with(
             "http://localhost:8001/end_trip",
             json={"maintenance": False, "ignore_zone": False},
-            params={'bike_id': mock_log["bike_id"]},
+            params={"bike_id": mock_log["bike_id"]},
             timeout=30,
         )
 
@@ -86,7 +86,7 @@ class TestBikeCaller:
         monkeypatch.assert_called_with(
             "http://localhost:8001/start_trip",
             json={"user_id": mock_log["user_id"], "trip_id": mock_log["trip_id"]},
-            params={'bike_id': mock_log["bike_id"]},
+            params={"bike_id": mock_log["bike_id"]},
             timeout=30,
         )
 
@@ -109,6 +109,6 @@ class TestBikeCaller:
         monkeypatch.assert_called_with(
             "http://localhost:8001/end_trip",
             json={"maintenance": False, "ignore_zone": False},
-            params={'bike_id': mock_log["bike_id"]},
+            params={"bike_id": mock_log["bike_id"]},
             timeout=30,
         )
