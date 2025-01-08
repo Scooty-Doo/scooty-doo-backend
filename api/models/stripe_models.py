@@ -1,7 +1,6 @@
 """MOdule with models for OAuth2"""
 
 from typing import Annotated
-from decimal import Decimal
 
 from pydantic import BaseModel, Field
 
@@ -27,4 +26,3 @@ class StripeResponse(BaseModel):
     """JSON:API resource for the payment URL."""
 
     data: PaymentUrlResponse
-

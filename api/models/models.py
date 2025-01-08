@@ -9,7 +9,6 @@ from datetime import datetime
 from typing import Any, Generic, Optional, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
-from decimal import Decimal
 
 from api.models.wkt_models import WKTPoint
 

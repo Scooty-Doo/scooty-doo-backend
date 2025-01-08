@@ -40,4 +40,3 @@ async def stripe_checkout(stripe_model: StripeModel) -> StripeResponse:
         return str(e)
 
     return StripeResponse(data=PaymentUrlResponse(url=checkout_session.url))
-

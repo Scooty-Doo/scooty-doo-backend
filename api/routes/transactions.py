@@ -1,10 +1,11 @@
 """Module for the /users routes"""
 
+from decimal import Decimal
 from typing import Annotated
 
+import stripe
 from fastapi import APIRouter, Depends, Query, Request
 
-import stripe
 from api.db.repository_transaction import TransactionRepository as TransactionRepoClass
 from api.dependencies.repository_factory import get_repository
 from api.models import db_models
@@ -12,10 +13,11 @@ from api.models.models import (
     JsonApiLinks,
     JsonApiResponse,
 )
-from api.models.transaction_models import ( 
-    TransactionGetRequestParams, TransactionResourceMinimal, TransactionResourceWithBalance
+from api.models.transaction_models import (
+    TransactionGetRequestParams,
+    TransactionResourceMinimal,
+    TransactionResourceWithBalance,
 )
-from decimal import Decimal
 
 router = APIRouter(
     prefix="/v1/transactions",
@@ -52,6 +54,7 @@ async def get_transactions(
         links=JsonApiLinks(self_links=collection_url),
     )
 
+
 @router.post("/", response_model=JsonApiResponse[TransactionResourceWithBalance])
 async def add_transaction(
     request: Request,
@@ -78,9 +81,7 @@ async def add_transaction(
 
     return JsonApiResponse(
         data=TransactionResourceWithBalance.from_db_model(
-            transaction=transaction,
-            request_url=transaction_url,
-            user_balance=user_balance_decimal
+            transaction=transaction, request_url=transaction_url, user_balance=user_balance_decimal
         ),
-        links=JsonApiLinks(self_link=collection_url)
+        links=JsonApiLinks(self_link=collection_url),
     )
