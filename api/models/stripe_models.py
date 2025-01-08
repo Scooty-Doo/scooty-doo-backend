@@ -28,19 +28,3 @@ class StripeResponse(BaseModel):
 
     data: PaymentUrlResponse
 
-
-class StripeSuccess(BaseModel):
-    """Model for incoming data on stripe success"""
-
-    user_id: str
-
-class NewBalance(BaseModel):
-    """Contains balance for stripe success call."""
-
-    balance: Decimal = 0.00
-
-
-class StripeSuccessResponse(BaseModel):
-    """JSON:API resource for the payment URL."""
-
-    data: NewBalance
