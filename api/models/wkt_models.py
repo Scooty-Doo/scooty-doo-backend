@@ -70,7 +70,6 @@ WKTPoint = Annotated[
     BeforeValidator(validate_wkt_point),
     Field(
         description="WKT POINT format with longitude (-180 to 180) and latitude (-90 to 90)",
-        example="POINT(11.9746 57.7089)",
         json_schema_extra={"format": "WKT POINT", "examples": ["POINT(11.9746 57.7089)"]},
     ),
 ]
@@ -82,7 +81,6 @@ WKTLineString = Annotated[
             "WKT LineString format with longitude (-180 to 180) and latitude "
             "(-90 to 90) coordinates"
         ),
-        example="LINESTRING(11.9746 57.7089, 11.9747 57.7090)",
         json_schema_extra={
             "format": "WKT LINESTRING",
             "examples": ["LINESTRING(11.9746 57.7089, 11.9747 57.7090)"],
@@ -98,7 +96,6 @@ WKTPolygon = Annotated[
             "WKT Polygon format with longitude (-180 to 180) and latitude "
             "(-90 to 90) coordinates"
         ),
-        example="POLYGON((11.97 57.70, 11.98 57.70, 11.98 57.71, 11.97 57.71, 11.97 57.70))",
         json_schema_extra={
             "format": "WKT POLYGON",
             "examples": [
