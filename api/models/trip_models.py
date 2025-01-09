@@ -10,6 +10,7 @@ from api.models.wkt_models import WKTLineString, WKTPoint
 
 TripId = Annotated[int, Field(gt=0, description="Trip ID")]
 
+
 class TripAttributes(BaseModel):
     """Trip attributes for JSON:API response."""
 
