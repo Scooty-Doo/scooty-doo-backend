@@ -60,7 +60,7 @@ def get_bike_routes(coordinate_tuples: list) -> list:
                 for coordinates {coord_str}"
             )
 
-        time.sleep(3)
+        time.sleep(1)
 
     return responses
 
@@ -77,12 +77,12 @@ def save_responses_to_json(responses: list, output_file: str) -> None:
         json.dump(responses, f, indent=4)
 
 
-# geojson_file = "../map_data/malmo_bike_paths.geojson"
-# # Ändra till antal rutter att skapa
-# num_coordinates = 0
-# coordinates = randomize_coordinates(geojson_file, num_coordinates)
-# print(coordinates)
-# responses = get_bike_routes(coordinates)
-# print(responses)
-# # Ändra till korrekt output-fil
-# save_responses_to_json(responses, "../data/generated/bike_routes.json")
+geojson_file = "../data/source/map_data/malmo_bike_paths.geojson"
+# Ändra till antal rutter att skapa (VAR SÄKER PÅ ATT INTE BRYTA MOT API-ANVÄNDNINGSREGLER)
+num_coordinates = 500
+coordinates = randomize_coordinates(geojson_file, num_coordinates)
+print(coordinates)
+responses = get_bike_routes(coordinates)
+print(responses)
+# Ändra till korrekt output-fil
+save_responses_to_json(responses, "../data/source/routes/malmo_routes.json")
