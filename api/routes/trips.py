@@ -1,9 +1,9 @@
 """Module for the /trips routes"""
 
-import random
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Path, Query, Request, status
+from tsidpy import TSID
 
 from api.db.repository_bike import BikeRepository as BikeRepoClass
 from api.db.repository_trip import TripRepository as TripRepoClass
@@ -100,7 +100,7 @@ async def start_trip(
     await user_repository.check_user_eligibility(trip.user_id)
 
     # TODO: Proper SLID generation
-    trip_id = random.randint(1, 1000000)
+    trip_id = TSID.create().number
 
     # Get bike data first
     bike_data = await bike_start_trip(trip.bike_id, trip.user_id, trip_id)
