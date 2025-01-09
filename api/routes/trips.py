@@ -148,7 +148,7 @@ async def end_trip(
 
     if bike_response.log.trip_id != trip_id:
         raise UnauthorizedTripAccessException(
-            detail=f"Trip {trip_id} does not match bike trip {bike_response.log.id}"
+            detail=f"Trip {trip_id} does not match bike trip {bike_response.log.trip_id}"
         )
 
     # Create end trip data from bike response
