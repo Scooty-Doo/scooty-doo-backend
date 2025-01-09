@@ -20,6 +20,7 @@ from api.models.models import (
 from api.models.trip_models import (
     TripCreate,
     TripEndRepoParams,
+    TripId,
     TripResource,
     UserTripStart,
 )
@@ -128,10 +129,11 @@ async def end_trip(
     request: Request,
     trip_repository: TripRepository,
     user_trip_data: UserTripStart = Body(..., description="User trip data"),  # noqa: B008
-    trip_id: int = Path(..., description="ID of the trip to end"),
+    trip_id: TripId = Path(..., description="ID of the trip to end"),  # noqa: B008
 ) -> JsonApiResponse[TripResource]:
     """Endpoint for user to end a trip
     TODO: Return link to user and user's transaction?"""
+    print(type(trip_id))
     _, bike_end_trip = get_bike_service()
     bike_response = await bike_end_trip(
         user_trip_data.bike_id, user_trip_data.user_id, trip_id, False, True
