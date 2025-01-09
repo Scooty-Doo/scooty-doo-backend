@@ -1,10 +1,9 @@
 """Module for the /trips routes"""
 
-import random
 from typing import Annotated
-from tsidpy import TSID
 
 from fastapi import APIRouter, Body, Depends, Path, Query, Request, status
+from tsidpy import TSID
 
 from api.db.repository_bike import BikeRepository as BikeRepoClass
 from api.db.repository_trip import TripRepository as TripRepoClass
