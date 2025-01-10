@@ -13,6 +13,12 @@ cities = {
             "../data/generated/trips_malmo_5.csv",
         ]
     },
+    "stockholm": {
+        "bike_file": "../data/generated/bikes_stockholm.csv",
+        "trip_files": [
+            "../data/generated/trips_stockholm_1.csv",
+        ]
+    },
 }
 
 def read_start_positions(trip_files):
