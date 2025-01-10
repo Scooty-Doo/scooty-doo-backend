@@ -1,6 +1,7 @@
 import csv
 import random
 from datetime import datetime, timedelta
+
 from tsidpy import TSID
 
 NUM_BIKES = 3000
@@ -12,6 +13,7 @@ RANDOM_BATTERY_LVL = True
 LAST_POSITION = "POINT(13.0038 55.6050)"
 BATTERY_LVL = 100
 CITY_ID = 1
+
 
 def generate_bikes(
     output_file: str,
@@ -48,7 +50,7 @@ def generate_bikes(
             bike_id = TSID.create().number
             # if NUM_LOW_ID is over 0, generate low IDs first
             if NUM_LOW_ID > 0 and i < NUM_LOW_ID:
-                bike_id = i+1
+                bike_id = i + 1
 
             if random_battery_lvl:
                 battery_lvl = random.randint(0, 100)

@@ -149,9 +149,7 @@ async def load_payment_providers(session: AsyncSession):
 async def load_bikes(session: AsyncSession, file_name: str):
     """Load bikes from CSV."""
     file_path = f"database/mock_data/data/generated/{file_name}"
-    with open(
-        file_path , encoding="utf-8"
-    ) as csvfile:
+    with open(file_path, encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             bike = Bike(
@@ -169,12 +167,11 @@ async def load_bikes(session: AsyncSession, file_name: str):
     await session.execute(text("SELECT setval('bikes_id_seq', (SELECT MAX(id) FROM bikes))"))
     await session.flush()
 
+
 async def load_trips(session: AsyncSession, file_name: str):
     """Load trips from CSV."""
     file_path = f"database/mock_data/data/generated/{file_name}"
-    with open(
-        file_path, encoding="utf-8"
-    ) as csvfile:
+    with open(file_path, encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             trip = Trip(

@@ -1,7 +1,8 @@
 import csv
 import os
-import tempfile
 import random
+import tempfile
+
 from shapely.wkt import loads
 
 cities = {
@@ -13,21 +14,23 @@ cities = {
             "../data/generated/trips_malmo_3.csv",
             "../data/generated/trips_malmo_4.csv",
             "../data/generated/trips_malmo_5.csv",
-        ]
+        ],
     },
     "stockholm": {
         "bike_file": "../data/generated/bikes_stockholm.csv",
         "trip_files": [
             "../data/generated/trips_stockholm_1.csv",
-        ]
+        ],
     },
     "gothenburg": {
         "bike_file": "../data/generated/bikes_gothenburg.csv",
         "trip_files": [
             "../data/generated/trips_gothenburg_1.csv",
-        ]
+        ],
     },
 }
+
+
 def read_start_positions(trip_files):
     """Read start positions and paths from multiple trip files."""
     start_positions = []
@@ -39,6 +42,7 @@ def read_start_positions(trip_files):
                 start_positions.append(row["start_position"])
                 paths.append(row["path_taken"])
     return start_positions, paths
+
 
 def update_bike_positions(bike_file, start_positions, paths):
     """Update bike positions based on start positions and paths."""
@@ -56,7 +60,7 @@ def update_bike_positions(bike_file, start_positions, paths):
             point = path.interpolate(random.uniform(0, path.length))
             row["last_position"] = point.wkt
 
-    with tempfile.NamedTemporaryFile('w', delete=False, newline="", encoding="utf-8") as temp_csv:
+    with tempfile.NamedTemporaryFile("w", delete=False, newline="", encoding="utf-8") as temp_csv:
         bike_writer = csv.DictWriter(temp_csv, fieldnames=fieldnames)
         bike_writer.writeheader()
         bike_writer.writerows(bikes)
@@ -64,12 +68,14 @@ def update_bike_positions(bike_file, start_positions, paths):
 
     os.replace(temp_file_name, bike_file)
 
+
 def process_city(city_name, bike_file, trip_files):
     """Process bike positions for a specific city."""
     print(f"Processing {city_name}...")
     start_positions, paths = read_start_positions(trip_files)
     update_bike_positions(bike_file, start_positions, paths)
     print(f"Finished processing {city_name}.")
+
 
 for city_name, files in cities.items():
     process_city(city_name, files["bike_file"], files["trip_files"])
