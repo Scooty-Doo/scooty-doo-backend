@@ -143,7 +143,8 @@ def generate_users(num_users: int, output_path: str, female_path: str, male_path
             writer.writerow(user)
         
         # Generate remaining users with sequential IDs starting from 3
-        for user_id in range(4, num_users + 1):
+        for user in range(4, num_users + 1):
+            user_id = TSID.create().number
             user_data = generate_user_data(female_names, male_names, last_names, user_id)
             writer.writerow(user_data)
 
