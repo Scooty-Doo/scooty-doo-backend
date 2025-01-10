@@ -7,7 +7,8 @@ from shapely.wkt import dumps
 import polyline
 from tsidpy import TSID
 
-trip_packages = [ {
+trip_packages = [ 
+{
 "json_file_path" : "../data/source/routes/malmo_routes_1.json",
 "bikes_file_path" : "../data/generated/bikes_malmo.csv",
 "users_file_path" : "../data/generated/users.csv",
@@ -17,7 +18,25 @@ trip_packages = [ {
 "bikes_file_path" : "../data/generated/bikes_malmo.csv",
 "users_file_path" : "../data/generated/users.csv",
 "output_file_path" : "../data/generated/trips_malmo_2.csv",
-}]
+},
+{
+"json_file_path" : "../data/source/routes/malmo_routes_3.json",
+"bikes_file_path" : "../data/generated/bikes_malmo.csv",
+"users_file_path" : "../data/generated/users.csv",
+"output_file_path" : "../data/generated/trips_malmo_3.csv",
+},
+{
+"json_file_path" : "../data/source/routes/malmo_routes_4.json",
+"bikes_file_path" : "../data/generated/bikes_malmo.csv",
+"users_file_path" : "../data/generated/users.csv",
+"output_file_path" : "../data/generated/trips_malmo_4.csv",
+},
+{
+"json_file_path" : "../data/source/routes/malmo_routes_5.json",
+"bikes_file_path" : "../data/generated/bikes_malmo.csv",
+"users_file_path" : "../data/generated/users.csv",
+"output_file_path" : "../data/generated/trips_malmo_5.csv",
+},]
 
 def load_csv_data(file_path):
     """

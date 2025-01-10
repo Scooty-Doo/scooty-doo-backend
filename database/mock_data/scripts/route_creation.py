@@ -85,4 +85,4 @@ print(coordinates)
 responses = get_bike_routes(coordinates)
 print(responses)
 # Ändra till korrekt output-fil
-save_responses_to_json(responses, "../data/source/routes/malmo_routes.json")
+save_responses_to_json(responses, "../data/source/routes/malmo_routes_5.json")
