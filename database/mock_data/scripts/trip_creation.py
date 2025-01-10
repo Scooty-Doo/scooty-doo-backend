@@ -7,6 +7,18 @@ from shapely.wkt import dumps
 import polyline
 from tsidpy import TSID
 
+trip_packages = [ {
+"json_file_path" : "../data/source/routes/malmo_routes_1.json",
+"bikes_file_path" : "../data/generated/bikes_malmo.csv",
+"users_file_path" : "../data/generated/users.csv",
+"output_file_path" : "../data/generated/trips_malmo_1.csv",
+}, {
+"json_file_path" : "../data/source/routes/malmo_routes_2.json",
+"bikes_file_path" : "../data/generated/bikes_malmo.csv",
+"users_file_path" : "../data/generated/users.csv",
+"output_file_path" : "../data/generated/trips_malmo_2.csv",
+}]
+
 def load_csv_data(file_path):
     """
     Load data from a CSV file and return it as a list of dictionaries.
@@ -14,22 +26,21 @@ def load_csv_data(file_path):
     with open(file_path, "r") as csvfile:
         reader = csv.DictReader(csvfile)
         return [row for row in reader]
-
-def generate_trip_data(json_file, bikes_file, users_file, output_file: str) -> None:
+def generate_trip_data(json_file_path: str, bikes_file_path: str, users_file_path: str, output_file_path: str) -> None:
     """
     Generate trip data based on the provided JSON data and save it to a CSV file.
 
     Parameters:
-    json_file (str): The path to the JSON file containing route information.
-    bikes_file (str): The path to the CSV file containing bike data.
-    users_file (str): The path to the CSV file containing user data.
-    output_file (str): The path to the output CSV file.
+    json_file_path (str): The path to the JSON file containing route information.
+    bikes_file_path (str): The path to the CSV file containing bike data.
+    users_file_path (str): The path to the CSV file containing user data.
+    output_file_path (str): The path to the output CSV file.
     """
-    with open(json_file, "r") as jsonfile:
+    with open(json_file_path, "r") as jsonfile:
         data = json.load(jsonfile)
 
-    bikes = load_csv_data(bikes_file)
-    users = load_csv_data(users_file)
+    bikes = load_csv_data(bikes_file_path)
+    users = load_csv_data(users_file_path)
 
     fieldnames = [
         "id",
@@ -46,17 +57,17 @@ def generate_trip_data(json_file, bikes_file, users_file, output_file: str) -> N
         "total_fee",
     ]
 
-    with open(output_file, "w", newline="") as csvfile:
+    with open(output_file_path, "w", newline="") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
 
         for trip in data:
-            # Randomm bike and user
+            # Random bike and user
             trip_id = TSID.create().number
             bike_id = random.choice(bikes)["id"]
             user_id = random.choice(users)["id"]
 
-            # Extract route and 
+            # Extract route and duration
             duration = trip["routes"][0]["duration"] / 2
             geometry = trip["routes"][0]["geometry"]
             waypoints = trip["waypoints"]
@@ -104,8 +115,6 @@ def generate_trip_data(json_file, bikes_file, users_file, output_file: str) -> N
                 }
             )
 
-json_file_path = "../data/source/routes/malmo_routes_2.json"
-bikes_file_path = "../data/generated/bikes_malmo.csv"
-users_file_path = "../data/generated/users.csv"
-output_file_path = "../data/generated/trips_malmo_2.csv"
-generate_trip_data(json_file_path, bikes_file_path, users_file_path, output_file_path)
+
+for trip_package in trip_packages:
+    generate_trip_data(**trip_package)
