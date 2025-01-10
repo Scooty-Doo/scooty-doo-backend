@@ -4,7 +4,7 @@ import datetime
 import re
 from pathlib import Path
 from typing import List, Tuple
-import uuid
+from tsidpy import TSID
 
 def load_names(female_path: str, male_path: str, last_name_path: str) -> Tuple[List[str], List[str], List[str]]:
     """Load name data from CSV files."""
