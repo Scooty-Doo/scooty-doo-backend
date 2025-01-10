@@ -1,3 +1,5 @@
+"""Module for calling bike service"""
+
 import json
 from datetime import datetime, timedelta, timezone
 
@@ -60,6 +62,10 @@ MOCK_DATA = {
             "13.09762 55.55229,13.09745 55.55193,13.0974 55.55183,13.09818 55.55142,"
             "13.09875 55.55103,13.09915 55.55074,13.09935 55.5506,13.09972 55.55037,"
             "13.09997 55.55027,13.10005 55.55034)",
+            "end_map_zone_id": 1,
+            "end_map_zone_type": "Parking",
+            "start_map_zone_id": 1,
+            "start_map_zone_type": "Parking",
         },
     },
 }
@@ -93,7 +99,6 @@ async def mock_end_trip(
 
 async def start_trip(bike_id: int, user_id: int, trip_id: int) -> BikeTripStartData:
     """Call bike service to start trip."""
-    print(settings.bike_url)
     async with httpx.AsyncClient() as client:
         try:
             request_data = BikeTripStartRequest(
@@ -164,6 +169,7 @@ async def end_trip(
 
 # Dependency injection
 def get_bike_service():
+    """Gets different bike services depending on if you want to mock it or not"""
     if settings.use_mocked_bike_call:
         return mock_start_trip, mock_end_trip
     return start_trip, end_trip
