@@ -19,6 +19,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from api.db.repository_bike import BikeRepository as BikeRepoClass
 from api.dependencies.repository_factory import get_repository
 from api.models import db_models
+from api.models.bike_models import BikeSocket
 from api.models.models import (
     BikeCreate,
     BikeResource,
@@ -191,7 +192,8 @@ async def update_bike(
 
     base_url = str(request.base_url).rstrip("/") + request.url.path.rsplit("/", 1)[0]
 
-    await emit_update(bike_id, updated_bike)
+    # Is this unpacking ok?
+    await emit_update(BikeSocket(**updated_bike.__dict__, bike_id=bike_id))
 
     return JsonApiResponse(
         data=BikeResource.from_db_model(updated_bike, base_url),
