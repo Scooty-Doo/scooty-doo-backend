@@ -13,8 +13,8 @@
             "trip_id": 123,
             "start_time": "2024-12-23T13:22:28.506298+00:00",
             "start_position": "POINT(13.06782 55.577859)",
-            "start_zone_id": null,
-            "start_zone_type": null,
+            "start_map_zone_id": 1,
+            "start_map_zone_type": "Parking",
             "path_taken": null
         }
     }

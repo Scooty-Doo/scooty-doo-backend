@@ -13,6 +13,7 @@ from api.exceptions import (
     UnauthorizedTripAccessException,
 )
 from api.models import db_models
+from api.models.bike_models import BikeSocket
 from api.models.models import (
     JsonApiLinks,
     JsonApiResponse,
@@ -25,6 +26,7 @@ from api.models.trip_models import (
     UserTripStart,
 )
 from api.services.bike_caller import get_bike_service
+from api.services.socket import emit_update
 
 router = APIRouter(
     prefix="/v1/trips",
@@ -95,8 +97,8 @@ async def start_trip(
     user_repository: UserRepository,
 ) -> JsonApiResponse[TripResource]:
     """Endpoint for user to start a trip"""
-    bike_start_trip, _ = get_bike_service()
 
+    bike_start_trip, _ = get_bike_service()
     await user_repository.check_user_eligibility(trip.user_id)
 
     # TODO: Proper SLID generation
@@ -104,7 +106,6 @@ async def start_trip(
 
     # Get bike data first
     bike_data = await bike_start_trip(trip.bike_id, trip.user_id, trip_id)
-
     # Create trip using bike response data
     trip_data = TripCreate(
         id=trip_id,
@@ -116,8 +117,13 @@ async def start_trip(
 
     created_trip = await trip_repository.add_trip(trip_data)
 
+    # Emit bike status to socket
+    # I might have gone a bit overboard with the unpacking, but I like it!
+    await emit_update(BikeSocket(**bike_data.log.__dict__, **bike_data.report.__dict__))
+
     base_url = str(request.base_url).rstrip("/")
     self_link = f"{base_url}/v1/trips/{created_trip.id}"
+
     return JsonApiResponse(
         data=TripResource.from_db_model(created_trip, self_link),
         links=JsonApiLinks(self_link=self_link),
@@ -138,7 +144,6 @@ async def end_trip(
     bike_response = await bike_end_trip(
         user_trip_data.bike_id, user_trip_data.user_id, trip_id, False, True
     )
-
     #  validate that user, trip and bike match before calling db
     if bike_response.log.user_id != user_trip_data.user_id:
         raise UnauthorizedTripAccessException(
@@ -162,9 +167,13 @@ async def end_trip(
         user_id=user_trip_data.user_id,
         bike_id=user_trip_data.bike_id,
     )
-
+    print("Whoo")
     # End trip in repository
     updated_trip = await trip_repository.end_trip(repo_params, bike_response.report.is_available)
+
+    # Emit bike status to socket
+    # Again with the unpackings?
+    await emit_update(BikeSocket(**bike_response.report.__dict__, **bike_response.log.__dict__))
 
     base_url = str(request.base_url).rstrip("/")
     self_link = f"{base_url}/v1/trips/{updated_trip.id}"

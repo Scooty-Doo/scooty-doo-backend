@@ -40,6 +40,7 @@ class Settings(BaseSettings):
 
     @field_validator("frontend_url", "bike_url", mode="before")
     def remove_trailing_slash(cls, v: str) -> str:
+        """Removes trailing slashes from urls"""
         return v.rstrip("/")
 
     class Config:

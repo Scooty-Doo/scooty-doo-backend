@@ -13,6 +13,11 @@ class TestValidateWktPoint:
         valid_point = "POINT(14.423 51.124)"
         assert validate_wkt_point(valid_point) == valid_point
 
+    def test_validate_zero_zero_wkt_point(self):
+        """Test if valid 0 0 point succeeds"""
+        valid_point = "POINT(0 0)"
+        assert validate_wkt_point(valid_point) == valid_point
+
     def test_validate_wkt_point_fail_comma(self):
         """Checks if a point with a comma fails"""
         invalid_point = "POINT(14.423, 51.124)"  # Not valid because of comma
