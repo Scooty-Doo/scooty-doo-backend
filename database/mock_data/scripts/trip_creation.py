@@ -36,6 +36,12 @@ trip_packages = [
 "bikes_file_path" : "../data/generated/bikes_malmo.csv",
 "users_file_path" : "../data/generated/users.csv",
 "output_file_path" : "../data/generated/trips_malmo_5.csv",
+},
+{
+"json_file_path" : "../data/source/routes/stockholm_routes_1.json",
+"bikes_file_path" : "../data/generated/bikes_stockholm.csv",
+"users_file_path" : "../data/generated/users.csv",
+"output_file_path" : "../data/generated/trips_stockholm_1.csv",
 },]
 
 def load_csv_data(file_path):
