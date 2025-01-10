@@ -15,7 +15,11 @@
             "end_time": "2024-12-23T13:22:36.545233+00:00",
             "start_position": "POINT(13.06782 55.577859)",
             "end_position": "POINT(13.100047 55.55034)",
-            "path_taken": "LINESTRING(13.06782 55.57786,13.06787 55.57785,13.07128 55.57756)"
+            "path_taken": "LINESTRING(13.06782 55.57786,13.06787 55.57785,13.07128 55.57756)",
+            "start_map_zone_id": 2,
+            "start_map_zone_type": "Parking",
+            "end_map_zone_id": 3,
+            "end_map_zone_type": "Forbidden"
         }
     }
 }
