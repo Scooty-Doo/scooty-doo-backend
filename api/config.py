@@ -3,8 +3,10 @@
 pydantic_settings for type-safe configuration management.
 Settings can be overridden using environment variables.
 """
+
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
+
 
 # pylint: disable=too-few-public-methods
 class Settings(BaseSettings):
@@ -36,9 +38,10 @@ class Settings(BaseSettings):
     frontend_url: str = Field(default="http://localhost:3000", pattern=r"^https?:\/\/.*\d$")
     bike_url: str = Field(default="http://localhost:8001", pattern=r"^https?:\/\/.*\d$")
 
-    @field_validator('frontend_url', 'bike_url', mode='before')
+    @field_validator("frontend_url", "bike_url", mode="before")
     def remove_trailing_slash(cls, v: str) -> str:
-        return v.rstrip('/')
+        """Removes trailing slashes from urls"""
+        return v.rstrip("/")
 
     class Config:
         """Pydantic model config.
