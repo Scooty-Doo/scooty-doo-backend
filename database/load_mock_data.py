@@ -47,6 +47,7 @@ async def load_mock_data():
         await load_trips(session, "trips_malmo_2.csv")
         await load_trips(session, "trips_malmo_3.csv")
         await load_trips(session, "trips_malmo_4.csv")
+        await load_trips(session, "trips_malmo_5.csv")
         await load_zone_types(session)
         await load_map_zones(session)
         await load_admins_and_roles(session)
