@@ -77,7 +77,7 @@ def save_responses_to_json(responses: list, output_file: str) -> None:
         json.dump(responses, f, indent=4)
 
 
-geojson_file = "../data/source/map_data/stockholm_bike_paths.geojson"
+geojson_file = "../data/source/map_data/goteborg.geojson"
 # Ändra till antal rutter att skapa (VAR SÄKER PÅ ATT INTE BRYTA MOT API-ANVÄNDNINGSREGLER)
 num_coordinates = 500
 coordinates = randomize_coordinates(geojson_file, num_coordinates)
@@ -85,4 +85,4 @@ print(coordinates)
 responses = get_bike_routes(coordinates)
 print(responses)
 # Ändra till korrekt output-fil
-save_responses_to_json(responses, "../data/source/routes/stockholm_route_1.json")
+save_responses_to_json(responses, "../data/source/routes/gothenburg_route_1.json")
