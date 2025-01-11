@@ -20,9 +20,9 @@ from api.db.repository_bike import BikeRepository as BikeRepoClass
 from api.dependencies.repository_factory import get_repository
 from api.models import db_models
 from api.models.bike_models import (
-    BikeSocket,
     BikeCreate,
     BikeResource,
+    BikeSocket,
     BikeUpdate,
 )
 from api.models.models import (
@@ -86,9 +86,7 @@ def raise_not_found(detail: str):
     raise HTTPException(
         status_code=404,
         detail=JsonApiErrorResponse(
-            errors=[
-                JsonApiError(status="404", title="Resource not found", detail=detail)
-            ]
+            errors=[JsonApiError(status="404", title="Resource not found", detail=detail)]
         ).model_dump(),
     )
 

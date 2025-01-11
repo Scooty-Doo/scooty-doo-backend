@@ -1,10 +1,10 @@
 """Models for bikes"""
 
-from typing import Optional, Any
-
-from pydantic import Field, field_validator, BaseModel, ConfigDict
-
 from datetime import datetime
+from typing import Any, Optional
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
 from api.models.models import JsonApiLinks
 from api.models.wkt_models import WKTPoint
 

@@ -5,9 +5,10 @@ https://fastapi-jsonapi.readthedocs.io/en/latest/
 """
 
 # pylint: disable=too-few-public-methods
-from typing import Any, Generic, Optional, TypeVar
+from typing import Generic, Optional, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
+
 
 class JsonApiLinks(BaseModel):
     """JSON:API links object."""
@@ -39,6 +40,3 @@ class JsonApiResponse(BaseModel, Generic[T]):
 
     data: T | list[T]
     links: JsonApiLinks
-
-
-
