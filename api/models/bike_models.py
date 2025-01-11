@@ -64,7 +64,7 @@ class BikeGetRequestParams(BaseModel):
     order_by: Literal["id", "created_at", "updated_at", "city_id", "is_available"] = "created_at"
     order_direction: Literal["asc", "desc"] = "desc"
 
-    city_id: Optional[int] = None
+    city_id: Optional[int] = Field(None, ge=1)
     is_available: Optional[bool] = None
     battery_gt: Optional[float] = None
     battery_lt: Optional[float] = None
