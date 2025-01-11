@@ -30,32 +30,36 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
             ST_AsText(self.model.last_position).label("last_position"),
         ]
 
-    def _build_filters(self, filters: dict[str, Any]) -> list[BinaryExpression]:
-        """Build SQLAlchemy filters from a dictionary of parameters."""
-        expressions = []
+    def _build_filters(self, **params: dict[str, Any]) -> list[BinaryExpression]:
+        """Filter builder for user queries."""
+        filter_map = {
+            "is_available": lambda v: self.model.is_available == v,
+            "city_id": lambda v: self.model.city_id == v,
+            "battery_gt": lambda v: self.model.battery_lvl > v,
+            "battery_lt": lambda v: self.model.battery_lvl < v,
+            "created_at_gt": lambda v: self.model.created_at > v,
+            "created_at_lt": lambda v: self.model.created_at < v,
+            "updated_at_gt": lambda v: self.model.updated_at > v,
+            "updated_at_lt": lambda v: self.model.updated_at < v,
+        }
 
-        if filters.get("city_id") is not None:
-            expressions.append(self.model.city_id == filters["city_id"])
+        return [
+            filter_map[key](value)
+            for key, value in params.items()
+            if key in filter_map and value is not None
+        ]
 
-        if filters.get("is_available") is not None:
-            expressions.append(self.model.is_available == filters["is_available"])
-
-        if filters.get("min_battery") is not None:
-            expressions.append(self.model.battery_lvl >= filters["min_battery"])
-
-        if filters.get("max_battery") is not None:
-            expressions.append(self.model.battery_lvl <= filters["max_battery"])
-
-        return expressions
-
-    async def get_bikes(self, filters: Optional[dict[str, Any]] = None) -> list[db_models.Bike]:
+    async def get_bikes(self, **params) -> list[db_models.Bike]:
         """Get bikes with dynamic filters."""
         stmt = select(*self._get_bike_columns())
 
+        filters = self._build_filters(**params)
         if filters:
-            expressions = self._build_filters(filters)
-            if expressions:
-                stmt = stmt.where(and_(*expressions))
+            stmt = stmt.where(and_(*filters))
+        order_column = getattr(self.model, params.get("order_by", "created_at"))
+        stmt = stmt.order_by(order_column)
+
+        stmt = stmt.offset(params.get("offset", 0)).limit(params.get("limit", 100))
 
         result = await self.session.execute(stmt)
         return list(result.mappings().all())
