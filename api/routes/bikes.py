@@ -19,11 +19,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from api.db.repository_bike import BikeRepository as BikeRepoClass
 from api.dependencies.repository_factory import get_repository
 from api.models import db_models
-from api.models.bike_models import BikeSocket
-from api.models.models import (
+from api.models.bike_models import (
     BikeCreate,
     BikeResource,
+    BikeSocket,
     BikeUpdate,
+)
+from api.models.models import (
     JsonApiError,
     JsonApiErrorResponse,
     JsonApiLinks,
@@ -158,11 +160,16 @@ async def get_bike(
     self_link = base_url + str(bike_id)
 
     return JsonApiResponse(
-        data=BikeResource.from_db_model(bike, base_url), links=JsonApiLinks(self_link=self_link)
+        data=BikeResource.from_db_model(bike, base_url),
+        links=JsonApiLinks(self_link=self_link),
     )
 
 
-@router.post("/", response_model=JsonApiResponse[BikeResource], status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    response_model=JsonApiResponse[BikeResource],
+    status_code=status.HTTP_201_CREATED,
+)
 async def add_bike(
     request: Request, bike: BikeCreate, bike_repository: BikeRepository
 ) -> JsonApiResponse[BikeResource]:
@@ -179,7 +186,10 @@ async def add_bike(
 
 @router.patch("/{bike_id}", response_model=JsonApiResponse[BikeResource])
 async def update_bike(
-    request: Request, bike_id: int, bike_update: BikeUpdate, bike_repository: BikeRepository
+    request: Request,
+    bike_id: int,
+    bike_update: BikeUpdate,
+    bike_repository: BikeRepository,
 ) -> JsonApiResponse[BikeResource]:
     """Update a bike."""
     bike = await bike_repository.get(bike_id)
