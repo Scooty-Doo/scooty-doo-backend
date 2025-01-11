@@ -21,10 +21,10 @@ from api.dependencies.repository_factory import get_repository
 from api.models import db_models
 from api.models.bike_models import (
     BikeCreate,
+    BikeGetRequestParams,
     BikeResource,
     BikeSocket,
     BikeUpdate,
-    BikeGetRequestParams,
     UserBikeGetRequestParams,
 )
 from api.models.models import (
@@ -97,7 +97,7 @@ def raise_not_found(detail: str):
 async def get_all_bikes(
     request: Request,
     bike_repository: BikeRepository,
-    query_params: Annotated[BikeGetRequestParams, Query()]
+    query_params: Annotated[BikeGetRequestParams, Query()],
 ) -> JsonApiResponse[BikeResource]:
     """Get all bikes (admin only)."""
     bikes = await bike_repository.get_bikes(**query_params.model_dump(exclude_none=True))
@@ -113,7 +113,7 @@ async def get_all_bikes(
 async def get_available_bikes(
     request: Request,
     bike_repository: BikeRepository,
-    query_params: Annotated[UserBikeGetRequestParams, Query()]
+    query_params: Annotated[UserBikeGetRequestParams, Query()],
 ) -> JsonApiResponse[BikeResource]:
     """Get available bikes (user endpoint)."""
     params = query_params.model_dump(exclude_none=True)

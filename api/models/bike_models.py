@@ -53,6 +53,7 @@ class BikeResource(BaseModel):
             links=JsonApiLinks(self_link=f"{request_url}{bike.id}"),
         )
 
+
 class BikeGetRequestParams(BaseModel):
     """Model for query params for getting bikes"""
 
