@@ -41,8 +41,8 @@ class TestBikeRoute:
             "order_by": "created_at",
             "order_direction": "desc",
             "city_id": 1,
-            "battery_gt": 10.0,
-            "battery_lt": 40.0
+            "min_battery": 10.0,
+            "max_battery": 40.0
         }
         # Mocks database call
         mock_get_bikes = AsyncMock(return_value=fake_bike_data)
@@ -51,7 +51,7 @@ class TestBikeRoute:
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://localhost:8000/"
         ) as ac:
-            response = await ac.get("v1/bikes/?city_id=1&battery_gt=10&battery_lt=40")
+            response = await ac.get("v1/bikes/?city_id=1&min_battery=10&max_battery=40")
 
         assert response.status_code == 200
 

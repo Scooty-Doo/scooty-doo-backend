@@ -67,8 +67,8 @@ class BikeGetRequestParams(BaseModel):
 
     city_id: Optional[int] = Field(None, ge=1)
     is_available: Optional[bool] = None
-    battery_gt: Optional[float] = None
-    battery_lt: Optional[float] = None
+    min_battery: Optional[float] = None
+    max_battery: Optional[float] = None
     created_at_gt: Optional[datetime] = None
     created_at_lt: Optional[datetime] = None
     updated_at_gt: Optional[datetime] = None

@@ -35,8 +35,8 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
         filter_map = {
             "is_available": lambda v: self.model.is_available == v,
             "city_id": lambda v: self.model.city_id == v,
-            "battery_gt": lambda v: self.model.battery_lvl > v,
-            "battery_lt": lambda v: self.model.battery_lvl < v,
+            "min_battery": lambda v: self.model.battery_lvl > v,
+            "max_battery": lambda v: self.model.battery_lvl < v,
             "created_at_gt": lambda v: self.model.created_at > v,
             "created_at_lt": lambda v: self.model.created_at < v,
             "updated_at_gt": lambda v: self.model.updated_at > v,
