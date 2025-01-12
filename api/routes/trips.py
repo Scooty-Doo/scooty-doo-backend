@@ -21,6 +21,7 @@ from api.models.models import (
 from api.models.trip_models import (
     TripCreate,
     TripEndRepoParams,
+    TripGetRequestParams,
     TripId,
     TripResource,
     UserTripStart,
@@ -55,17 +56,10 @@ BikeRepository = Annotated[
 async def get_trips(
     request: Request,
     trip_repository: TripRepository,
-    user_id: Annotated[int | None, Query()] = None,
-    bike_id: Annotated[int | None, Query()] = None,
+    query_params: Annotated[TripGetRequestParams, Query()],
 ) -> JsonApiResponse[TripResource]:
     """Get all trips from the database."""
-    filters = {}
-    if user_id:
-        filters["user_id"] = user_id
-    if bike_id:
-        filters["bike_id"] = bike_id
-
-    trips = await trip_repository.get_trips(filters)
+    trips = await trip_repository.get_trips(**query_params.model_dump(exclude_none=True))
     base_url = str(request.base_url).rstrip("/") + request.url.path
 
     return JsonApiResponse(

@@ -1,7 +1,7 @@
 """Module for trip models"""
 
 from datetime import datetime
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -160,3 +160,29 @@ class BikeTripStartRequest(BaseModel):
 
     user_id: int
     trip_id: int
+
+
+class TripGetRequestParams(BaseModel):
+    """Model for getting queriyng trips"""
+
+    # Pagination defaults to 300 trips per page
+    limit: int = Field(300, gt=0)
+    offset: int = Field(0, ge=0)
+
+    # Sorting
+    order_by: Literal[
+        "created_at", "updated_at", "bike_id", "user_id", "total_fee", "start_time", "end_time"
+    ] = "created_at"
+    order_direction: Literal["asc", "desc"] = "desc"
+
+    bike_id: Optional[int] = None
+    user_id: Optional[int] = None
+    is_ongoing: Optional[bool] = None
+    total_fee_gt: Optional[float] = None
+    total_fee_lt: Optional[float] = None
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
+    created_at_gt: Optional[datetime] = None
+    updated_at_lt: Optional[datetime] = None
+    updated_at_gt: Optional[datetime] = None
+    created_at_lt: Optional[datetime] = None
