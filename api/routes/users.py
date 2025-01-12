@@ -115,7 +115,7 @@ async def update_user(
     user_id: int = Path(..., ge=1),
 ) -> JsonApiResponse[UserResource]:
     """Update a user by ID"""
-    user_data_dict = user_data.model_dump()
+    user_data_dict = user_data.model_dump(exclude_unset=True)
     user = await user_repository.update_user(user_id, user_data_dict)
 
     base_url = str(request.base_url).rstrip("/")
