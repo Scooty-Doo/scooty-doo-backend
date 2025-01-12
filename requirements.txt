@@ -19,3 +19,6 @@ python-socketio==5.12.0
 pyjwt==2.10.1
 stripe==11.4.1
 tsidpy==1.1.5
+
+# Trip generation
+polyline==2.0.2
