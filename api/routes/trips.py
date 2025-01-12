@@ -13,7 +13,7 @@ from api.exceptions import (
     UnauthorizedTripAccessException,
 )
 from api.models import db_models
-from api.models.bike_models import BikeSocket
+from api.models.bike_models import BikeSocketStartEnd
 from api.models.models import (
     JsonApiLinks,
     JsonApiResponse,
@@ -26,7 +26,7 @@ from api.models.trip_models import (
     UserTripStart,
 )
 from api.services.bike_caller import get_bike_service
-from api.services.socket import emit_update
+from api.services.socket import emit_update_start_end
 
 router = APIRouter(
     prefix="/v1/trips",
@@ -118,8 +118,10 @@ async def start_trip(
     created_trip = await trip_repository.add_trip(trip_data)
 
     # Emit bike status to socket
-    # I might have gone a bit overboard with the unpacking, but I like it!
-    await emit_update(BikeSocket(**bike_data.log.__dict__, **bike_data.report.__dict__))
+    await emit_update_start_end(
+        BikeSocketStartEnd(**bike_data.log.__dict__, **bike_data.report.__dict__),
+        "bike_update_start",
+    )
 
     base_url = str(request.base_url).rstrip("/")
     self_link = f"{base_url}/v1/trips/{created_trip.id}"
@@ -167,13 +169,14 @@ async def end_trip(
         user_id=user_trip_data.user_id,
         bike_id=user_trip_data.bike_id,
     )
-    print("Whoo")
     # End trip in repository
     updated_trip = await trip_repository.end_trip(repo_params, bike_response.report.is_available)
 
     # Emit bike status to socket
-    # Again with the unpackings?
-    await emit_update(BikeSocket(**bike_response.report.__dict__, **bike_response.log.__dict__))
+    await emit_update_start_end(
+        BikeSocketStartEnd(**bike_response.report.__dict__, **bike_response.log.__dict__),
+        "bike_update_end",
+    )
 
     base_url = str(request.base_url).rstrip("/")
     self_link = f"{base_url}/v1/trips/{updated_trip.id}"
