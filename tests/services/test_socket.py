@@ -11,7 +11,7 @@ from api.db.repository_bike import BikeRepository
 from api.db.repository_trip import TripRepository
 from api.db.repository_user import UserRepository
 from api.main import app
-from api.models.bike_models import BikeSocket
+from api.models.bike_models import BikeSocket, BikeSocketStartEnd
 from api.models.trip_models import BikeTripEndData, BikeTripStartData
 from api.services.socket import socket
 from tests.mock_files.objects import fake_bike_data, fake_trip
@@ -25,6 +25,7 @@ class TestSocket:
         "battery_lvl": 43,
         "city_id": 1,
         "last_position": "POINT(11.9746 57.7089)",
+        "speed": 13.5,
         "is_available": "true",
         "meta_data": None,
     }
@@ -73,6 +74,7 @@ class TestSocket:
                 city_id=1,
                 last_position="POINT(11.9746 57.7089)",
                 is_available=True,
+                speed=13.5,
                 meta_data=None,
                 bike_id=1,
                 zone_id=None,
@@ -114,8 +116,8 @@ class TestSocket:
 
         assert response.status_code == 201
         mock_socket_emit.assert_awaited_once_with(
-            "bike_update",
-            data=BikeSocket(
+            "bike_update_start",
+            data=BikeSocketStartEnd(
                 battery_lvl=85,
                 city_id=1,
                 last_position="POINT(13.10005 55.55034)",
@@ -156,8 +158,8 @@ class TestSocket:
 
         assert response.status_code == 200
         mock_socket_emit.assert_awaited_once_with(
-            "bike_update",
-            data=BikeSocket(
+            "bike_update_end",
+            data=BikeSocketStartEnd(
                 battery_lvl=85,
                 city_id=1,
                 last_position="POINT(13.10005 55.55034)",
