@@ -139,7 +139,6 @@ async def end_trip(
 ) -> JsonApiResponse[TripResource]:
     """Endpoint for user to end a trip
     TODO: Return link to user and user's transaction?"""
-    print(type(trip_id))
     _, bike_end_trip = get_bike_service()
     bike_response = await bike_end_trip(
         user_trip_data.bike_id, user_trip_data.user_id, trip_id, False, True
@@ -176,10 +175,10 @@ async def end_trip(
     await emit_update(BikeSocket(**bike_response.report.__dict__, **bike_response.log.__dict__))
 
     base_url = str(request.base_url).rstrip("/")
-    base_url = f"{base_url}/v1/trips/"
-    self_link = base_url + str(trip_id)
+    base_url_link = f"{base_url}/v1/trips/"
+    self_link = base_url_link + str(trip_id)
 
     return JsonApiResponse(
-        data=TripResource.from_db_model(updated_trip, base_url),
+        data=TripResource.from_db_model(updated_trip, base_url_link),
         links=JsonApiLinks(self_link=self_link),
     )
