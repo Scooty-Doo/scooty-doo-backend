@@ -94,7 +94,7 @@ def raise_not_found(detail: str):
 
 @router.get("/", response_model=JsonApiResponse[BikeResource])
 async def get_all_bikes(
-    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
+    _: Annotated[int, Security(security_check, scopes=["admin"])],
     request: Request,
     bike_repository: BikeRepository,
     city_id: Annotated[int | None, Query()] = None,
@@ -150,7 +150,7 @@ async def get_available_bikes(
 
 @router.get("/{bike_id}", response_model=JsonApiResponse[BikeResource])
 async def get_bike(
-    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
+    _: Annotated[int, Security(security_check, scopes=["admin"])],
     request: Request, bike_id: int, bike_repository: BikeRepository,
 ) -> JsonApiResponse[BikeResource]:
     """Get a bike by ID."""
@@ -174,7 +174,7 @@ async def get_bike(
     status_code=status.HTTP_201_CREATED
 )
 async def add_bike(
-    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
+    _: Annotated[int, Security(security_check, scopes=["admin"])],
     request: Request,
     bike: BikeCreate,
     bike_repository: BikeRepository,
@@ -192,7 +192,7 @@ async def add_bike(
 
 @router.patch("/{bike_id}", response_model=JsonApiResponse[BikeResource])
 async def update_bike(
-    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
+    _: Annotated[int, Security(security_check, scopes=["admin"])],
     request: Request,
     bike_id: int,
     bike_update: BikeUpdate,
@@ -220,7 +220,7 @@ async def update_bike(
 
 @router.delete("/{bike_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_bike(
-    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
+    _: Annotated[int, Security(security_check, scopes=["admin"])],
     bike_id: int,
     bike_repository: BikeRepository,
 ):
