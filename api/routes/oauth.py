@@ -1,6 +1,5 @@
 """OAuth routes"""
 
-import os
 from typing import Annotated
 
 import jwt
@@ -12,7 +11,8 @@ from api.dependencies.repository_factory import get_repository
 from api.exceptions import UserNotFoundException
 from api.models import db_models
 from api.models.oauth_models import GitHubRequest, GitHubUserResponse
-from api.oauth.oauth import get_github_access_token, get_github_user, get_id
+from api.services.oauth import get_github_access_token, get_github_user, get_id
+from api.config import settings
 
 router = APIRouter(
     prefix="/v1/oauth",
@@ -41,11 +41,10 @@ async def login_github(
         github_user_data = await get_github_user(access_token)
         github_user = GitHubUserResponse.model_validate(github_user_data)
         try:
-            user_id = await get_id(github_user, request.role, admin_repository, user_repository)
+            user_id, scopes = await get_id(github_user, request.role, admin_repository, user_repository)
         except UserNotFoundException as e:
             raise HTTPException(status_code=404, detail="Admin not found") from e
-
-        token = jwt.encode({"user_id": user_id.id}, os.getenv("JWT_SECRET"), algorithm="HS256")
-        return {"token": token}
+        token = jwt.encode({"sub": str(user_id.id), "scopes": scopes}, settings.jwt_secret, algorithm="HS256")
+        return {"access_token": token, "token_type": "bearer"}
     except HTTPException as e:
         raise e
