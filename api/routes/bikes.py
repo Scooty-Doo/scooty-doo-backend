@@ -14,7 +14,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status, Security
 
 from api.db.repository_bike import BikeRepository as BikeRepoClass
 from api.dependencies.repository_factory import get_repository
@@ -32,6 +32,7 @@ from api.models.models import (
     JsonApiResponse,
 )
 from api.services.socket import emit_update
+from api.services.oauth import security_check
 
 router = APIRouter(
     prefix="/v1/bikes",
@@ -93,6 +94,7 @@ def raise_not_found(detail: str):
 
 @router.get("/", response_model=JsonApiResponse[BikeResource])
 async def get_all_bikes(
+    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
     request: Request,
     bike_repository: BikeRepository,
     city_id: Annotated[int | None, Query()] = None,
@@ -148,7 +150,8 @@ async def get_available_bikes(
 
 @router.get("/{bike_id}", response_model=JsonApiResponse[BikeResource])
 async def get_bike(
-    request: Request, bike_id: int, bike_repository: BikeRepository
+    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
+    request: Request, bike_id: int, bike_repository: BikeRepository,
 ) -> JsonApiResponse[BikeResource]:
     """Get a bike by ID."""
     bike = await bike_repository.get_bike(bike_id)
@@ -168,10 +171,13 @@ async def get_bike(
 @router.post(
     "/",
     response_model=JsonApiResponse[BikeResource],
-    status_code=status.HTTP_201_CREATED,
+    status_code=status.HTTP_201_CREATED
 )
 async def add_bike(
-    request: Request, bike: BikeCreate, bike_repository: BikeRepository
+    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
+    request: Request,
+    bike: BikeCreate,
+    bike_repository: BikeRepository,
 ) -> JsonApiResponse[BikeResource]:
     """Add a new bike to the database (admin only)"""
     bike_data = bike.model_dump()
@@ -186,6 +192,7 @@ async def add_bike(
 
 @router.patch("/{bike_id}", response_model=JsonApiResponse[BikeResource])
 async def update_bike(
+    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
     request: Request,
     bike_id: int,
     bike_update: BikeUpdate,
@@ -212,7 +219,11 @@ async def update_bike(
 
 
 @router.delete("/{bike_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def remove_bike(bike_id: int, bike_repository: BikeRepository):
+async def remove_bike(
+    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
+    bike_id: int,
+    bike_repository: BikeRepository,
+):
     """Remove a bike."""
     bike = await bike_repository.get(bike_id)
     if bike is None:

@@ -1,11 +1,8 @@
 """Stripe routes"""
 
-import os
-
 import stripe
-from dotenv import load_dotenv
 from fastapi import APIRouter
-
+from api.config import settings
 from api.models.stripe_models import (
     PaymentUrlResponse,
     StripeModel,
@@ -18,14 +15,11 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-load_dotenv()
-
 
 @router.post("/")
 async def stripe_checkout(stripe_model: StripeModel) -> StripeResponse:
     """Creates a stripe checkout session"""
-    stripe.api_key = os.getenv("STRIPE_API_KEY")
-    print(stripe_model.frontend_url)
+    stripe.api_key = settings.stripe_api_key
     try:
         checkout_session = stripe.checkout.Session.create(
             line_items=[
