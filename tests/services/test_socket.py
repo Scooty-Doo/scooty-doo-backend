@@ -5,6 +5,7 @@ import json
 from unittest.mock import AsyncMock, Mock
 
 import pytest
+from fastapi.security.oauth2 import SecurityScopes
 from httpx import ASGITransport, AsyncClient
 
 from api.db.repository_bike import BikeRepository
@@ -13,6 +14,7 @@ from api.db.repository_user import UserRepository
 from api.main import app
 from api.models.bike_models import BikeSocket
 from api.models.trip_models import BikeTripEndData, BikeTripStartData
+from api.routes.bikes import security_check
 from api.services.socket import socket
 from tests.mock_files.objects import fake_bike_data, fake_trip
 from tests.utils import get_fake_json_data
@@ -41,9 +43,15 @@ class TestSocket:
     start_mock_data = get_fake_json_data("bike_caller_start_trip")
     end_mock_data = get_fake_json_data("bike_caller_end_trip")
 
+    async def mock_security_check(token: str = "", security_scopes: SecurityScopes = None):
+        return 652134919185249719
+
     @pytest.mark.asyncio
     async def test_socket_emit_patch(self, monkeypatch):
         """Tests socket emitting"""
+        # Mock security check (for all socket tests)
+        app.dependency_overrides[security_check] = self.mock_security_check
+
         # Mock database call
         mock_get_bike = AsyncMock(return_value=fake_bike_data[0])
         monkeypatch.setattr(BikeRepository, "get", mock_get_bike)
@@ -64,7 +72,7 @@ class TestSocket:
                 f"v1/bikes/{self.fake_socket_data['bike_id']}",
                 content=json.dumps(self.fake_input_data),
             )
-
+        print(response.json())
         assert response.status_code == 200
         mock_socket_emit.assert_awaited_once_with(
             "bike_update",
@@ -84,6 +92,7 @@ class TestSocket:
     @pytest.mark.asyncio
     async def test_socket_emit_start_trip(self, monkeypatch):
         """Tests socket emitting from start_trip"""
+
         # Setup
         # Mock user eligibility
         mock_check_user = AsyncMock(return_value="")
@@ -109,9 +118,10 @@ class TestSocket:
         ) as ac:
             response = await ac.post(
                 "v1/trips/",
-                json={"bike_id": 3, "user_id": 1},
+                json={"bike_id": 3},
             )
 
+        print(response.json())
         assert response.status_code == 201
         mock_socket_emit.assert_awaited_once_with(
             "bike_update",
@@ -145,14 +155,15 @@ class TestSocket:
         monkeypatch.setattr(
             "api.routes.trips.get_bike_service", Mock(return_value=(mock_end_data, mock_end_data))
         )
-
+        # 652134919185249719
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://localhost:8000/"
         ) as ac:
             response = await ac.patch(
                 "v1/trips/123",
-                json={"bike_id": 1, "user_id": 652134919185249719},
+                json={"bike_id": 1},
             )
+        print(response.json())
 
         assert response.status_code == 200
         mock_socket_emit.assert_awaited_once_with(
