@@ -1,0 +1,40 @@
+{
+    "data": {
+        "id": 12409712904,
+        "type": "trips",
+        "attributes": {
+          "start_position": "POINT(13.06782 55.577859)",
+          "end_position": null,
+          "path_taken": null,
+          "start_time": "2025-01-08T20:12:27.694999Z",
+          "end_time": null,
+          "start_fee": null,
+          "time_fee": null,
+          "end_fee": null,
+          "total_fee": null,
+          "created_at": "2025-01-08T20:12:27.694999Z",
+          "updated_at": "2025-01-08T20:12:27.694999Z"
+        },
+        "relationships": {
+          "user": {
+            "data": {
+              "type": "users",
+              "id": "None"
+            }
+          },
+          "bike": {
+            "data": {
+              "type": "bikes",
+              "id": "None"
+            }
+          },
+          "transaction": null
+        },
+        "links": {
+          "self": "http://localhost:8000/v1/trips/12409712904"
+        }
+    },
+    "links": {
+        "self": "http://localhost:8000/v1/trips/12409712904"
+      }
+}

@@ -107,7 +107,6 @@ async def start_trip(
     bike_start_trip, _ = get_bike_service()
     await user_repository.check_user_eligibility(user_id)
 
-    # TODO: Proper SLID generation
     trip_id = TSID.create().number
 
     # Get bike data first
@@ -128,10 +127,11 @@ async def start_trip(
     await emit_update(BikeSocket(**bike_data.log.__dict__, **bike_data.report.__dict__))
 
     base_url = str(request.base_url).rstrip("/")
-    self_link = f"{base_url}/v1/trips/{created_trip.id}"
+    base_url = f"{base_url}/v1/trips/"
+    self_link = base_url + str(trip_id)
 
     return JsonApiResponse(
-        data=TripResource.from_db_model(created_trip, self_link),
+        data=TripResource.from_db_model(created_trip, base_url),
         links=JsonApiLinks(self_link=self_link),
     )
 
@@ -146,7 +146,6 @@ async def end_trip(
 ) -> JsonApiResponse[TripResource]:
     """Endpoint for user to end a trip
     TODO: Return link to user and user's transaction?"""
-    print(type(trip_id))
     _, bike_end_trip = get_bike_service()
     bike_response = await bike_end_trip(user_trip_data.bike_id, user_id, trip_id, False, True)
     #  validate that user, trip and bike match before calling db
@@ -178,8 +177,10 @@ async def end_trip(
     await emit_update(BikeSocket(**bike_response.report.__dict__, **bike_response.log.__dict__))
 
     base_url = str(request.base_url).rstrip("/")
-    self_link = f"{base_url}/v1/trips/{updated_trip.id}"
+    base_url_link = f"{base_url}/v1/trips/"
+    self_link = base_url_link + str(trip_id)
+
     return JsonApiResponse(
-        data=TripResource.from_db_model(updated_trip, self_link),
+        data=TripResource.from_db_model(updated_trip, base_url_link),
         links=JsonApiLinks(self_link=self_link),
     )

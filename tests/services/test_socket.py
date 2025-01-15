@@ -160,8 +160,8 @@ class TestSocket:
             transport=ASGITransport(app=app), base_url="http://localhost:8000/"
         ) as ac:
             response = await ac.patch(
-                "v1/trips/123",
-                json={"bike_id": 1},
+                "v1/trips/12409712904",
+                json={"bike_id": 1, "user_id": 652134919185249719},
             )
         print(response.json())
 

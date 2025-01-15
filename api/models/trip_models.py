@@ -71,7 +71,7 @@ class TripResource(BaseModel):
             attributes=TripAttributes.model_validate(trip),
             relationships=TripRelationships(**relationships),
             # Add links to user/bike/transaction?
-            links=JsonApiLinks(self_link=f"{request_url}"),
+            links=JsonApiLinks(self_link=f"{request_url}{trip.id}"),
         )
 
 
