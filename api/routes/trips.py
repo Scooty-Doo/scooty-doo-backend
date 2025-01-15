@@ -118,7 +118,7 @@ async def start_trip(
 
     # Emit bike status to socket
     # I might have gone a bit overboard with the unpacking, but I like it!
-    await emit_update(BikeSocket(**bike_data.log.__dict__, **bike_data.report.__dict__))
+    await emit_update(BikeSocket(**bike_data.log.model_dump(), **bike_data.report.model_dump()))
 
     base_url = str(request.base_url).rstrip("/")
     base_url = f"{base_url}/v1/trips/"
@@ -172,7 +172,7 @@ async def end_trip(
 
     # Emit bike status to socket
     # Again with the unpackings?
-    await emit_update(BikeSocket(**bike_response.report.__dict__, **bike_response.log.__dict__))
+    await emit_update(BikeSocket(**bike_response.report.model_dump(), **bike_response.log.model_dump()))
 
     base_url = str(request.base_url).rstrip("/")
     base_url_link = f"{base_url}/v1/trips/"

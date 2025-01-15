@@ -202,7 +202,7 @@ async def update_bike(
 
     base_url = str(request.base_url).rstrip("/") + request.url.path.rsplit("/", 1)[0]
 
-    await emit_update(BikeSocket(**bike_update.__dict__, bike_id=bike_id))
+    await emit_update(BikeSocket(**bike_update.model_dump(), bike_id=bike_id))
 
     return JsonApiResponse(
         data=BikeResource.from_db_model(updated_bike, base_url),
