@@ -202,7 +202,6 @@ async def update_bike(
 
     base_url = str(request.base_url).rstrip("/") + request.url.path.rsplit("/", 1)[0]
 
-    # Is this unpacking ok?
     await emit_update(BikeSocket(**bike_update.__dict__, bike_id=bike_id))
 
     return JsonApiResponse(
