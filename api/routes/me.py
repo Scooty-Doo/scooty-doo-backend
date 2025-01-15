@@ -19,10 +19,7 @@ from api.models.transaction_models import (
 from api.models.trip_models import (
     TripResource,
 )
-from api.models.user_models import (
-    UserResource,
-    UserUpdate
-)
+from api.models.user_models import UserResource, UserUpdate
 from api.services.oauth import security_check
 
 router = APIRouter(
@@ -46,11 +43,12 @@ TransactionRepository = Annotated[
     Depends(get_repository(db_models.Transaction, repository_class=TransactionRepoClass)),
 ]
 
+
 @router.get("/", response_model=JsonApiResponse[UserResource])
 async def get_my_user(
+    user_id: Annotated[int, Security(security_check, scopes=["user"])],
     user_repository: UserRepository,
     request: Request,
-    user_id: Annotated[int, Security(security_check, scopes=["user"])],
 ) -> JsonApiResponse[UserResource]:
     """Get a user by ID in token"""
     user = await user_repository.get_user(user_id)
@@ -66,10 +64,10 @@ async def get_my_user(
 
 @router.patch("/", response_model=JsonApiResponse[UserResource])
 async def update_my_user(
+    user_id: Annotated[int, Security(security_check, scopes=["user"])],
     user_repository: UserRepository,
     user_data: UserUpdate,
     request: Request,
-    user_id: Annotated[int, Security(security_check, scopes=["user"])],
 ) -> JsonApiResponse[UserResource]:
     """Updates a users own information"""
     user_data_dict = user_data.model_dump(exclude_unset=True)
@@ -86,9 +84,9 @@ async def update_my_user(
 
 @router.get("/trips", response_model=JsonApiResponse[TripResource])
 async def get_my_trips(
+    user_id: Annotated[int, Security(security_check, scopes=["user"])],
     trip_repository: TripRepository,
     request: Request,
-    user_id: Annotated[int, Security(security_check, scopes=["user"])]
 ) -> JsonApiResponse[TripResource]:
     """Get all trips for your user"""
     filter_dict = {"user_id": user_id}
@@ -105,9 +103,9 @@ async def get_my_trips(
 
 @router.get("/transactions", response_model=JsonApiResponse[TransactionResourceMinimal])
 async def get_my_user_transactions(
+    user_id: Annotated[int, Security(security_check, scopes=["user"])],
     transaction_repository: TransactionRepository,
     request: Request,
-    user_id: Annotated[int, Security(security_check, scopes=["user"])]
 ) -> JsonApiResponse[TransactionResourceMinimal]:
     """Get all transactions for your user"""
     transactions = await transaction_repository.get_transactions(user_id=user_id)

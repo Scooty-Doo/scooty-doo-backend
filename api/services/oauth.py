@@ -1,21 +1,20 @@
 """Module for Oauth"""
 
+from typing import Annotated
 
 import httpx
 import jwt
-
-from fastapi import HTTPException, status, Depends
-from fastapi.security.oauth2 import SecurityScopes, OAuth2AuthorizationCodeBearer
-from typing import Annotated
+from fastapi import Depends, HTTPException, status
+from fastapi.security.oauth2 import OAuth2AuthorizationCodeBearer, SecurityScopes
 from jwt.exceptions import InvalidTokenError
 from pydantic import ValidationError
 
 from api.config import settings
+from api.db.repository_user import UserRepository as UserRepoClass
+from api.dependencies.repository_factory import get_repository
 from api.exceptions import UserNotFoundException
 from api.models import db_models
-from api.models.oauth_models import GitHubUserResponse, UserId, TokenData
-from api.dependencies.repository_factory import get_repository
-from api.db.repository_user import UserRepository as UserRepoClass
+from api.models.oauth_models import GitHubUserResponse, TokenData, UserId
 
 UserRepository = Annotated[
     UserRepoClass,
@@ -25,7 +24,7 @@ UserRepository = Annotated[
 oauth2_scheme = OAuth2AuthorizationCodeBearer(
     authorizationUrl="https://github.com/login/oauth/authorize",
     tokenUrl="https://github.com/login/oauth/access_token",
-    scopes={"user": "Rent bikes, see own data", "admin": "Full access"}
+    scopes={"user": "Rent bikes, see own data", "admin": "Full access"},
 )
 
 
@@ -69,9 +68,7 @@ async def get_github_user(access_token: str):
     return response.json()
 
 
-async def get_id(
-    github_user: GitHubUserResponse, role: str, admin_repository, user_repository
-):
+async def get_id(github_user: GitHubUserResponse, role: str, admin_repository, user_repository):
     """Gets the id of the user or admin from the github_login database field.
 
     If the user isn't in the database it is created.
@@ -96,7 +93,7 @@ async def get_id(
 
 async def security_check(
     security_scopes: SecurityScopes,
-    token = Depends(oauth2_scheme),
+    token=Depends(oauth2_scheme),
 ) -> int:
     """Checks a token for user id and scopes, returns user/admin ID"""
     if security_scopes.scopes:
@@ -115,8 +112,8 @@ async def security_check(
             raise credentials_exception
         token_scopes = payload.get("scopes", [])
         token_data = TokenData(user_id=user_id, scopes=token_scopes)
-    except (InvalidTokenError, ValidationError):
-        raise credentials_exception
+    except (InvalidTokenError, ValidationError) as e:
+        raise credentials_exception from e
     for scope in security_scopes.scopes:
         if scope not in token_data.scopes:
             raise HTTPException(

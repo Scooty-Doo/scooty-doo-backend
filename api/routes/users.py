@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path, Query, Request, status, Security
+from fastapi import APIRouter, Depends, Path, Query, Request, Security, status
 
 from api.db.repository_transaction import TransactionRepository as TransactionRepoClass
 from api.db.repository_trip import TripRepository as TripRepoClass
@@ -52,10 +52,10 @@ TransactionRepository = Annotated[
 
 @router.get("/{user_id}", response_model=JsonApiResponse[UserResource])
 async def get_user(
+    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
     user_repository: UserRepository,
     request: Request,
-    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
-    user_id: int = Path(..., ge=1)
+    user_id: int = Path(..., ge=1),
 ) -> JsonApiResponse[UserResource]:
     """Get a user by ID"""
     user = await user_repository.get_user(user_id)
@@ -71,10 +71,10 @@ async def get_user(
 
 @router.get("/", response_model=JsonApiResponse[UserResourceMinimal])
 async def get_users(
+    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
     request: Request,
     user_repository: UserRepository,
     query_params: Annotated[UserGetRequestParams, Query()],
-    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
 ) -> JsonApiResponse[UserResourceMinimal]:
     """Get users from the db. Defaults to showing first 100 users"""
     users = await user_repository.get_users(**query_params.model_dump(exclude_none=True))
@@ -93,10 +93,10 @@ async def get_users(
     "/", response_model=JsonApiResponse[UserResourceMinimal], status_code=status.HTTP_201_CREATED
 )
 async def create_user(
+    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
     user_repository: UserRepository,
     request: Request,
     user_data: UserCreate,
-    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
 ) -> JsonApiResponse[UserResourceMinimal]:
     """Create a new user"""
     user_data_dict = user_data.model_dump()
@@ -113,10 +113,10 @@ async def create_user(
 
 @router.patch("/{user_id}", response_model=JsonApiResponse[UserResource])
 async def update_user(
+    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
     user_repository: UserRepository,
     request: Request,
     user_data: UserUpdate,
-    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
     user_id: int = Path(..., ge=1),
 ) -> JsonApiResponse[UserResource]:
     """Update a user by ID"""
@@ -134,9 +134,9 @@ async def update_user(
 
 @router.get("/{user_id}/trips", response_model=JsonApiResponse[TripResource])
 async def get_user_trips(
+    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
     trip_repository: TripRepository,
     request: Request,
-    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
     user_id: int = Path(..., ge=1),
 ) -> JsonApiResponse[TripResource]:
     """Get all trips for a user"""
@@ -154,9 +154,9 @@ async def get_user_trips(
 
 @router.get("/{user_id}/transactions", response_model=JsonApiResponse[TransactionResourceMinimal])
 async def get_user_transactions(
+    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
     transaction_repository: TransactionRepository,
     request: Request,
-    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
     user_id: int = Path(..., ge=1),
 ) -> JsonApiResponse[TransactionResourceMinimal]:
     """Get all transactions for a user"""

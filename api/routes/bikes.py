@@ -14,7 +14,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status, Security
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Security, status
 
 from api.db.repository_bike import BikeRepository as BikeRepoClass
 from api.dependencies.repository_factory import get_repository
@@ -31,8 +31,8 @@ from api.models.models import (
     JsonApiLinks,
     JsonApiResponse,
 )
-from api.services.socket import emit_update
 from api.services.oauth import security_check
+from api.services.socket import emit_update
 
 router = APIRouter(
     prefix="/v1/bikes",
@@ -151,7 +151,9 @@ async def get_available_bikes(
 @router.get("/{bike_id}", response_model=JsonApiResponse[BikeResource])
 async def get_bike(
     _: Annotated[int, Security(security_check, scopes=["admin"])],
-    request: Request, bike_id: int, bike_repository: BikeRepository,
+    request: Request,
+    bike_id: int,
+    bike_repository: BikeRepository,
 ) -> JsonApiResponse[BikeResource]:
     """Get a bike by ID."""
     bike = await bike_repository.get_bike(bike_id)
@@ -168,11 +170,7 @@ async def get_bike(
     )
 
 
-@router.post(
-    "/",
-    response_model=JsonApiResponse[BikeResource],
-    status_code=status.HTTP_201_CREATED
-)
+@router.post("/", response_model=JsonApiResponse[BikeResource], status_code=status.HTTP_201_CREATED)
 async def add_bike(
     _: Annotated[int, Security(security_check, scopes=["admin"])],
     request: Request,

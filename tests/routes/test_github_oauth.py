@@ -1,11 +1,11 @@
 """Module for testing github oauth"""
 
-import os
 from unittest.mock import AsyncMock
 
 import jwt
 import pytest
 from httpx import ASGITransport, AsyncClient
+
 from api.config import settings
 from api.db.repository_user import UserRepository
 from api.main import app

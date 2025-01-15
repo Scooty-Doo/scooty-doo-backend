@@ -1,6 +1,6 @@
-"""MOdule with models for OAuth2"""
+"""Module with models for OAuth2"""
 
-from typing import Optional, List
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -35,7 +35,9 @@ class GitHubUserResponse(BaseModel):
             github_login=self.login,
         )
 
+
 class TokenData(BaseModel):
     """Model for data field in security token"""
+
     user_id: str
-    scopes: List[str] = ["user"]
+    scopes: list[str] = ["user"]

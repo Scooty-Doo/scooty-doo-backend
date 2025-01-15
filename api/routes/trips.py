@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Path, Query, Request, status, Security
+from fastapi import APIRouter, Body, Depends, Path, Query, Request, Security, status
 from tsidpy import TSID
 
 from api.db.repository_bike import BikeRepository as BikeRepoClass
@@ -26,8 +26,8 @@ from api.models.trip_models import (
     UserTripStart,
 )
 from api.services.bike_caller import get_bike_service
-from api.services.socket import emit_update
 from api.services.oauth import security_check
+from api.services.socket import emit_update
 
 router = APIRouter(
     prefix="/v1/trips",
@@ -79,7 +79,9 @@ async def get_trips(
 @router.get("/{trip_id}", response_model=JsonApiResponse[TripResource])
 async def get_trip(
     _: Annotated[int, Security(security_check, scopes=["admin"])],
-    request: Request, trip_id: int, trip_repository: TripRepository
+    request: Request,
+    trip_id: int,
+    trip_repository: TripRepository,
 ) -> JsonApiResponse[TripResource]:
     """Get a single trip by ID."""
     trip = await trip_repository.get_trip(trip_id)
@@ -146,16 +148,11 @@ async def end_trip(
     TODO: Return link to user and user's transaction?"""
     print(type(trip_id))
     _, bike_end_trip = get_bike_service()
-    bike_response = await bike_end_trip(
-        user_trip_data.bike_id, user_id, trip_id, False, True
-    )
+    bike_response = await bike_end_trip(user_trip_data.bike_id, user_id, trip_id, False, True)
     #  validate that user, trip and bike match before calling db
     if bike_response.log.user_id != user_id:
         raise UnauthorizedTripAccessException(
-            detail=(
-                f"User {user_id} "
-                f"is not allowed to end trip {bike_response.log.user_id}"
-            )
+            detail=(f"User {user_id} " f"is not allowed to end trip {bike_response.log.user_id}")
         )
 
     if bike_response.log.trip_id != trip_id:

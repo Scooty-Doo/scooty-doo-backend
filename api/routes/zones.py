@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path, Query, Request, status, Security
+from fastapi import APIRouter, Depends, Path, Query, Request, Security, status
 
 from api.db.repository_zone import (
     MapZoneRepository as MapZoneRepoClass,
@@ -67,9 +67,9 @@ async def get_zones(
 
 @router.get("/{zone_id}", response_model=JsonApiResponse[MapZoneResource])
 async def get_zone(
+    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
     map_zone_repository: MapZoneRepository,
     request: Request,
-    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
     zone_id: int = Path(..., ge=1),
 ) -> JsonApiResponse[MapZoneResource]:
     """Get a zone by ID"""
@@ -88,10 +88,10 @@ async def get_zone(
     "/", response_model=JsonApiResponse[MapZoneResource], status_code=status.HTTP_201_CREATED
 )
 async def create_zone(
+    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
     map_zone_repository: MapZoneRepository,
     request: Request,
     zone_data: MapZoneCreate,
-    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
 ) -> JsonApiResponse[MapZoneResource]:
     """Create a new zone"""
     zone_data_dict = zone_data.model_dump()
@@ -108,10 +108,10 @@ async def create_zone(
 
 @router.patch("/{zone_id}", response_model=JsonApiResponse[MapZoneResource])
 async def update_zone(
+    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
     map_zone_repository: MapZoneRepository,
     request: Request,
     zone_data: MapZoneUpdate,
-    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
     zone_id: int = Path(..., ge=1),
 ) -> JsonApiResponse[MapZoneResource]:
     """Update a zone by ID"""
@@ -149,8 +149,10 @@ async def get_zone_types(
     "/types", response_model=JsonApiResponse[ZoneTypeResource], status_code=status.HTTP_201_CREATED
 )
 async def create_zone_type(
-    zone_type_repository: ZoneTypeRepository, request: Request, zone_type_data: ZoneTypeCreate,
     _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
+    zone_type_repository: ZoneTypeRepository,
+    request: Request,
+    zone_type_data: ZoneTypeCreate,
 ) -> JsonApiResponse[ZoneTypeResource]:
     """Create a new zone type"""
     zone_type_data_dict = zone_type_data.model_dump()
@@ -167,10 +169,10 @@ async def create_zone_type(
 
 @router.patch("/types/{zone_type_id}", response_model=JsonApiResponse[ZoneTypeResource])
 async def update_zone_type(
+    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
     zone_type_repository: ZoneTypeRepository,
     request: Request,
     zone_type_data: ZoneTypeUpdate,
-    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
     zone_type_id: int = Path(..., ge=1),
 ) -> JsonApiResponse[ZoneTypeResource]:
     """Update a zone type by ID"""

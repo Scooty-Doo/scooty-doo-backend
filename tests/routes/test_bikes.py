@@ -1,21 +1,23 @@
 """Module for testing bike module"""
 
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from api.routes.bikes import security_check
 from api.db.repository_bike import BikeRepository
 from api.main import app
+from api.routes.bikes import security_check
 from tests.mock_files.objects import fake_bike_data
 from tests.utils import get_fake_json_data
 
 
 class TestBikeRoute:
     """Class to test bike routes"""
-    async def mock_security_check(token: str = "", required_scopes: list = []):
-       return {"user_id": 1, "scopes": required_scopes}  # Simulerar en admin-användare
+
+    async def mock_security_check(self, token: str = "", required_scopes: list = None):
+        """Mocks security check for bike routes"""
+        return {"user_id": 1, "scopes": required_scopes}
 
     @pytest.mark.asyncio
     async def test_get_all_bikes(self, monkeypatch):
