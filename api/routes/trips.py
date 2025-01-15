@@ -118,7 +118,7 @@ async def start_trip(
 
     # Emit bike status to socket
     await emit_update_start_end(
-        BikeSocketStartEnd(**bike_data.log.__dict__, **bike_data.report.__dict__),
+        BikeSocketStartEnd(bike_data.log.model_dump(), bike_data.report.model_dump()),
         "bike_update_start",
     )
 
@@ -173,7 +173,7 @@ async def end_trip(
 
     # Emit bike status to socket
     await emit_update_start_end(
-        BikeSocketStartEnd(**bike_response.report.__dict__, **bike_response.log.__dict__),
+        BikeSocketStartEnd(bike_response.report.model_dump(), bike_response.log.model_dump()),
         "bike_update_end",
     )
 
