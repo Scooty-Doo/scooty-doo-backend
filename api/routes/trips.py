@@ -166,7 +166,9 @@ async def end_trip(
 
     # Emit bike status to socket
     # Again with the unpackings?
-    await emit_update(BikeSocket(**bike_response.report.model_dump(), **bike_response.log.model_dump()))
+    await emit_update(
+        BikeSocket(**bike_response.report.model_dump(), **bike_response.log.model_dump())
+    )
 
     base_url = str(request.base_url).rstrip("/")
     base_url_link = f"{base_url}/v1/trips/"

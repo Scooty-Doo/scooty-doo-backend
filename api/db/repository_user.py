@@ -2,7 +2,7 @@
 
 from typing import Any, Optional
 
-from sqlalchemy import BinaryExpression, and_, asc, desc, select, update, or_
+from sqlalchemy import BinaryExpression, and_, asc, desc, or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
@@ -58,8 +58,8 @@ class UserRepository(DatabaseRepository[db_models.User]):
             "email_search": lambda v: self.model.email.ilike(f"%{v}%"),
             "github_login_search": lambda v: self.model.github_login.ilike(f"%{v}%"),
             "is_eligible": lambda v: or_(
-                and_(self.model.use_prepay == True, self.model.balance > 0),
-                self.model.use_prepay == False
+                and_(self.model.use_prepay, self.model.balance > 0),
+                not self.model.use_prepay,
             ),
             "balance_gt": lambda v: self.model.balance > v,
             "balance_lt": lambda v: self.model.balance < v,
