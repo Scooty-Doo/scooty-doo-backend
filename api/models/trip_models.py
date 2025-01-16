@@ -99,8 +99,8 @@ class BikeTripStartlog(BaseModel):
     start_time: datetime
     start_position: WKTPoint
     path_taken: Optional[WKTLineString] = None
-    start_map_zone_id: int
-    start_map_zone_type: str
+    start_map_zone_id: Optional[int] = None
+    start_map_zone_type: Optional[str] = None
 
 
 class BikeTripEndLog(BikeTripStartlog):
@@ -110,8 +110,8 @@ class BikeTripEndLog(BikeTripStartlog):
     end_time: datetime
     end_position: WKTPoint
     path_taken: WKTLineString
-    end_map_zone_id: int
-    end_map_zone_type: str
+    end_map_zone_id: Optional[int] = None
+    end_map_zone_type: Optional[str] = None
 
 
 class BikeTripStartData(BaseModel):
