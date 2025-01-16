@@ -38,9 +38,10 @@ async def load_mock_data():
 
         # Load data in order of dependencies
         await load_cities(session)
-        await load_bikes(session, "bikes_low_id_malmo.csv")
+        # await load_bikes(session, "bikes_low_id_malmo.csv")
         await load_bikes(session, "bikes_malmo.csv")
         await load_bikes(session, "bikes_stockholm.csv")
+        await load_bikes(session, "bikes_gothenburg.csv")
         await load_users(session)
         await load_payment_providers(session)
         await load_trips(session, "trips_low_id_malmo.csv")
@@ -50,6 +51,7 @@ async def load_mock_data():
         await load_trips(session, "trips_malmo_4.csv")
         await load_trips(session, "trips_malmo_5.csv")
         await load_trips(session, "trips_stockholm_1.csv")
+        await load_trips(session, "trips_gothenburg_1.csv")
         await load_zone_types(session)
         await load_map_zones(session)
         await load_admins_and_roles(session)
