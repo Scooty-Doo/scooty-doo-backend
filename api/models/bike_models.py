@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
 from api.models.models import JsonApiLinks
 from api.models.wkt_models import WKTPoint
@@ -120,21 +120,28 @@ class BikeUpdate(BaseModel):
         description="WKT POINT format, e.g. 'POINT(57.7089 11.9746)'",
         alias="last_position",
     )
+    speed: Optional[float] = 0.0
     is_available: Optional[bool] = None
     meta_data: Optional[dict[str, Any]] = None
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
-
-
-class BikeSocket(BikeUpdate):
-    """Socket output model"""
-
-    bike_id: int
-    zone_id: Optional[int] = Field(alias="end_map_zone_id", default=None)
-    zone_type: Optional[str] = Field(alias="end_map_zone_type", default=None)
 
     @field_validator("battery_lvl", mode="before")
     @classmethod
     def cast_float_to_int(cls, value: float) -> int:
         """Casts battery_lvl to int"""
         return int(value)
+
+
+class BikeSocket(BikeUpdate):
+    """Socket output model for reports"""
+
+    bike_id: int
+
+
+class BikeSocketStartEnd(BikeSocket):
+    """Socket output model for start/end trip"""
+
+    zone_id: Optional[int] = Field(
+        alias=AliasChoices("start_zone_map_id", "end_map_zone_id"), default=None
+    )
