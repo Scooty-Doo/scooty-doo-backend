@@ -38,10 +38,18 @@ async def load_mock_data():
 
         # Load data in order of dependencies
         await load_cities(session)
-        await load_bikes(session)
+        await load_bikes(session, "bikes_low_id_malmo.csv")
+        await load_bikes(session, "bikes_malmo.csv")
+        await load_bikes(session, "bikes_stockholm.csv")
         await load_users(session)
         await load_payment_providers(session)
-        await load_trips(session)
+        await load_trips(session, "trips_low_id_malmo.csv")
+        await load_trips(session, "trips_malmo_1.csv")
+        await load_trips(session, "trips_malmo_2.csv")
+        await load_trips(session, "trips_malmo_3.csv")
+        await load_trips(session, "trips_malmo_4.csv")
+        await load_trips(session, "trips_malmo_5.csv")
+        await load_trips(session, "trips_stockholm_1.csv")
         await load_zone_types(session)
         await load_map_zones(session)
         await load_admins_and_roles(session)
@@ -108,7 +116,7 @@ async def load_cities(session: AsyncSession):
 
 async def load_users(session: AsyncSession):
     """Load users from CSV."""
-    with open("database/mock_data/data/generated/users_cleaned.csv", encoding="utf-8") as csvfile:
+    with open("database/mock_data/data/generated/users.csv", encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             user = User(
@@ -138,11 +146,10 @@ async def load_payment_providers(session: AsyncSession):
     await session.flush()
 
 
-async def load_bikes(session: AsyncSession):
+async def load_bikes(session: AsyncSession, file_name: str):
     """Load bikes from CSV."""
-    with open(
-        "database/mock_data/data/generated/bikes_with_updated_positions.csv", encoding="utf-8"
-    ) as csvfile:
+    file_path = f"database/mock_data/data/generated/{file_name}"
+    with open(file_path, encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             bike = Bike(
@@ -161,11 +168,10 @@ async def load_bikes(session: AsyncSession):
     await session.flush()
 
 
-async def load_trips(session: AsyncSession):
+async def load_trips(session: AsyncSession, file_name: str):
     """Load trips from CSV."""
-    with open(
-        "database/mock_data/data/generated/trip_data_with_ids.csv", encoding="utf-8"
-    ) as csvfile:
+    file_path = f"database/mock_data/data/generated/{file_name}"
+    with open(file_path, encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             trip = Trip(

@@ -1,7 +1,7 @@
 """Models for bikes"""
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
@@ -52,6 +52,43 @@ class BikeResource(BaseModel):
             ),
             links=JsonApiLinks(self_link=f"{request_url}{bike.id}"),
         )
+
+
+class BikeGetRequestParams(BaseModel):
+    """Model for query params for getting bikes"""
+
+    # Pagination defaults to 100 users per page
+    limit: int = Field(300, gt=0)
+    offset: int = Field(0, ge=0)
+
+    # Sorting
+    order_by: Literal["id", "created_at", "updated_at", "city_id", "is_available"] = "created_at"
+    order_direction: Literal["asc", "desc"] = "desc"
+
+    city_id: Optional[int] = Field(None, ge=1)
+    is_available: Optional[bool] = None
+    min_battery: Optional[float] = None
+    max_battery: Optional[float] = None
+    created_at_gt: Optional[datetime] = None
+    created_at_lt: Optional[datetime] = None
+    updated_at_gt: Optional[datetime] = None
+    updated_at_lt: Optional[datetime] = None
+
+
+class UserBikeGetRequestParams(BaseModel):
+    """Model for query params for getting bikes"""
+
+    # Pagination defaults to 100 users per page
+    limit: int = Field(300, gt=0)
+    offset: int = Field(0, ge=0)
+
+    # Sorting
+    order_by: Literal["id", "created_at", "updated_at", "city_id", "is_available"] = "created_at"
+    order_direction: Literal["asc", "desc"] = "desc"
+
+    city_id: Optional[int] = Field(None, ge=1)
+    battery_gt: Optional[float] = None
+    battery_lt: Optional[float] = None
 
 
 class BikeCreate(BaseModel):

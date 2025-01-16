@@ -21,6 +21,7 @@ from api.models.models import (
 from api.models.trip_models import (
     TripCreate,
     TripEndRepoParams,
+    TripGetRequestParams,
     TripId,
     TripResource,
     UserTripStart,
@@ -55,17 +56,10 @@ BikeRepository = Annotated[
 async def get_trips(
     request: Request,
     trip_repository: TripRepository,
-    user_id: Annotated[int | None, Query()] = None,
-    bike_id: Annotated[int | None, Query()] = None,
+    query_params: Annotated[TripGetRequestParams, Query()],
 ) -> JsonApiResponse[TripResource]:
     """Get all trips from the database."""
-    filters = {}
-    if user_id:
-        filters["user_id"] = user_id
-    if bike_id:
-        filters["bike_id"] = bike_id
-
-    trips = await trip_repository.get_trips(filters)
+    trips = await trip_repository.get_trips(**query_params.model_dump(exclude_none=True))
     base_url = str(request.base_url).rstrip("/") + request.url.path
 
     return JsonApiResponse(
@@ -118,7 +112,7 @@ async def start_trip(
 
     # Emit bike status to socket
     await emit_update_start_end(
-        BikeSocketStartEnd(**bike_data.log.__dict__, **bike_data.report.__dict__),
+        BikeSocketStartEnd(**bike_data.log.model_dump(), **bike_data.report.model_dump()),
         "bike_update_start",
     )
 
@@ -173,7 +167,7 @@ async def end_trip(
 
     # Emit bike status to socket
     await emit_update_start_end(
-        BikeSocketStartEnd(**bike_response.report.__dict__, **bike_response.log.__dict__),
+        BikeSocketStartEnd(**bike_response.report.model_dump(), **bike_response.log.model_dump()),
         "bike_update_end",
     )
 
