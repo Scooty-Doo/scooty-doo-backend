@@ -114,6 +114,7 @@ class UserGetRequestParams(BaseModel):
     name_search: Optional[str] = Field(None, min_length=3)
     email_search: Optional[str] = Field(None, min_length=3)
     github_login_search: Optional[GitHubUsername] = None
+    is_eligible: Optional[bool] = None
     balance_gt: Optional[float] = None
     balance_lt: Optional[float] = None
     created_at_gt: Optional[datetime] = None

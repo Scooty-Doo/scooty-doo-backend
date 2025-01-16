@@ -21,9 +21,11 @@ from api.dependencies.repository_factory import get_repository
 from api.models import db_models
 from api.models.bike_models import (
     BikeCreate,
+    BikeGetRequestParams,
     BikeResource,
     BikeSocket,
     BikeUpdate,
+    UserBikeGetRequestParams,
 )
 from api.models.models import (
     JsonApiError,
@@ -95,20 +97,10 @@ def raise_not_found(detail: str):
 async def get_all_bikes(
     request: Request,
     bike_repository: BikeRepository,
-    city_id: Annotated[int | None, Query()] = None,
-    min_battery: Annotated[int | None, Query(ge=0, le=100)] = None,
-    max_battery: Annotated[int | None, Query(ge=0, le=100)] = None,
+    query_params: Annotated[BikeGetRequestParams, Query()],
 ) -> JsonApiResponse[BikeResource]:
     """Get all bikes (admin only)."""
-    filters = {}
-    if city_id is not None:
-        filters["city_id"] = city_id
-    if min_battery is not None:
-        filters["min_battery"] = min_battery
-    if max_battery is not None:
-        filters["max_battery"] = max_battery
-
-    bikes = await bike_repository.get_bikes(filters)
+    bikes = await bike_repository.get_bikes(**query_params.model_dump(exclude_none=True))
     base_url = str(request.base_url).rstrip("/") + request.url.path
 
     return JsonApiResponse(
@@ -121,23 +113,12 @@ async def get_all_bikes(
 async def get_available_bikes(
     request: Request,
     bike_repository: BikeRepository,
-    city_id: Annotated[int | None, Query()] = None,
-    min_battery: Annotated[int | None, Query(ge=0, le=100)] = None,
-    max_battery: Annotated[int | None, Query(ge=0, le=100)] = None,
+    query_params: Annotated[UserBikeGetRequestParams, Query()],
 ) -> JsonApiResponse[BikeResource]:
-    """Get all available bikes.
-    TODO: Should probably add pydantic type checks to query params?
-    TODO: Find more efficient way to filter parameters??"""
-    filters = {"is_available": True}
-
-    if city_id is not None:
-        filters["city_id"] = city_id
-    if min_battery is not None:
-        filters["min_battery"] = min_battery
-    if max_battery is not None:
-        filters["max_battery"] = max_battery
-
-    bikes = await bike_repository.get_bikes(filters)
+    """Get available bikes (user endpoint)."""
+    params = query_params.model_dump(exclude_none=True)
+    params["is_available"] = True
+    bikes = await bike_repository.get_bikes(**params)
     base_url = str(request.base_url).rstrip("/") + request.url.path
 
     return JsonApiResponse(

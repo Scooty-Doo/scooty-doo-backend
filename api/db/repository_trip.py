@@ -46,27 +46,37 @@ class TripRepository(DatabaseRepository[db_models.Trip]):
             self.model.updated_at,
         ]
 
-    def _build_filters(self, filters: dict[str, Any]) -> list[BinaryExpression]:
-        """Build SQLAlchemy filters from a dictionary of parameters.
-        TODO This could be more general and moved to db"""
-        expressions = []
+    def _build_filters(self, **params: dict[str, Any]) -> list[BinaryExpression]:
+        """Filter builder for trip queries."""
+        filter_map = {
+            "bike_id": lambda v: self.model.bike_id == v,
+            "user_id": lambda v: self.model.user_id == v,
+            "total_fee_gt": lambda v: self.model.total_fee > v,
+            "total_fee_lt": lambda v: self.model.total_fee < v,
+            "start_time": lambda v: self.model.start_time == v,
+            "end_time": lambda v: self.model.end_time == v,
+            "created_at_gt": lambda v: self.model.created_at > v,
+            "created_at_lt": lambda v: self.model.created_at < v,
+            "updated_at_gt": lambda v: self.model.updated_at > v,
+            "updated_at_lt": lambda v: self.model.updated_at < v,
+            "is_ongoing": lambda v: self.model.end_time.is_(None)
+            if v
+            else self.model.end_time.isnot(None),
+        }
 
-        if filters.get("bike_id") is not None:
-            expressions.append(self.model.bike_id == filters["bike_id"])
+        return [
+            filter_map[key](value)
+            for key, value in params.items()
+            if key in filter_map and value is not None
+        ]
 
-        if filters.get("user_id") is not None:
-            expressions.append(self.model.user_id == filters["user_id"])
-
-        return expressions
-
-    async def get_trips(self, filters: Optional[dict[str, Any]] = None) -> list[db_models.Trip]:
+    async def get_trips(self, **params) -> list[db_models.Trip]:
         """Get trip with dynamic filters."""
         stmt = select(*self._get_trip_columns())
 
+        filters = self._build_filters(**params)
         if filters:
-            expressions = self._build_filters(filters)
-            if expressions:
-                stmt = stmt.where(and_(*expressions))
+            stmt = stmt.where(and_(*filters))
 
         result = await self.session.execute(stmt)
         return list(result.mappings().all())
