@@ -1,7 +1,7 @@
 services:
   db:
     image: postgis/postgis
-    container_name: database-db-2
+    container_name: database-db
     networks:
       - scooty-web
     restart: always
@@ -14,39 +14,39 @@ services:
     ports:
       - "5432:5432"
 
-  # adminer:
-  #   image: adminer
-  #   networks:
-  #     - scooty-web
-  #   container_name: database-adminer-1
-  #   restart: always
-  #   depends_on:
-  #     - db
-  #   ports:
-  #     - "8080:8080"
+  adminer:
+    image: adminer
+    networks:
+      - scooty-web
+    container_name: database-adminer-1
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
 
-  # api:
-  #   build:
-  #     dockerfile: Dockerfile
-  #   container_name: api-2
-  #   restart: always
-  #   depends_on:
-  #     - db
-  #   environment:
-  #     DATABASE_URL: postgresql+asyncpg://user:pass@db:5432/sddb
-  #     PROJECT_NAME: scooty-doo
-  #     DEBUG: "true"
-  #     ENVIRONMENT: local
-  #     GITHUB_CLIENT_ID: secretid
-  #     GITHUB_CLIENT_SECRET: secresecret
-  #     GITHUB_REDIRECT_URI: 'http://secret.secret/'
-  #     USE_MOCKED_BIKE_CALL: "false"
-  #   ports:
-  #     - "8000:8000"
-  #   networks:
-  #     - scooty-web
-  #   links:
-  #     - db:db
+  api:
+    build:
+      dockerfile: Dockerfile
+    container_name: api
+    restart: always
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql+asyncpg://user:pass@db:5432/sddb
+      PROJECT_NAME: scooty-doo
+      DEBUG: "true"
+      ENVIRONMENT: local
+      GITHUB_CLIENT_ID: secretid
+      GITHUB_CLIENT_SECRET: secresecret
+      GITHUB_REDIRECT_URI: 'http://secret.secret/'
+      USE_MOCKED_BIKE_CALL: "false"
+    ports:
+      - "8000:8000"
+    networks:
+      - scooty-web
+    links:
+      - db:db
 
 volumes:
   pgdata:
