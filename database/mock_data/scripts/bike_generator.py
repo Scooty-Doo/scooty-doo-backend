@@ -1,6 +1,5 @@
 import csv
 import random
-import uuid
 from datetime import datetime, timedelta
 
 from tsidpy import TSID
