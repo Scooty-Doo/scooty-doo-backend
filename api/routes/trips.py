@@ -13,7 +13,7 @@ from api.exceptions import (
     UnauthorizedTripAccessException,
 )
 from api.models import db_models
-from api.models.bike_models import BikeSocket
+from api.models.bike_models import BikeSocketStartEnd
 from api.models.models import (
     JsonApiLinks,
     JsonApiResponse,
@@ -21,13 +21,15 @@ from api.models.models import (
 from api.models.trip_models import (
     TripCreate,
     TripEndRepoParams,
+    TripGetRequestParams,
     TripId,
     TripResource,
     UserTripStart,
 )
 from api.services.bike_caller import get_bike_service
 from api.services.oauth import security_check
-from api.services.socket import emit_update
+from api.services.socket import emit_update_start_end
+
 
 router = APIRouter(
     prefix="/v1/trips",
@@ -57,17 +59,10 @@ async def get_trips(
     _: Annotated[int, Security(security_check, scopes=["admin"])],
     request: Request,
     trip_repository: TripRepository,
-    user_id: Annotated[int | None, Query()] = None,
-    bike_id: Annotated[int | None, Query()] = None,
+    query_params: Annotated[TripGetRequestParams, Query()],
 ) -> JsonApiResponse[TripResource]:
     """Get all trips from the database."""
-    filters = {}
-    if user_id:
-        filters["user_id"] = user_id
-    if bike_id:
-        filters["bike_id"] = bike_id
-
-    trips = await trip_repository.get_trips(filters)
+    trips = await trip_repository.get_trips(**query_params.model_dump(exclude_none=True))
     base_url = str(request.base_url).rstrip("/") + request.url.path
 
     return JsonApiResponse(
@@ -123,8 +118,10 @@ async def start_trip(
     created_trip = await trip_repository.add_trip(trip_data)
 
     # Emit bike status to socket
-    # I might have gone a bit overboard with the unpacking, but I like it!
-    await emit_update(BikeSocket(**bike_data.log.__dict__, **bike_data.report.__dict__))
+    await emit_update_start_end(
+        BikeSocketStartEnd(**bike_data.log.model_dump(), **bike_data.report.model_dump()),
+        "bike_update_start",
+    )
 
     base_url = str(request.base_url).rstrip("/")
     base_url = f"{base_url}/v1/trips/"
@@ -168,13 +165,14 @@ async def end_trip(
         user_id=user_id,
         bike_id=user_trip_data.bike_id,
     )
-    print("Whoo")
     # End trip in repository
     updated_trip = await trip_repository.end_trip(repo_params, bike_response.report.is_available)
 
     # Emit bike status to socket
-    # Again with the unpackings?
-    await emit_update(BikeSocket(**bike_response.report.__dict__, **bike_response.log.__dict__))
+    await emit_update_start_end(
+        BikeSocketStartEnd(**bike_response.report.model_dump(), **bike_response.log.model_dump()),
+        "bike_update_end",
+    )
 
     base_url = str(request.base_url).rstrip("/")
     base_url_link = f"{base_url}/v1/trips/"
