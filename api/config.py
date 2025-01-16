@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     github_client_id: str = "secretid"
     github_client_secret: str = "secret"
     github_redirect_uri: str = "sercret"
+    jwt_secret: str = "s00s3cr3t"
     use_mocked_bike_call: bool = False
     stripe_api_key: str = "secret"
     frontend_url: str = Field(default="http://localhost:3000", pattern=r"^https?:\/\/.*\d$")

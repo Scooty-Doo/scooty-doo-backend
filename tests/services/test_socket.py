@@ -5,14 +5,15 @@ import json
 from unittest.mock import AsyncMock, Mock
 
 import pytest
+from fastapi.security.oauth2 import SecurityScopes
 from httpx import ASGITransport, AsyncClient
 
 from api.db.repository_bike import BikeRepository
 from api.db.repository_trip import TripRepository
 from api.db.repository_user import UserRepository
 from api.main import app
-from api.models.bike_models import BikeSocket, BikeSocketStartEnd
 from api.models.trip_models import BikeTripEndData, BikeTripStartData
+from api.routes.bikes import security_check
 from api.services.socket import socket
 from tests.mock_files.objects import fake_bike_data, fake_trip
 from tests.utils import get_fake_json_data
@@ -42,9 +43,15 @@ class TestSocket:
     start_mock_data = get_fake_json_data("bike_caller_start_trip")
     end_mock_data = get_fake_json_data("bike_caller_end_trip")
 
+    async def mock_security_check(token: str = "", security_scopes: SecurityScopes = None):
+        return 652134919185249719
+
     @pytest.mark.asyncio
     async def test_socket_emit_patch(self, monkeypatch):
         """Tests socket emitting"""
+        # Mock security check (for all socket tests)
+        app.dependency_overrides[security_check] = self.mock_security_check
+
         # Mock database call
         mock_get_bike = AsyncMock(return_value=fake_bike_data[0])
         monkeypatch.setattr(BikeRepository, "get", mock_get_bike)
@@ -65,27 +72,26 @@ class TestSocket:
                 f"v1/bikes/{self.fake_socket_data['bike_id']}",
                 content=json.dumps(self.fake_input_data),
             )
-
+        print(response.json())
         assert response.status_code == 200
         mock_socket_emit.assert_awaited_once_with(
             "bike_update",
-            data=BikeSocket(
-                battery_lvl=43,
-                city_id=1,
-                last_position="POINT(11.9746 57.7089)",
-                is_available=True,
-                speed=13.5,
-                meta_data=None,
-                bike_id=1,
-                zone_id=None,
-                zone_type=None,
-            ),
+            data={
+                "battery_lvl": 43,
+                "city_id": 1,
+                "last_position": "POINT(11.9746 57.7089)",
+                "is_available": True,
+                "speed": 13.5,
+                "meta_data": None,
+                "bike_id": 1,
+            },
             room="bike_updates",
         )
 
     @pytest.mark.asyncio
     async def test_socket_emit_start_trip(self, monkeypatch):
         """Tests socket emitting from start_trip"""
+
         # Setup
         # Mock user eligibility
         mock_check_user = AsyncMock(return_value="")
@@ -111,22 +117,23 @@ class TestSocket:
         ) as ac:
             response = await ac.post(
                 "v1/trips/",
-                json={"bike_id": 3, "user_id": 1},
+                json={"bike_id": 3},
             )
 
+        print(response.json())
         assert response.status_code == 201
         mock_socket_emit.assert_awaited_once_with(
             "bike_update_start",
-            data=BikeSocketStartEnd(
-                battery_lvl=85,
-                city_id=1,
-                last_position="POINT(13.10005 55.55034)",
-                is_available=False,
-                meta_data=None,
-                bike_id=1,
-                zone_id=None,
-                zone_type=None,
-            ),
+            data={
+                "battery_lvl": 85,
+                "city_id": 1,
+                "last_position": "POINT(13.10005 55.55034)",
+                "speed": 0.0,
+                "is_available": False,
+                "meta_data": None,
+                "bike_id": 1,
+                "zone_id": None,
+            },
             room="bike_updates",
         )
 
@@ -155,19 +162,20 @@ class TestSocket:
                 "v1/trips/12409712904",
                 json={"bike_id": 1, "user_id": 652134919185249719},
             )
+        print(response.json())
 
         assert response.status_code == 200
         mock_socket_emit.assert_awaited_once_with(
             "bike_update_end",
-            data=BikeSocketStartEnd(
-                battery_lvl=85,
-                city_id=1,
-                last_position="POINT(13.10005 55.55034)",
-                is_available=True,
-                meta_data=None,
-                bike_id=1,
-                zone_id=3,
-                zone_type="Forbidden",
-            ),
+            data={
+                "battery_lvl": 85,
+                "city_id": 1,
+                "last_position": "POINT(13.10005 55.55034)",
+                "is_available": True,
+                "speed": 0.0,
+                "meta_data": None,
+                "bike_id": 1,
+                "zone_id": 3,
+            },
             room="bike_updates",
         )

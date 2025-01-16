@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path, Query, Request, status
+from fastapi import APIRouter, Depends, Path, Query, Request, Security, status
 
 from api.db.repository_zone import (
     MapZoneRepository as MapZoneRepoClass,
@@ -26,6 +26,7 @@ from api.models.zone_models import (
     ZoneTypeResource,
     ZoneTypeUpdate,
 )
+from api.services.oauth import security_check
 
 router = APIRouter(
     prefix="/v1/zones",
@@ -66,6 +67,7 @@ async def get_zones(
 
 @router.get("/{zone_id}", response_model=JsonApiResponse[MapZoneResource])
 async def get_zone(
+    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
     map_zone_repository: MapZoneRepository,
     request: Request,
     zone_id: int = Path(..., ge=1),
@@ -86,6 +88,7 @@ async def get_zone(
     "/", response_model=JsonApiResponse[MapZoneResource], status_code=status.HTTP_201_CREATED
 )
 async def create_zone(
+    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
     map_zone_repository: MapZoneRepository,
     request: Request,
     zone_data: MapZoneCreate,
@@ -105,6 +108,7 @@ async def create_zone(
 
 @router.patch("/{zone_id}", response_model=JsonApiResponse[MapZoneResource])
 async def update_zone(
+    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
     map_zone_repository: MapZoneRepository,
     request: Request,
     zone_data: MapZoneUpdate,
@@ -145,7 +149,10 @@ async def get_zone_types(
     "/types", response_model=JsonApiResponse[ZoneTypeResource], status_code=status.HTTP_201_CREATED
 )
 async def create_zone_type(
-    zone_type_repository: ZoneTypeRepository, request: Request, zone_type_data: ZoneTypeCreate
+    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
+    zone_type_repository: ZoneTypeRepository,
+    request: Request,
+    zone_type_data: ZoneTypeCreate,
 ) -> JsonApiResponse[ZoneTypeResource]:
     """Create a new zone type"""
     zone_type_data_dict = zone_type_data.model_dump()
@@ -162,6 +169,7 @@ async def create_zone_type(
 
 @router.patch("/types/{zone_type_id}", response_model=JsonApiResponse[ZoneTypeResource])
 async def update_zone_type(
+    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
     zone_type_repository: ZoneTypeRepository,
     request: Request,
     zone_type_data: ZoneTypeUpdate,

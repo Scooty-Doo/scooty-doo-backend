@@ -4,7 +4,7 @@ from decimal import Decimal
 from typing import Annotated
 
 import stripe
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, Query, Request, Security
 
 from api.db.repository_transaction import TransactionRepository as TransactionRepoClass
 from api.dependencies.repository_factory import get_repository
@@ -18,6 +18,7 @@ from api.models.transaction_models import (
     TransactionResourceMinimal,
     TransactionResourceWithBalance,
 )
+from api.services.oauth import security_check
 
 router = APIRouter(
     prefix="/v1/transactions",
@@ -33,6 +34,7 @@ TransactionRepository = Annotated[
 
 @router.get("/", response_model=JsonApiResponse[TransactionResourceMinimal])
 async def get_transactions(
+    _: Annotated[int, Security(security_check, scopes=["admin"])],
     transaction_repository: TransactionRepository,
     request: Request,
     query_params: Annotated[TransactionGetRequestParams, Query()],
@@ -57,6 +59,7 @@ async def get_transactions(
 
 @router.post("/", response_model=JsonApiResponse[TransactionResourceWithBalance])
 async def add_transaction(
+    user_id: Annotated[int, Security(security_check, scopes=["user"])],
     request: Request,
     session_data: dict,
     transaction_repository: TransactionRepository,
@@ -67,7 +70,7 @@ async def add_transaction(
     payment_intent = stripe_session.payment_intent
 
     transaction_data = {
-        "user_id": int(session_data["user_id"]),
+        "user_id": user_id,
         "amount": amount_in_kr,
         "payment_intent_id": payment_intent,
         "transaction_type": "deposit",

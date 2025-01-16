@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Path, Query, Request, status
+from fastapi import APIRouter, Body, Depends, Path, Query, Request, Security, status
 from tsidpy import TSID
 
 from api.db.repository_bike import BikeRepository as BikeRepoClass
@@ -27,6 +27,7 @@ from api.models.trip_models import (
     UserTripStart,
 )
 from api.services.bike_caller import get_bike_service
+from api.services.oauth import security_check
 from api.services.socket import emit_update_start_end
 
 router = APIRouter(
@@ -54,6 +55,7 @@ BikeRepository = Annotated[
 
 @router.get("/", response_model=JsonApiResponse[TripResource])
 async def get_trips(
+    _: Annotated[int, Security(security_check, scopes=["admin"])],
     request: Request,
     trip_repository: TripRepository,
     query_params: Annotated[TripGetRequestParams, Query()],
@@ -70,7 +72,10 @@ async def get_trips(
 
 @router.get("/{trip_id}", response_model=JsonApiResponse[TripResource])
 async def get_trip(
-    request: Request, trip_id: int, trip_repository: TripRepository
+    _: Annotated[int, Security(security_check, scopes=["admin"])],
+    request: Request,
+    trip_id: int,
+    trip_repository: TripRepository,
 ) -> JsonApiResponse[TripResource]:
     """Get a single trip by ID."""
     trip = await trip_repository.get_trip(trip_id)
@@ -85,6 +90,7 @@ async def get_trip(
 
 @router.post("/", response_model=JsonApiResponse[TripResource], status_code=status.HTTP_201_CREATED)
 async def start_trip(
+    user_id: Annotated[int, Security(security_check, scopes=["user"])],
     request: Request,
     trip: UserTripStart,
     trip_repository: TripRepository,
@@ -93,16 +99,16 @@ async def start_trip(
     """Endpoint for user to start a trip"""
 
     bike_start_trip, _ = get_bike_service()
-    await user_repository.check_user_eligibility(trip.user_id)
+    await user_repository.check_user_eligibility(user_id)
 
     trip_id = TSID.create().number
 
     # Get bike data first
-    bike_data = await bike_start_trip(trip.bike_id, trip.user_id, trip_id)
+    bike_data = await bike_start_trip(trip.bike_id, user_id, trip_id)
     # Create trip using bike response data
     trip_data = TripCreate(
         id=trip_id,
-        user_id=trip.user_id,
+        user_id=user_id,
         bike_id=trip.bike_id,
         start_position=bike_data.log.start_position,
         start_time=bike_data.log.start_time,
@@ -128,6 +134,7 @@ async def start_trip(
 
 @router.patch("/{trip_id}", response_model=JsonApiResponse[TripResource])
 async def end_trip(
+    user_id: Annotated[int, Security(security_check, scopes=["user"])],
     request: Request,
     trip_repository: TripRepository,
     user_trip_data: UserTripStart = Body(..., description="User trip data"),  # noqa: B008
@@ -136,16 +143,11 @@ async def end_trip(
     """Endpoint for user to end a trip
     TODO: Return link to user and user's transaction?"""
     _, bike_end_trip = get_bike_service()
-    bike_response = await bike_end_trip(
-        user_trip_data.bike_id, user_trip_data.user_id, trip_id, False, True
-    )
+    bike_response = await bike_end_trip(user_trip_data.bike_id, user_id, trip_id, False, True)
     #  validate that user, trip and bike match before calling db
-    if bike_response.log.user_id != user_trip_data.user_id:
+    if bike_response.log.user_id != user_id:
         raise UnauthorizedTripAccessException(
-            detail=(
-                f"User {user_trip_data.user_id} "
-                f"is not allowed to end trip {bike_response.log.user_id}"
-            )
+            detail=(f"User {user_id} " f"is not allowed to end trip {bike_response.log.user_id}")
         )
 
     if bike_response.log.trip_id != trip_id:
@@ -159,7 +161,7 @@ async def end_trip(
         end_position=bike_response.log.end_position,
         path_taken=bike_response.log.path_taken,
         trip_id=trip_id,
-        user_id=user_trip_data.user_id,
+        user_id=user_id,
         bike_id=user_trip_data.bike_id,
     )
     # End trip in repository

@@ -1,12 +1,12 @@
 """Module for testing github oauth"""
 
-import os
 from unittest.mock import AsyncMock
 
 import jwt
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+from api.config import settings
 from api.db.repository_user import UserRepository
 from api.main import app
 from tests.mock_files.objects import fake_user_data
@@ -16,7 +16,7 @@ class TestOauthRoutes:
     """Class to test github oauth routes"""
 
     @pytest.mark.asyncio
-    async def test_oauth_github(self, monkeypatch):
+    async def test_github_oauth(self, monkeypatch):
         """Tests v1/oauth/github route"""
 
         # Mock github token call
@@ -42,8 +42,8 @@ class TestOauthRoutes:
         mock_get_user.assert_called_once()
         assert response.status_code == 200
         response = response.json()
-        assert response["token"]
+        assert response["access_token"]
         expected_response = jwt.decode(
-            response["token"], os.getenv("JWT_SECRET"), algorithms=["HS256"]
+            response["access_token"], settings.jwt_secret, algorithms=["HS256"]
         )
-        assert fake_user_data.id == expected_response["user_id"]
+        assert str(fake_user_data.id) == expected_response["sub"]

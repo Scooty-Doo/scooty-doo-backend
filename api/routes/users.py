@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path, Query, Request, status
+from fastapi import APIRouter, Depends, Path, Query, Request, Security, status
 
 from api.db.repository_transaction import TransactionRepository as TransactionRepoClass
 from api.db.repository_trip import TripRepository as TripRepoClass
@@ -26,6 +26,7 @@ from api.models.user_models import (
     UserResourceMinimal,
     UserUpdate,
 )
+from api.services.oauth import security_check
 
 router = APIRouter(
     prefix="/v1/users",
@@ -51,6 +52,7 @@ TransactionRepository = Annotated[
 
 @router.get("/{user_id}", response_model=JsonApiResponse[UserResource])
 async def get_user(
+    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
     user_repository: UserRepository,
     request: Request,
     user_id: int = Path(..., ge=1),
@@ -69,6 +71,7 @@ async def get_user(
 
 @router.get("/", response_model=JsonApiResponse[UserResourceMinimal])
 async def get_users(
+    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
     request: Request,
     user_repository: UserRepository,
     query_params: Annotated[UserGetRequestParams, Query()],
@@ -90,6 +93,7 @@ async def get_users(
     "/", response_model=JsonApiResponse[UserResourceMinimal], status_code=status.HTTP_201_CREATED
 )
 async def create_user(
+    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
     user_repository: UserRepository,
     request: Request,
     user_data: UserCreate,
@@ -109,6 +113,7 @@ async def create_user(
 
 @router.patch("/{user_id}", response_model=JsonApiResponse[UserResource])
 async def update_user(
+    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
     user_repository: UserRepository,
     request: Request,
     user_data: UserUpdate,
@@ -129,6 +134,7 @@ async def update_user(
 
 @router.get("/{user_id}/trips", response_model=JsonApiResponse[TripResource])
 async def get_user_trips(
+    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
     trip_repository: TripRepository,
     request: Request,
     user_id: int = Path(..., ge=1),
@@ -148,6 +154,7 @@ async def get_user_trips(
 
 @router.get("/{user_id}/transactions", response_model=JsonApiResponse[TransactionResourceMinimal])
 async def get_user_transactions(
+    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
     transaction_repository: TransactionRepository,
     request: Request,
     user_id: int = Path(..., ge=1),

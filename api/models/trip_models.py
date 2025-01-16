@@ -78,7 +78,6 @@ class TripResource(BaseModel):
 class UserTripStart(BaseModel):
     """Model for starting a trip"""
 
-    user_id: int
     bike_id: int
 
 

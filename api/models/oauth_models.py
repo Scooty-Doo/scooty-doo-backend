@@ -1,4 +1,4 @@
-"""MOdule with models for OAuth2"""
+"""Module with models for OAuth2"""
 
 from typing import Optional
 
@@ -34,3 +34,10 @@ class GitHubUserResponse(BaseModel):
             email=self.email,
             github_login=self.login,
         )
+
+
+class TokenData(BaseModel):
+    """Model for data field in security token"""
+
+    user_id: str
+    scopes: list[str] = ["user"]
