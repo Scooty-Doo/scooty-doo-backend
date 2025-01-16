@@ -84,7 +84,7 @@ class TransactionGetRequestParams(BaseModel):
     """Model for getting a transaction"""
 
     # Pagination defaults to 100 transactions per page
-    limit: int = Field(99999, gt=0)
+    limit: int = Field(300, gt=0)
     offset: int = Field(0, ge=0)
 
     # Sorting

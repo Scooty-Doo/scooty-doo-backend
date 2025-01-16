@@ -144,7 +144,7 @@ class MapZoneGetRequestParams(BaseModel):
     """Model for request parameters for getting map zones."""
 
     # Pagination and offset
-    limit: int = Field(100, gt=0)
+    limit: int = Field(300, gt=0)
     offset: int = Field(0, ge=0)
 
     # Sorting
