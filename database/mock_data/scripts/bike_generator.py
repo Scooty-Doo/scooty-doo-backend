@@ -1,18 +1,19 @@
 import csv
 import random
+import uuid
 from datetime import datetime, timedelta
 
 from tsidpy import TSID
 
 NUM_BIKES = 3000
-OUTPUT_FILE = "../data/generated/bikes_gbg.csv"
+OUTPUT_FILE = "../data/generated/bikes_stockholm.csv"
 NUM_LOW_ID = 0
 RANDOM_AVAILABLE = True
 IS_AVAILABLE = True
 RANDOM_BATTERY_LVL = True
 LAST_POSITION = "POINT(13.0038 55.6050)"
 BATTERY_LVL = 100
-CITY_ID = 1
+CITY_ID = 2
 
 
 def generate_bikes(
@@ -33,7 +34,7 @@ def generate_bikes(
     output_file (str): The file path to save the generated CSV file.
     """
     # open output CSV file
-    with open(output_file, "a", newline="") as csvfile:
+    with open(output_file, "w", newline="") as csvfile:
         fieldnames = [
             "id",
             "battery_lvl",
@@ -47,7 +48,10 @@ def generate_bikes(
 
         for i in range(num_bikes):
             # Generate random bike ID
-            bike_id = TSID.create().number
+            tsid_number = TSID.create().number
+            max_safe_integer = 9007199254740991
+            bike_id = tsid_number % max_safe_integer
+
             # if NUM_LOW_ID is over 0, generate low IDs first
             if NUM_LOW_ID > 0 and i < NUM_LOW_ID:
                 bike_id = i + 1

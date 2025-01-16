@@ -102,7 +102,9 @@ def generate_trip_data(
 
         for trip in data:
             # Random bike and user
-            trip_id = TSID.create().number
+            tsid_number = TSID.create().number
+            max_safe_integer = 9007199254740991
+            trip_id = tsid_number % max_safe_integer
             bike_id = random.choice(bikes)["id"]
             user_id = random.choice(users)["id"]
 
