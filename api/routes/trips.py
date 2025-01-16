@@ -101,7 +101,9 @@ async def start_trip(
     bike_start_trip, _ = get_bike_service()
     await user_repository.check_user_eligibility(user_id)
 
-    trip_id = TSID.create().number
+    tsid_number = TSID.create().number
+    max_safe_integer = 9007199254740991
+    trip_id = tsid_number % max_safe_integer
 
     # Get bike data first
     bike_data = await bike_start_trip(trip.bike_id, user_id, trip_id)
