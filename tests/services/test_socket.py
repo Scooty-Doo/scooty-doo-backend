@@ -12,7 +12,6 @@ from api.db.repository_bike import BikeRepository
 from api.db.repository_trip import TripRepository
 from api.db.repository_user import UserRepository
 from api.main import app
-from api.models.bike_models import BikeSocket, BikeSocketStartEnd
 from api.models.trip_models import BikeTripEndData, BikeTripStartData
 from api.routes.bikes import security_check
 from api.services.socket import socket
@@ -77,17 +76,15 @@ class TestSocket:
         assert response.status_code == 200
         mock_socket_emit.assert_awaited_once_with(
             "bike_update",
-            data=BikeSocket(
-                battery_lvl=43,
-                city_id=1,
-                last_position="POINT(11.9746 57.7089)",
-                is_available=True,
-                speed=13.5,
-                meta_data=None,
-                bike_id=1,
-                zone_id=None,
-                zone_type=None,
-            ),
+            data={
+                "battery_lvl": 43,
+                "city_id": 1,
+                "last_position": "POINT(11.9746 57.7089)",
+                "is_available": True,
+                "speed": 13.5,
+                "meta_data": None,
+                "bike_id": 1,
+            },
             room="bike_updates",
         )
 
@@ -127,16 +124,16 @@ class TestSocket:
         assert response.status_code == 201
         mock_socket_emit.assert_awaited_once_with(
             "bike_update_start",
-            data=BikeSocketStartEnd(
-                battery_lvl=85,
-                city_id=1,
-                last_position="POINT(13.10005 55.55034)",
-                is_available=False,
-                meta_data=None,
-                bike_id=1,
-                zone_id=None,
-                zone_type=None,
-            ),
+            data={
+                "battery_lvl": 85,
+                "city_id": 1,
+                "last_position": "POINT(13.10005 55.55034)",
+                "speed": 0.0,
+                "is_available": False,
+                "meta_data": None,
+                "bike_id": 1,
+                "zone_id": None,
+            },
             room="bike_updates",
         )
 
@@ -157,7 +154,7 @@ class TestSocket:
         monkeypatch.setattr(
             "api.routes.trips.get_bike_service", Mock(return_value=(mock_end_data, mock_end_data))
         )
-        # 652134919185249719
+
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://localhost:8000/"
         ) as ac:
@@ -170,15 +167,15 @@ class TestSocket:
         assert response.status_code == 200
         mock_socket_emit.assert_awaited_once_with(
             "bike_update_end",
-            data=BikeSocketStartEnd(
-                battery_lvl=85,
-                city_id=1,
-                last_position="POINT(13.10005 55.55034)",
-                is_available=True,
-                meta_data=None,
-                bike_id=1,
-                zone_id=3,
-                zone_type="Forbidden",
-            ),
+            data={
+                "battery_lvl": 85,
+                "city_id": 1,
+                "last_position": "POINT(13.10005 55.55034)",
+                "is_available": True,
+                "speed": 0.0,
+                "meta_data": None,
+                "bike_id": 1,
+                "zone_id": 3,
+            },
             room="bike_updates",
         )

@@ -3,20 +3,21 @@
 from unittest.mock import AsyncMock, Mock
 
 import pytest
+from fastapi.security.oauth2 import SecurityScopes
 from httpx import ASGITransport, AsyncClient
 
 from api.db.repository_trip import TripRepository
 from api.db.repository_user import UserRepository
 from api.main import app
 from api.models.trip_models import BikeTripEndData, BikeTripStartData
-from api.routes.trips import TSID
+from api.routes.trips import TSID, security_check
 from api.services.socket import socket
 from tests.mock_files.objects import fake_trip_start, fake_trips
 from tests.utils import get_fake_json_data
 
 
-class TestSocket:
-    """Class to test socket functionality"""
+class TestTrips:
+    """Class to test trip functionality"""
 
     fake_input_data = {
         "battery_lvl": 43,
@@ -38,9 +39,16 @@ class TestSocket:
     start_mock_data = get_fake_json_data("bike_caller_start_trip")
     end_mock_data = get_fake_json_data("bike_caller_end_trip")
 
+    async def mock_security_check(self, _1: str = "", _2: SecurityScopes = None):
+        """Mocks security check"""
+        return 652134919185249719
+
     @pytest.mark.asyncio
     async def test_get_trips(self, monkeypatch):
         """Tests get trips route"""
+
+        app.dependency_overrides[security_check] = self.mock_security_check
+
         mock_trips_return = AsyncMock(return_value=fake_trips)
         monkeypatch.setattr(TripRepository, "get_trips", mock_trips_return)
         async with AsyncClient(

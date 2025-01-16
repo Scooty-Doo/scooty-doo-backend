@@ -30,7 +30,6 @@ from api.services.bike_caller import get_bike_service
 from api.services.oauth import security_check
 from api.services.socket import emit_update_start_end
 
-
 router = APIRouter(
     prefix="/v1/trips",
     tags=["trips"],

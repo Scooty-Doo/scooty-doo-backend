@@ -15,7 +15,7 @@ from tests.utils import get_fake_json_data
 class TestBikeRoute:
     """Class to test bike routes"""
 
-    async def mock_security_check(self, token: str = "", required_scopes: list = None):
+    async def mock_security_check(self, _: str = "", required_scopes: list = None):
         """Mocks security check for bike routes"""
         return {"user_id": 1, "scopes": required_scopes}
 
