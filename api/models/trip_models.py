@@ -71,7 +71,7 @@ class TripResource(BaseModel):
             attributes=TripAttributes.model_validate(trip),
             relationships=TripRelationships(**relationships),
             # Add links to user/bike/transaction?
-            links=JsonApiLinks(self_link=f"{request_url}"),
+            links=JsonApiLinks(self_link=f"{request_url}{trip.id}"),
         )
 
 
@@ -99,8 +99,8 @@ class BikeTripStartlog(BaseModel):
     start_time: datetime
     start_position: WKTPoint
     path_taken: Optional[WKTLineString] = None
-    start_map_zone_id: int
-    start_map_zone_type: str
+    start_map_zone_id: Optional[int] = None
+    start_map_zone_type: Optional[str] = None
 
 
 class BikeTripEndLog(BikeTripStartlog):
@@ -110,8 +110,8 @@ class BikeTripEndLog(BikeTripStartlog):
     end_time: datetime
     end_position: WKTPoint
     path_taken: WKTLineString
-    end_map_zone_id: int
-    end_map_zone_type: str
+    end_map_zone_id: Optional[int] = None
+    end_map_zone_type: Optional[str] = None
 
 
 class BikeTripStartData(BaseModel):
