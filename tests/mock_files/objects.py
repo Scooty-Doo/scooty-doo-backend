@@ -149,3 +149,37 @@ fake_trips = [
         total_fee=49.23,
     ),
 ]
+
+fake_me_data = User(
+    id=1201279949800724,
+    github_login="Ape-T",
+    full_name="Apan Trazansson",
+    use_prepay=False,
+    balance=-10.44,
+    created_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+    updated_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+)
+
+fake_updated_me = User(
+    id=1201279949800724,
+    github_login="K",
+    full_name="String Boy",
+    email="user@example.com",
+    use_prepay=True,
+    meta_data={},
+    created_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+    updated_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+)
+
+fake_user_two = User(
+    id=1201279949800725,
+    github_login="K",
+    full_name="String Boy",
+    email="user@example.com",
+    use_prepay=True,
+    meta_data={},
+    created_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+    updated_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+)
+
+fake_users_data = [fake_me_data, fake_user_two]

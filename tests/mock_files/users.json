@@ -1,0 +1,41 @@
+{
+    "data": [
+         {
+             "attributes": {
+                 "balance": -10.44,
+                 "created_at": "2025-01-08T20:12:27.694999Z",
+                 "email": null,
+                 "full_name": "Apan Trazansson",
+                 "github_login": "Ape-T",
+                 "meta_data": null,
+                 "updated_at": "2025-01-08T20:12:27.694999Z",
+                 "use_prepay": false
+             },
+             "id": "1201279949800724",
+             "links": {
+                 "self": "http://localhost:8000/v1/users/1201279949800724"
+             },
+             "type": "users"         
+         },
+         {
+             "attributes": {
+                 "balance": null,
+                 "created_at": "2025-01-08T20:12:27.694999Z",
+                 "email": "user@example.com",
+                 "full_name": "String Boy",
+                 "github_login": "K",
+                 "meta_data": {},
+                 "updated_at": "2025-01-08T20:12:27.694999Z",
+                 "use_prepay": true
+             },
+             "id": "1201279949800725",
+             "links": {
+                 "self": "http://localhost:8000/v1/users/1201279949800725"
+             },
+             "type": "users"
+         }
+    ],
+     "links": {
+         "self": "http://localhost:8000/v1/users"
+     }
+}

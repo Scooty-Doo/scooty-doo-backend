@@ -1,0 +1,36 @@
+{
+    "data": {
+      "id": "1201279949800724",
+      "type": "users",
+      "attributes": {
+        "full_name": "Apan Trazansson",
+        "email": null,
+        "github_login": "Ape-T",
+        "balance": -10.44,
+        "use_prepay": false,
+        "meta_data": null,
+        "created_at": "2025-01-08T20:12:27.694999Z",
+        "updated_at": "2025-01-08T20:12:27.694999Z"
+      },
+      "relationships": {
+        "payment_methods": {
+          "data": []
+        },
+        "trips": {
+          "data": [
+          ]
+        },
+        "transactions": {
+          "data": [
+          ]
+        }
+      },
+      "links": {
+        "self": "http://localhost:8000/v1/me"
+      }
+    },
+    "links": {
+      "self": "http://localhost:8000/v1/me"
+    }
+  }
+  
