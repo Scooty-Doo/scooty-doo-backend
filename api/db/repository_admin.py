@@ -29,15 +29,15 @@ class AdminRepository(DatabaseRepository[db_models.Admin]):
         """
         stmt = select(self.model.id).where(self.model.github_login == github_login)
         result = await self.session.execute(stmt)
-        user_id = result.scalar_one_or_none()
+        admin_id = result.scalar_one_or_none()
 
-        if user_id is None:
+        if admin_id is None:
             raise UserNotFoundException(f"User with GitHub login {github_login} not found.")
 
-        return user_id
+        return admin_id
 
     def _build_filters(self, **params: dict[str, Any]) -> list[BinaryExpression]:
-        """Filter builder for user queries."""
+        """Filter builder for admin queries."""
         filter_map = {
             "name_search": lambda v: self.model.full_name.ilike(f"%{v}%"),
             "email_search": lambda v: self.model.email.ilike(f"%{v}%"),
@@ -50,14 +50,23 @@ class AdminRepository(DatabaseRepository[db_models.Admin]):
             if key in filter_map and value is not None
         ]
 
-    async def get_user(self, user_id: int) -> db_models.Admin:
+    async def get_admin(self, admin_id: int) -> db_models.Admin:
         """Get a admin by ID."""
-        stmt = select(self.model).where(self.model.id == user_id)
+        stmt = select(self.model).where(self.model.id == admin_id)
 
         result = await self.session.execute(stmt)
         admin = result.unique().scalar_one_or_none()
 
         if admin is None:
-            raise UserNotFoundException(f"Admin with ID {user_id} not found.")
+            raise UserNotFoundException(f"Admin with ID {admin_id} not found.")
 
         return admin
+
+    async def get_admins(self, **params: dict[str, Any]) -> list[db_models.Admin]:
+        """Get a list of admins."""
+        stmt = select(self.model).filter(*self._build_filters(**params))
+
+        result = await self.session.execute(stmt)
+        admins = result.scalars().all()
+
+        return admins
