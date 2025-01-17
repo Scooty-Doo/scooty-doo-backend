@@ -57,9 +57,15 @@ class UserRepository(DatabaseRepository[db_models.User]):
             "name_search": lambda v: self.model.full_name.ilike(f"%{v}%"),
             "email_search": lambda v: self.model.email.ilike(f"%{v}%"),
             "github_login_search": lambda v: self.model.github_login.ilike(f"%{v}%"),
-            "is_eligible": lambda v: or_(
-                and_(self.model.use_prepay, self.model.balance > 0),
-                not self.model.use_prepay,
+            "is_eligible": lambda v: (
+                or_(
+                    and_(self.model.use_prepay == True, self.model.balance > 0),
+                    self.model.use_prepay == False,
+                ) if v else
+                and_(
+                    self.model.use_prepay == True,
+                    self.model.balance <= 0
+                )
             ),
             "balance_gt": lambda v: self.model.balance > v,
             "balance_lt": lambda v: self.model.balance < v,
