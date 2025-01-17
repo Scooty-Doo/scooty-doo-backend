@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Request, Security, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request, Security
 
 from api.db.repository_transaction import TransactionRepository as TransactionRepoClass
 from api.db.repository_trip import TripRepository as TripRepoClass
@@ -10,15 +10,15 @@ from api.db.repository_user import UserRepository as UserRepoClass
 from api.dependencies.repository_factory import get_repository
 from api.models import db_models
 from api.models.models import (
-    JsonApiLinks,
-    JsonApiResponse,
     JsonApiError,
     JsonApiErrorResponse,
+    JsonApiLinks,
+    JsonApiResponse,
 )
+from api.models.transaction_models import TransactionResourceMinimal
 from api.models.trip_models import (
     TripResource,
 )
-from api.models.transaction_models import TransactionResourceMinimal
 from api.models.user_models import UserResource, UserUpdate
 from api.services.oauth import security_check
 
@@ -42,6 +42,7 @@ TransactionRepository = Annotated[
     TransactionRepoClass,
     Depends(get_repository(db_models.Transaction, repository_class=TransactionRepoClass)),
 ]
+
 
 def raise_forbidden(detail: str):
     """Raise a 403 error in JSON:API format.
@@ -110,6 +111,7 @@ async def get_my_trips(
         links=JsonApiLinks(self_link=resource_url),
     )
 
+
 @router.get("/trips/{trip_id}", response_model=JsonApiResponse[TripResource])
 async def get_trip(
     user_id: Annotated[int, Security(security_check, scopes=["user"])],
@@ -121,7 +123,7 @@ async def get_trip(
     trip = await trip_repository.get_trip(trip_id)
     print(trip)
     if trip.user_id != user_id:
-        raise_forbidden("Trip user id doesn't match current user id.")  
+        raise_forbidden("Trip user id doesn't match current user id.")
 
     base_url = str(request.base_url) + "v1/me/trips/"
     self_url = base_url + str(trip_id)

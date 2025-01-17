@@ -93,8 +93,7 @@ WKTPolygon = Annotated[
     BeforeValidator(validate_wkt_polygon),
     Field(
         description=(
-            "WKT Polygon format with longitude (-180 to 180) and latitude "
-            "(-90 to 90) coordinates"
+            "WKT Polygon format with longitude (-180 to 180) and latitude (-90 to 90) coordinates"
         ),
         json_schema_extra={
             "format": "WKT POLYGON",
