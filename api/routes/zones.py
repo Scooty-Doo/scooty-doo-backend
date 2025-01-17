@@ -65,25 +65,6 @@ async def get_zones(
     )
 
 
-@router.get("/{zone_id}", response_model=JsonApiResponse[MapZoneResource])
-async def get_zone(
-    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
-    map_zone_repository: MapZoneRepository,
-    request: Request,
-    zone_id: int = Path(..., ge=1),
-) -> JsonApiResponse[MapZoneResource]:
-    """Get a zone by ID"""
-    zone = await map_zone_repository.get_map_zone(zone_id)
-
-    base_url = str(request.base_url).rstrip("/")
-    resource_url = f"{base_url}/v1/zones/{zone_id}"
-
-    return JsonApiResponse(
-        data=MapZoneResource.from_db_model(zone, resource_url),
-        links=JsonApiLinks(self_link=resource_url),
-    )
-
-
 @router.post(
     "/", response_model=JsonApiResponse[MapZoneResource], status_code=status.HTTP_201_CREATED
 )
@@ -99,27 +80,6 @@ async def create_zone(
 
     base_url = str(request.base_url).rstrip("/")
     resource_url = f"{base_url}/v1/zones/{zone.id}"
-
-    return JsonApiResponse(
-        data=MapZoneResource.from_db_model(zone, resource_url),
-        links=JsonApiLinks(self_link=resource_url),
-    )
-
-
-@router.patch("/{zone_id}", response_model=JsonApiResponse[MapZoneResource])
-async def update_zone(
-    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
-    map_zone_repository: MapZoneRepository,
-    request: Request,
-    zone_data: MapZoneUpdate,
-    zone_id: int = Path(..., ge=1),
-) -> JsonApiResponse[MapZoneResource]:
-    """Update a zone by ID"""
-    zone_data_dict = zone_data.model_dump(exclude_unset=True)
-    zone = await map_zone_repository.update_map_zone(zone_id, zone_data_dict)
-
-    base_url = str(request.base_url).rstrip("/")
-    resource_url = f"{base_url}/v1/zones/{zone_id}"
 
     return JsonApiResponse(
         data=MapZoneResource.from_db_model(zone, resource_url),
@@ -184,5 +144,45 @@ async def update_zone_type(
 
     return JsonApiResponse(
         data=ZoneTypeResource.from_db_model(zone_type, resource_url),
+        links=JsonApiLinks(self_link=resource_url),
+    )
+
+
+@router.get("/{zone_id}", response_model=JsonApiResponse[MapZoneResource])
+async def get_zone(
+    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
+    map_zone_repository: MapZoneRepository,
+    request: Request,
+    zone_id: int = Path(..., ge=1),
+) -> JsonApiResponse[MapZoneResource]:
+    """Get a zone by ID"""
+    zone = await map_zone_repository.get_map_zone(zone_id)
+
+    base_url = str(request.base_url).rstrip("/")
+    resource_url = f"{base_url}/v1/zones/{zone_id}"
+
+    return JsonApiResponse(
+        data=MapZoneResource.from_db_model(zone, resource_url),
+        links=JsonApiLinks(self_link=resource_url),
+    )
+
+
+@router.patch("/{zone_id}", response_model=JsonApiResponse[MapZoneResource])
+async def update_zone(
+    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
+    map_zone_repository: MapZoneRepository,
+    request: Request,
+    zone_data: MapZoneUpdate,
+    zone_id: int = Path(..., ge=1),
+) -> JsonApiResponse[MapZoneResource]:
+    """Update a zone by ID"""
+    zone_data_dict = zone_data.model_dump(exclude_unset=True)
+    zone = await map_zone_repository.update_map_zone(zone_id, zone_data_dict)
+
+    base_url = str(request.base_url).rstrip("/")
+    resource_url = f"{base_url}/v1/zones/{zone_id}"
+
+    return JsonApiResponse(
+        data=MapZoneResource.from_db_model(zone, resource_url),
         links=JsonApiLinks(self_link=resource_url),
     )

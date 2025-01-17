@@ -1,4 +1,4 @@
-"""Module for testing trip routes"""
+"""Module for testing user routes"""
 
 from unittest.mock import AsyncMock
 

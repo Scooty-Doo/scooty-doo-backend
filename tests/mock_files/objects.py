@@ -1,6 +1,6 @@
 import datetime
 
-from api.models.db_models import Bike, Trip, User
+from api.models.db_models import Bike, MapZone, Trip, User, ZoneType
 
 fake_bike_data = [
     Bike(
@@ -183,3 +183,65 @@ fake_user_two = User(
 )
 
 fake_users_data = [fake_me_data, fake_user_two]
+
+fake_zones_data = [
+    MapZone(
+        id=1516236,
+        zone_name="Papan",
+        boundary="POLYGON((12.968277 55.60259, 12.968111 55.602781, \
+12.967826 55.602711, 12.967993 55.602508, 12.968277 55.60259))",
+        city_id=1,
+        zone_type_id=3,
+        created_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+        updated_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+    ),
+    MapZone(
+        id=112415,
+        zone_name="apan",
+        boundary="POLYGON((12.988973 55.592655, 12.985862 55.591079, 12.985368 55.590084, \
+12.98614 55.588641, 12.992879 55.587368, 12.991591 55.591103, 12.988973 55.592655))",
+        city_id=1,
+        zone_type_id=2,
+        created_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+        updated_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+    ),
+]
+
+fake_zone_type_data = [
+    ZoneType(
+        id=1,
+        type_name="Parking",
+        speed_limit=0,
+        start_fee=5,
+        end_fee=5,
+        created_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+        updated_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+    ),
+    ZoneType(
+        id=2,
+        type_name="Charging",
+        speed_limit=0,
+        start_fee=0,
+        end_fee=0,
+        created_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+        updated_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+    ),
+    ZoneType(
+        id=3,
+        type_name="Forbidden",
+        speed_limit=0,
+        start_fee=5,
+        end_fee=20,
+        created_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+        updated_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+    ),
+    ZoneType(
+        id=4,
+        type_name="Slow",
+        speed_limit=10,
+        start_fee=10,
+        end_fee=10,
+        created_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+        updated_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+    ),
+]
