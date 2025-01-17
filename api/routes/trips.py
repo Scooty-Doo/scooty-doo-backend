@@ -81,10 +81,12 @@ async def get_trip(
     trip = await trip_repository.get_trip(trip_id)
 
     base_url = str(request.base_url).rstrip("/") + request.url.path
+    base_url = base_url.rsplit("/", 1)[0] + "/"
+    self_link = base_url + str(trip_id)
 
     return JsonApiResponse(
         data=TripResource.from_db_model(trip, base_url),
-        links=JsonApiLinks(self_link=base_url),
+        links=JsonApiLinks(self_link=self_link),
     )
 
 
