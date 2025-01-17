@@ -29,10 +29,10 @@ class BikeRelationships(BaseModel):
 
     city: dict[str, Any]
 
-class BikeZoneRelationships(BaseModel):
-    """Bike relationships for JSON:API response."""
 
-    zone: dict[str, Any]
+class BikeZoneRelationships(BaseModel):
+    zone: Optional[dict[str, Any]] = None
+
 
 class BikeResource(BaseModel):
     """JSON:API resource object for bikes."""
@@ -56,15 +56,15 @@ class BikeResource(BaseModel):
             ),
             links=JsonApiLinks(self_link=f"{request_url}{bike.id}"),
         )
-    
+
     @classmethod
-    def from_bike_zone_db_model(cls, bike: Any, request_url: str) -> "BikeResource":
+    def from_bike_zone_model(cls, bike: Any, request_url: str, map_zone_id: int) -> "BikeResource":
         """Create a BikeResource from a database model."""
         return cls(
             id=str(bike.id),
             attributes=BikeAttributes.model_validate(bike),
             relationships=BikeZoneRelationships(
-                zone={"data": {"type": "zones", "id": str(bike.zone_id)}}
+                zone={"data": {"type": "zones", "id": str(map_zone_id)}}
             ),
             links=JsonApiLinks(self_link=f"{request_url}{bike.id}"),
         )
@@ -106,9 +106,11 @@ class UserBikeGetRequestParams(BaseModel):
     battery_gt: Optional[float] = None
     battery_lt: Optional[float] = None
 
+
 class ZoneBikeGetRequestParams(BaseModel):
     zone_type_id: int = Field(gt=0)
     city_id: int = Field(gt=0)
+
 
 class BikeCreate(BaseModel):
     """Model for creating a new bike

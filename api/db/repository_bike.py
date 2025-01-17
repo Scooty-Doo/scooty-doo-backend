@@ -95,32 +95,20 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
         result = await self.session.execute(stmt)
         return result.mappings().first()
 
-    async def get_bikes_in_zone(self, zone_type_id: int, city_id: int) -> tuple[int, list[db_models.Bike]]:
+    async def get_bikes_in_zone(
+        self, zone_type_id: int, city_id: int
+    ) -> list[tuple[db_models.Bike, int]]:
         """Get bikes in a given zone and city."""
         stmt = (
-            select(
-                self.model,
-                db_models.MapZone.id.label('map_zone_id'),
-                func.count().over().label('total_count')
+            select(self.model, db_models.MapZone.id.label("map_zone_id"))
+            .join(
+                db_models.MapZone,
+                func.ST_Contains(db_models.MapZone.boundary, self.model.last_position),
             )
-            .join(db_models.MapZone, func.ST_Contains(db_models.MapZone.boundary, self.model.last_position))
             .options(with_expression(self.model.last_position, ST_AsText(self.model.last_position)))
             .where(db_models.MapZone.zone_type_id == zone_type_id)
             .where(self.model.city_id == city_id)
         )
-        
+
         result = await self.session.execute(stmt)
-        rows = result.all()
-        
-        if not rows:
-            return 0, []
-        
-        bikes = []
-        for row in rows:
-            bike = row[0]
-            bike.zone_id = row[1]
-            bikes.append(bike)
-        
-        count = rows[0][2] if rows else 0
-        
-        return count, bikes
+        return result.all()

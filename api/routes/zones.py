@@ -188,11 +188,10 @@ async def update_zone_type(
         links=JsonApiLinks(self_link=resource_url),
     )
 
+
 @router.post("/point_in_zone", response_model=JsonApiResponse[MapZoneResource])
 async def get_point_in_zone(
-    map_zone_repository: MapZoneRepository,
-    request: Request,
-    point: WKTPoint
+    map_zone_repository: MapZoneRepository, request: Request, point: WKTPoint
 ) -> JsonApiResponse[MapZoneResource]:
     """Get a zone by point"""
     zone = await map_zone_repository.check_if_point_in_zones(point)

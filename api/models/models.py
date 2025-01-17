@@ -38,6 +38,5 @@ T = TypeVar("T", bound=BaseModel)
 class JsonApiResponse(BaseModel, Generic[T]):
     """JSON:API response wrapper."""
 
-    count: Optional[int] = None
     data: T | list[T]
     links: JsonApiLinks
