@@ -71,11 +71,13 @@ class ActiveTripExistsException(ApiException):
     status_code = status.HTTP_409_CONFLICT
     title = "Active Trip Exists"
 
+
 class BikeNotFoundException(ApiException):
     """Exception raised when a bike is not found."""
 
     status_code = status.HTTP_404_NOT_FOUND
     title = "Bike Not Found"
+
 
 class BikeRejectedError(ApiException):
     """Exception raised when bike rejects rental request."""
