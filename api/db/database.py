@@ -62,8 +62,8 @@ class DatabaseSessionManager:
         self._engine = create_async_engine(
             url,
             pool_pre_ping=True,  # Verify connection before using from pool
-            pool_size=10,  # Number of connections to maintain
-            max_overflow=10,  # max extra connections to create
+            pool_size=20,  # Number of connections to maintain
+            max_overflow=20,  # max extra connections to create
             echo=settings.debug,  # SQL logging
         )
         self._sessionmaker = async_sessionmaker(
