@@ -91,25 +91,25 @@ def move_bikes_to_zone(zone_type_id: int, bikes_per_zone: int):
         bikes_reader = csv.DictReader(bikes_csv)
         bikes = list(bikes_reader)
 
-    moved_bikes = set()  # Track moved bikes
+    moved_bikes = set()
 
-    # Move bikes to zones
+
     for zone in map_zones:
         boundary = loads(zone['boundary'])
-        bike_count = 0  # Reset bike count for each zone
+        bike_count = 0
         for i in range(10, len(bikes), 5):
             if bike_count >= bikes_per_zone:
                 break
             bike = bikes[i]
             if bike['id'] in moved_bikes:
-                continue  # Skip bikes that have already been moved
+                continue
             minx, miny, maxx, maxy = boundary.bounds
             while True:
                 pnt = Point(random.uniform(minx, maxx), random.uniform(miny, maxy))
                 if boundary.contains(pnt):
                     break
             bike['last_position'] = f"POINT ({pnt.x} {pnt.y})"
-            moved_bikes.add(bike['id'])  # Mark bike as moved
+            moved_bikes.add(bike['id'])
             bike_count += 1
             print(f"Moved bike {bike['id']} to {bike['last_position']} in zone {zone['zone_name']}")
 
