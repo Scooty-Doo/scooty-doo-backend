@@ -39,42 +39,6 @@ from api.services.socket import emit_update
 router = APIRouter(
     prefix="/v1/bikes",
     tags=["bikes"],
-    responses={
-        404: {
-            "model": JsonApiErrorResponse,
-            "description": "Resource not found",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "errors": [
-                            {
-                                "status": "404",
-                                "title": "Resource not found",
-                                "detail": "The requested bike was not found",
-                            }
-                        ]
-                    }
-                }
-            },
-        },
-        422: {
-            "model": JsonApiErrorResponse,
-            "description": "Validation error",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "errors": [
-                            {
-                                "status": "422",
-                                "title": "Validation Error",
-                                "detail": "The field 'battery_lvl' must be between 0 and 100",
-                            }
-                        ]
-                    }
-                }
-            },
-        },
-    },
 )
 
 BikeRepository = Annotated[
@@ -131,15 +95,13 @@ async def get_available_bikes(
 
 @router.get("/{bike_id}", response_model=JsonApiResponse[BikeResource])
 async def get_bike(
-    _: Annotated[int, Security(security_check, scopes=["admin"])],
+    # _: Annotated[int, Security(security_check, scopes=["admin"])],
     request: Request,
     bike_id: int,
     bike_repository: BikeRepository,
 ) -> JsonApiResponse[BikeResource]:
     """Get a bike by ID."""
     bike = await bike_repository.get_bike(bike_id)
-    if bike is None:
-        raise_not_found(f"Bike with ID {bike_id} not found")
 
     base_url = str(request.base_url).rstrip("/") + request.url.path
     base_url = base_url.rsplit("/", 1)[0] + "/"
