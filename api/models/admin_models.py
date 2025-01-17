@@ -2,7 +2,7 @@
 
 # pylint: disable=too-few-public-methods
 from datetime import datetime
-from typing import Annotated, Any, Literal, Optional
+from typing import Annotated, Any, Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -16,6 +16,7 @@ GitHubUsername = Annotated[
 
 class AdminAttributes(BaseModel):
     """User attributes for JSON:API response."""
+
     full_name: Optional[str] = None
     email: Optional[EmailStr] = None
     github_login: GitHubUsername
