@@ -1,16 +1,14 @@
 """Module for testing trip routes"""
 
-import json
 from unittest.mock import AsyncMock
 
 import pytest
-from fastapi.security.oauth2 import SecurityScopes
 from httpx import ASGITransport, AsyncClient
 
 from api.db.repository_user import UserRepository
 from api.main import app
 from api.routes.me import security_check
-from tests.mock_files.objects import fake_users_data, fake_me_data
+from tests.mock_files.objects import fake_me_data, fake_users_data
 from tests.utils import get_fake_json_data
 
 
@@ -39,7 +37,7 @@ class TestUsers:
         assert response.json() == get_fake_json_data("users")
 
     @pytest.mark.asyncio
-    async def test_get_users(self, monkeypatch):
+    async def test_get_user(self, monkeypatch):
         """Tests get users route"""
 
         app.dependency_overrides[security_check] = self.mock_security_check

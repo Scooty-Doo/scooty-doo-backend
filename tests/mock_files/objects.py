@@ -182,4 +182,4 @@ fake_user_two = User(
     updated_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
 )
 
-fake_users_data = [ fake_me_data, fake_user_two ]
+fake_users_data = [fake_me_data, fake_user_two]
