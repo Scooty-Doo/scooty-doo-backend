@@ -68,7 +68,7 @@ async def get_zones(
 
 @router.get("/{zone_id}", response_model=JsonApiResponse[MapZoneResource])
 async def get_zone(
-    # _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
+    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
     map_zone_repository: MapZoneRepository,
     request: Request,
     zone_id: int = Path(..., ge=1),
