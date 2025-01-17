@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Request, Security
+from fastapi import APIRouter, Depends, HTTPException, Request, Security
 
 from api.db.repository_transaction import TransactionRepository as TransactionRepoClass
 from api.db.repository_trip import TripRepository as TripRepoClass
@@ -10,12 +10,12 @@ from api.db.repository_user import UserRepository as UserRepoClass
 from api.dependencies.repository_factory import get_repository
 from api.models import db_models
 from api.models.models import (
+    JsonApiError,
+    JsonApiErrorResponse,
     JsonApiLinks,
     JsonApiResponse,
 )
-from api.models.transaction_models import (
-    TransactionResourceMinimal,
-)
+from api.models.transaction_models import TransactionResourceMinimal
 from api.models.trip_models import (
     TripResource,
 )
@@ -42,6 +42,17 @@ TransactionRepository = Annotated[
     TransactionRepoClass,
     Depends(get_repository(db_models.Transaction, repository_class=TransactionRepoClass)),
 ]
+
+
+def raise_forbidden(detail: str):
+    """Raise a 403 error in JSON:API format.
+    TODO: Change to work the same way as validation error? Move to exceptions?"""
+    raise HTTPException(
+        status_code=403,
+        detail=JsonApiErrorResponse(
+            errors=[JsonApiError(status="404", title="Forbidden", detail=detail)]
+        ).model_dump(),
+    )
 
 
 @router.get("/", response_model=JsonApiResponse[UserResource])
@@ -98,6 +109,27 @@ async def get_my_trips(
     return JsonApiResponse(
         data=[TripResource.from_db_model(trip, resource_url) for trip in user],
         links=JsonApiLinks(self_link=resource_url),
+    )
+
+
+@router.get("/trips/{trip_id}", response_model=JsonApiResponse[TripResource])
+async def get_trip(
+    user_id: Annotated[int, Security(security_check, scopes=["user"])],
+    request: Request,
+    trip_id: int,
+    trip_repository: TripRepository,
+) -> JsonApiResponse[TripResource]:
+    """Get a single trip by ID."""
+    trip = await trip_repository.get_trip(trip_id)
+    print(trip)
+    if trip.user_id != user_id:
+        raise_forbidden("Trip user id doesn't match current user id.")
+
+    base_url = str(request.base_url) + "v1/me/trips/"
+    self_url = base_url + str(trip_id)
+    return JsonApiResponse(
+        data=TripResource.from_db_model(trip, base_url),
+        links=JsonApiLinks(self_link=self_url),
     )
 
 
