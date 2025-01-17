@@ -7,14 +7,11 @@ from fastapi import APIRouter, Depends, Query, Request, Security
 from api.db.repository_admin import AdminRepository as AdminRepoClass
 from api.dependencies.repository_factory import get_repository
 from api.models import db_models
+from api.models.admin_models import AdminGetRequestParams, AdminResource
 from api.models.models import (
     JsonApiLinks,
     JsonApiResponse,
 )
-
-from api.models.admin_models import (
-    AdminGetRequestParams,
-    AdminResource)
 from api.services.oauth import security_check
 
 router = APIRouter(
@@ -27,7 +24,6 @@ AdminRepository = Annotated[
     AdminRepoClass,
     Depends(get_repository(db_models.Admin, repository_class=AdminRepoClass)),
 ]
-
 
 
 @router.get("/", response_model=JsonApiResponse[AdminResource])
@@ -47,7 +43,8 @@ async def get_my_admin(
         links=JsonApiLinks(self_link=resource_url),
     )
 
-@router.get("/get_all", response_model=JsonApiResponse[AdminResource])
+
+@router.get("/all", response_model=JsonApiResponse[AdminResource])
 async def get_admins(
     _: Annotated[int, Security(security_check, scopes=["admin"])],
     admin_repository: AdminRepository,
