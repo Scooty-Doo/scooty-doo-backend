@@ -1,7 +1,7 @@
 """Models for bikes"""
 
 from datetime import datetime
-from typing import Any, Literal, Optional
+from typing import Any, Literal, Optional, Union
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
@@ -30,13 +30,17 @@ class BikeRelationships(BaseModel):
     city: dict[str, Any]
 
 
+class BikeZoneRelationships(BaseModel):
+    zone: Optional[dict[str, Any]] = None
+
+
 class BikeResource(BaseModel):
     """JSON:API resource object for bikes."""
 
     id: str
     type: str = "bikes"
     attributes: BikeAttributes
-    relationships: Optional[BikeRelationships] = None
+    relationships: Optional[Union[BikeRelationships, BikeZoneRelationships]] = None
     links: Optional[JsonApiLinks] = None
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
@@ -51,6 +55,18 @@ class BikeResource(BaseModel):
                 city={"data": {"type": "cities", "id": str(bike.city_id)}}
             ),
             links=JsonApiLinks(self_link=f"{request_url}{bike.id}"),
+        )
+
+    @classmethod
+    def from_bike_zone_model(cls, bike: Any, request_url: str, map_zone_id: int) -> "BikeResource":
+        """Create a BikeResource from a database model."""
+        return cls(
+            id=str(bike.id),
+            attributes=BikeAttributes.model_validate(bike),
+            relationships=BikeZoneRelationships(
+                zone={"data": {"type": "zones", "id": str(map_zone_id)}}
+            ),
+            links=JsonApiLinks(self_link=f"{request_url}v1/bikes/{bike.id}"),
         )
 
 
@@ -89,6 +105,11 @@ class UserBikeGetRequestParams(BaseModel):
     city_id: Optional[int] = Field(None, ge=1)
     battery_gt: Optional[float] = None
     battery_lt: Optional[float] = None
+
+
+class ZoneBikeGetRequestParams(BaseModel):
+    zone_type_id: int = Field(gt=0)
+    city_id: int = Field(gt=0)
 
 
 class BikeCreate(BaseModel):
