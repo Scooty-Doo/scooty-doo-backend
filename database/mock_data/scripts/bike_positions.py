@@ -3,6 +3,7 @@ import os
 import random
 import tempfile
 
+from shapely import Point
 from shapely.wkt import loads
 
 cities = {
@@ -77,5 +78,52 @@ def process_city(city_name, bike_file, trip_files):
     print(f"Finished processing {city_name}.")
 
 
-for city_name, files in cities.items():
-    process_city(city_name, files["bike_file"], files["trip_files"])
+def move_bikes_to_zone(zone_type_id: int, bikes_per_zone: int):
+    """Move bikes to a specific zone."""
+    
+    # Read map_zones and identify all zones of the specified zone_type_id
+    with open("../data/generated/map_zones.csv", encoding="utf-8") as map_zones_csv:
+        map_zones_reader = csv.DictReader(map_zones_csv)
+        map_zones = [row for row in map_zones_reader if int(row['zone_type_id']) == zone_type_id]
+
+    # Read bikes
+    with open("../data/generated/bikes_malmo.csv", encoding="utf-8") as bikes_csv:
+        bikes_reader = csv.DictReader(bikes_csv)
+        bikes = list(bikes_reader)
+
+    moved_bikes = set()  # Track moved bikes
+
+    # Move bikes to zones
+    for zone in map_zones:
+        boundary = loads(zone['boundary'])
+        bike_count = 0  # Reset bike count for each zone
+        for i in range(10, len(bikes), 5):
+            if bike_count >= bikes_per_zone:
+                break
+            bike = bikes[i]
+            if bike['id'] in moved_bikes:
+                continue  # Skip bikes that have already been moved
+            minx, miny, maxx, maxy = boundary.bounds
+            while True:
+                pnt = Point(random.uniform(minx, maxx), random.uniform(miny, maxy))
+                if boundary.contains(pnt):
+                    break
+            bike['last_position'] = f"POINT ({pnt.x} {pnt.y})"
+            moved_bikes.add(bike['id'])  # Mark bike as moved
+            bike_count += 1
+            print(f"Moved bike {bike['id']} to {bike['last_position']} in zone {zone['zone_name']}")
+
+    # Write updated positions to the file
+    with open("../data/generated/bikes_malmo.csv", mode="w", encoding="utf-8", newline="") as bikes_csv:
+        fieldnames = bikes_reader.fieldnames
+        writer = csv.DictWriter(bikes_csv, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(bikes)
+
+# Move bikes to parking and charging (20 bikes each)
+# move_bikes_to_zone(1, 20)
+# move_bikes_to_zone(2, 20)
+
+# Set bike positions according to trip data
+# for city_name, files in cities.items():
+#     process_city(city_name, files["bike_file"], files["trip_files"])
