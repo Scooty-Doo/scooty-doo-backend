@@ -15,7 +15,7 @@ from tests.utils import get_fake_json_data
 
 
 class TestMe:
-    """Class to test trip functionality"""
+    """Class to me functionality"""
 
     async def mock_security_check(self, _1: str = "", _2: SecurityScopes = None):
         """Mocks security check"""
@@ -59,7 +59,7 @@ class TestMe:
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://localhost:8000/"
         ) as ac:
-            response = await ac.patch("v1/me/", data=json.dumps(mock_data))
+            response = await ac.patch("v1/me/", content=json.dumps(mock_data))
 
         assert response.status_code == 200
         mock_update.assert_awaited_once_with(
