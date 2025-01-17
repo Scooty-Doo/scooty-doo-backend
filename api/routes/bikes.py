@@ -95,7 +95,7 @@ async def get_available_bikes(
 
 @router.get("/{bike_id}", response_model=JsonApiResponse[BikeResource])
 async def get_bike(
-    # _: Annotated[int, Security(security_check, scopes=["admin"])],
+    _: Annotated[int, Security(security_check, scopes=["admin"])],
     request: Request,
     bike_id: int,
     bike_repository: BikeRepository,
