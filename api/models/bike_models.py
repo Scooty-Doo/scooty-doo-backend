@@ -66,7 +66,7 @@ class BikeResource(BaseModel):
             relationships=BikeZoneRelationships(
                 zone={"data": {"type": "zones", "id": str(map_zone_id)}}
             ),
-            links=JsonApiLinks(self_link=f"{request_url}{bike.id}"),
+            links=JsonApiLinks(self_link=f"{request_url}v1/bikes/{bike.id}"),
         )
 
 

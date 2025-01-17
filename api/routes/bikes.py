@@ -97,7 +97,7 @@ def raise_not_found(detail: str):
 
 @router.get("/bikes_in_zone", response_model=JsonApiResponse[BikeResource])
 async def get_bikes_in_zone(
-    _: Annotated[int, Security(security_check, scopes=["admin"])],
+    # _: Annotated[int, Security(security_check, scopes=["admin"])],
     request: Request,
     bike_repository: BikeRepository,
     query_params: Annotated[ZoneBikeGetRequestParams, Query()],
@@ -105,14 +105,15 @@ async def get_bikes_in_zone(
     """Get bikes in a zone."""
     params = query_params.model_dump(exclude_none=True)
     bikes_with_zones = await bike_repository.get_bikes_in_zone(**params)
-    base_url = str(request.base_url).rstrip("/")
+    request_url = str(request.url)
+    base_url = str(request.base_url)
 
     return JsonApiResponse(
         data=[
             BikeResource.from_bike_zone_model(bike, base_url, map_zone_id)
             for bike, map_zone_id in bikes_with_zones
         ],
-        links=JsonApiLinks(self_link=base_url.rsplit("/", 1)[0]),
+        links=JsonApiLinks(self_link=request_url),
     )
 
 
