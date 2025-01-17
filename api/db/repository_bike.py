@@ -95,17 +95,32 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
         result = await self.session.execute(stmt)
         return result.mappings().first()
 
-    async def get_bikes_in_zone(self, zone_id: int, city_id: int) -> list[db_models.Bike]:
+    async def get_bikes_in_zone(self, zone_type_id: int, city_id: int) -> tuple[int, list[db_models.Bike]]:
         """Get bikes in a given zone and city."""
         stmt = (
-            select(self.model)
+            select(
+                self.model,
+                db_models.MapZone.id.label('map_zone_id'),
+                func.count().over().label('total_count')
+            )
             .join(db_models.MapZone, func.ST_Contains(db_models.MapZone.boundary, self.model.last_position))
             .options(with_expression(self.model.last_position, ST_AsText(self.model.last_position)))
-            .where(db_models.MapZone.id == zone_id)
+            .where(db_models.MapZone.zone_type_id == zone_type_id)
             .where(self.model.city_id == city_id)
         )
-
+        
         result = await self.session.execute(stmt)
-        bikes = result.scalars().all()
-
-        return bikes
+        rows = result.all()
+        
+        if not rows:
+            return 0, []
+        
+        bikes = []
+        for row in rows:
+            bike = row[0]
+            bike.zone_id = row[1]
+            bikes.append(bike)
+        
+        count = rows[0][2] if rows else 0
+        
+        return count, bikes

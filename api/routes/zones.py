@@ -16,6 +16,7 @@ from api.models.models import (
     JsonApiLinks,
     JsonApiResponse,
 )
+from api.models.wkt_models import WKTPoint
 from api.models.zone_models import (
     MapZoneCreate,
     MapZoneGetRequestParams,
@@ -67,7 +68,7 @@ async def get_zones(
 
 @router.get("/{zone_id}", response_model=JsonApiResponse[MapZoneResource])
 async def get_zone(
-    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
+    # _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
     map_zone_repository: MapZoneRepository,
     request: Request,
     zone_id: int = Path(..., ge=1),
@@ -184,5 +185,22 @@ async def update_zone_type(
 
     return JsonApiResponse(
         data=ZoneTypeResource.from_db_model(zone_type, resource_url),
+        links=JsonApiLinks(self_link=resource_url),
+    )
+
+@router.post("/point_in_zone", response_model=JsonApiResponse[MapZoneResource])
+async def get_point_in_zone(
+    map_zone_repository: MapZoneRepository,
+    request: Request,
+    point: WKTPoint
+) -> JsonApiResponse[MapZoneResource]:
+    """Get a zone by point"""
+    zone = await map_zone_repository.check_if_point_in_zones(point)
+
+    base_url = str(request.base_url).rstrip("/")
+    resource_url = f"{base_url}/v1/zones/{zone.id}"
+
+    return JsonApiResponse(
+        data=MapZoneResource.from_db_model(zone, resource_url),
         links=JsonApiLinks(self_link=resource_url),
     )
