@@ -26,6 +26,7 @@ from api.models.bike_models import (
     BikeSocket,
     BikeUpdate,
     UserBikeGetRequestParams,
+    ZoneBikeGetRequestParams,
 )
 from api.models.models import (
     JsonApiError,
@@ -93,6 +94,21 @@ def raise_not_found(detail: str):
         ).model_dump(),
     )
 
+@router.get("/bikes_in_zone", response_model=JsonApiResponse[BikeResource])
+async def get_bikes_in_zone(
+    request: Request,
+    bike_repository: BikeRepository,
+    query_params: Annotated[ZoneBikeGetRequestParams, Query()],
+) -> JsonApiResponse[BikeResource]:
+    """Get bikes in a zone."""
+    params = query_params.model_dump(exclude_none=True)
+    bikes = await bike_repository.get_bikes_in_zone(**params)
+    base_url = str(request.base_url).rstrip("/") + request.url.path
+
+    return JsonApiResponse(
+        data=[BikeResource.from_db_model(bike, base_url) for bike in bikes],
+        links=JsonApiLinks(self_link=base_url.rsplit("/", 1)[0]),
+    )
 
 @router.get("/", response_model=JsonApiResponse[BikeResource])
 async def get_all_bikes(

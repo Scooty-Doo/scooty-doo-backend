@@ -90,6 +90,9 @@ class UserBikeGetRequestParams(BaseModel):
     battery_gt: Optional[float] = None
     battery_lt: Optional[float] = None
 
+class ZoneBikeGetRequestParams(BaseModel):
+    zone_id: int = Field(gt=0)
+    city_id: int = Field(gt=0)
 
 class BikeCreate(BaseModel):
     """Model for creating a new bike
