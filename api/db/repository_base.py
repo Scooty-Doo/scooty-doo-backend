@@ -35,7 +35,6 @@ class DatabaseRepository(Generic[Model]):
 
     async def get(self, pk: int) -> Model | None:
         """Get an instance by primary key."""
-        print("INSIDE REPOBASE GET:", pk)
         return await self.session.get(self.model, pk)
 
     async def get_all(self) -> list[Model]:
