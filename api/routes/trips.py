@@ -149,7 +149,7 @@ async def end_trip(
     #  validate that user, trip and bike match before calling db
     if bike_response.log.user_id != user_id:
         raise UnauthorizedTripAccessException(
-            detail=(f"User {user_id} " f"is not allowed to end trip {bike_response.log.user_id}")
+            detail=(f"User {user_id} is not allowed to end trip {bike_response.log.user_id}")
         )
 
     if bike_response.log.trip_id != trip_id:
