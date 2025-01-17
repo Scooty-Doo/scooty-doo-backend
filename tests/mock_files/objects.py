@@ -149,3 +149,13 @@ fake_trips = [
         total_fee=49.23,
     ),
 ]
+
+fake_me_data = User(
+    id=1201279949800724,
+    github_login="Ape-T",
+    full_name="Apan Trazansson",
+    use_prepay=False,
+    balance=-10.44,
+    created_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+    updated_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+    )
