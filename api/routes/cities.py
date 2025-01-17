@@ -1,24 +1,22 @@
 """Module for the /cities routes"""
 
-from typing import Annotated, Optional
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path, Query, Request, Security, status
+from fastapi import APIRouter, Depends, Request
 
 from api.db.repository_city import (
     CityRepository as CityRepoClass,
 )
 from api.dependencies.repository_factory import get_repository
 from api.models import db_models
-from api.models.models import (
-    JsonApiLinks,
-    JsonApiResponse,
-)
-from api.models.wkt_models import WKTPoint
 from api.models.city_models import (
     CityGetRequestParams,
     CityResource,
 )
-from api.services.oauth import security_check
+from api.models.models import (
+    JsonApiLinks,
+    JsonApiResponse,
+)
 
 router = APIRouter(
     prefix="/v1/cities",
@@ -44,9 +42,6 @@ async def get_cities(
     collection_url = f"{base_url}/v1/cities"
 
     return JsonApiResponse(
-        data=[
-            CityResource.from_db_model(city, base_url)
-            for city in cities
-        ],
+        data=[CityResource.from_db_model(city, base_url) for city in cities],
         links=JsonApiLinks(self_link=collection_url),
     )

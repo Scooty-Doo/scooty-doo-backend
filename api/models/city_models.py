@@ -38,6 +38,7 @@ class CityResource(BaseModel):
             links=JsonApiLinks(self_link=f"{base_url}/v1/bikes/available?city_id={city.id}"),
         )
 
+
 class CityGetRequestParams(BaseModel):
     """Query parameters for GET requests to /cities."""
 

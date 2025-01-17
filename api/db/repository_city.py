@@ -5,10 +5,11 @@ from typing import Any, Optional
 from geoalchemy2.functions import ST_AsText
 from sqlalchemy import BinaryExpression, and_, asc, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload, with_expression
+from sqlalchemy.orm import with_expression
 
 from api.db.repository_base import DatabaseRepository
 from api.models import db_models
+
 
 class CityRepository(DatabaseRepository[db_models.City]):
     """Repository for  city-specific operations."""
@@ -32,11 +33,9 @@ class CityRepository(DatabaseRepository[db_models.City]):
 
     async def get_cities(self, **params: Optional[dict[str, Any]]) -> list[db_models.City]:
         """Get all  citys from the database."""
-        stmt = (
-            select(self.model)
-            .options(
-                with_expression(self.model.c_location, ST_AsText(self.model.c_location)),
-            ))
+        stmt = select(self.model).options(
+            with_expression(self.model.c_location, ST_AsText(self.model.c_location)),
+        )
         if params:
             filters = self._build_filters(**params)
             stmt = stmt.where(and_(*filters))
@@ -47,4 +46,3 @@ class CityRepository(DatabaseRepository[db_models.City]):
 
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
-
