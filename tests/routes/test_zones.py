@@ -35,6 +35,22 @@ class TestZoneRoute:
         assert response.json() == expected_response
 
     @pytest.mark.asyncio
+    async def test_get_zone(self, monkeypatch):
+        """Tests v1/zones/{zone_id} route"""
+        # Mock database call
+        mock_get_zone = AsyncMock(return_value=fake_zones_data[0])
+        monkeypatch.setattr(MapZoneRepository, "get_map_zone", mock_get_zone)
+
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://localhost:8000/"
+        ) as ac:
+            response = await ac.get("v1/zones/1516236")
+
+        assert response.status_code == 200
+        expected_response = get_fake_json_data("zone")
+        assert response.json() == expected_response
+
+    @pytest.mark.asyncio
     async def test_get_all_zone_types(self, monkeypatch):
         """Tests v1/zones/types route"""
         # Mock database call
@@ -45,8 +61,6 @@ class TestZoneRoute:
             transport=ASGITransport(app=app), base_url="http://localhost:8000/"
         ) as ac:
             response = await ac.get("v1/zones/types")
-        expected_response = get_fake_json_data("zonetypes")
-        assert response.json() == expected_response
 
         assert response.status_code == 200
         expected_response = get_fake_json_data("zonetypes")
