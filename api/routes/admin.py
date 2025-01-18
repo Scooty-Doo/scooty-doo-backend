@@ -32,7 +32,7 @@ async def get_my_admin(
     admin_repository: AdminRepository,
     request: Request,
 ) -> JsonApiResponse[AdminResource]:
-    """Get a admin by ID in token"""
+    """Get an admin by ID in token"""
     admin = await admin_repository.get_admin(admin_id)
 
     base_url = str(request.base_url).rstrip("/")
@@ -51,7 +51,7 @@ async def get_admins(
     query_params: Annotated[AdminGetRequestParams, Query()],
     request: Request,
 ) -> JsonApiResponse[AdminResource]:
-    """Get a admin by ID in token"""
+    """Get all admins"""
     admin = await admin_repository.get_admins(**query_params.model_dump(exclude_none=True))
 
     base_url = str(request.base_url).rstrip("/")
