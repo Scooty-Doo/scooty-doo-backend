@@ -101,7 +101,7 @@ async def get_my_trips(
 ) -> JsonApiResponse[TripResource]:
     """Get all trips for your user"""
     filter_dict = {"user_id": user_id}
-    user = await trip_repository.get_trips(filter_dict)
+    user = await trip_repository.get_trips(**filter_dict)
 
     base_url = str(request.base_url).rstrip("/")
     resource_url = f"{base_url}/v1/me/trips"
