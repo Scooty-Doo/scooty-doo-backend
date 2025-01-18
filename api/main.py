@@ -15,7 +15,9 @@ from api.exceptions import (
     api_exception_handler,
     validation_exception_handler,
 )
-from api.routes import admin, bikes, me, oauth, stripe, transactions, trips, users, zones
+
+from api.routes import admin, bikes, cities, me, oauth, stripe, transactions, trips, users, zones
+
 from api.services.socket import socket
 
 sessionmanager.init(settings.database_url)
@@ -58,6 +60,7 @@ app.include_router(transactions.router)
 app.include_router(stripe.router)
 app.include_router(me.router)
 app.include_router(admin.router)
+app.include_router(cities.router)
 
 # Add exception handlers
 app.add_exception_handler(ApiException, api_exception_handler)
