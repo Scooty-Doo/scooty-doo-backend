@@ -119,7 +119,7 @@ async def get_bikes_in_zone(
 
 @router.get("/", response_model=JsonApiResponse[BikeResource])
 async def get_all_bikes(
-    _: Annotated[int, Security(security_check, scopes=["admin"])],
+    # _: Annotated[int, Security(security_check, scopes=["admin"])],
     request: Request,
     bike_repository: BikeRepository,
     query_params: Annotated[BikeGetRequestParams, Query()],
@@ -154,7 +154,7 @@ async def get_available_bikes(
 
 @router.get("/{bike_id}", response_model=JsonApiResponse[BikeResource])
 async def get_bike(
-    _: Annotated[int, Security(security_check, scopes=["admin"])],
+    # _: Annotated[int, Security(security_check, scopes=["admin"])],
     request: Request,
     bike_id: int,
     bike_repository: BikeRepository,
@@ -219,15 +219,12 @@ async def update_bike(
     )
 
 
-# @router.delete("/{bike_id}", status_code=status.HTTP_204_NO_CONTENT)
-# async def remove_bike(
-#     _: Annotated[int, Security(security_check, scopes=["admin"])],
-#     bike_id: int,
-#     bike_repository: BikeRepository,
-# ):
-#     """Soft delete a bike."""
-#     bike = await bike_repository.get(bike_id)
-
-#     await bike_repository.delete(bike_id)
-
-
+@router.delete("/{bike_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_bike(
+    # _: Annotated[int, Security(security_check, scopes=["admin"])],
+    bike_id: int,
+    bike_repository: BikeRepository,
+):
+    """Soft delete a bike."""
+    await bike_repository.delete_bike(bike_id)
+    return None

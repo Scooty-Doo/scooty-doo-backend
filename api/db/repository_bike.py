@@ -29,6 +29,7 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
             self.model.meta_data,
             self.model.created_at,
             self.model.updated_at,
+            self.model.deleted_at,
             ST_AsText(self.model.last_position).label("last_position"),
         ]
 
@@ -129,7 +130,8 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
             .values(
                 deleted_at=func.now(),
                 is_available=False,
-                last_position=None
+                last_position=None,
+                battery_lvl=0,
             )
             .returning(*self._get_bike_columns())
         )
