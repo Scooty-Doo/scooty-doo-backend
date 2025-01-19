@@ -218,3 +218,16 @@ async def update_bike(
         links=JsonApiLinks(self_link=base_url),
     )
 
+
+# @router.delete("/{bike_id}", status_code=status.HTTP_204_NO_CONTENT)
+# async def remove_bike(
+#     _: Annotated[int, Security(security_check, scopes=["admin"])],
+#     bike_id: int,
+#     bike_repository: BikeRepository,
+# ):
+#     """Soft delete a bike."""
+#     bike = await bike_repository.get(bike_id)
+
+#     await bike_repository.delete(bike_id)
+
+
