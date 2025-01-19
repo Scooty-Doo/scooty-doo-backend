@@ -1,0 +1,49 @@
+{
+    "data": [
+      {
+        "id": "3",
+        "type": "transactions",
+        "attributes": {
+          "amount": "-10.89",
+          "transaction_type": "trip",
+          "transaction_description": null,
+          "created_at": "2025-01-19T17:55:39.596693",
+          "updated_at": "2025-01-19T17:55:39.596693"
+        },
+        "links": {
+          "self": "http://localhost:8000/v1/transactions/3"
+        }
+      },
+      {
+        "id": "2",
+        "type": "transactions",
+        "attributes": {
+          "amount": "-24.23",
+          "transaction_type": "trip",
+          "transaction_description": null,
+          "created_at": "2025-01-19T17:55:39.596693",
+          "updated_at": "2025-01-19T17:55:39.596693"
+        },
+        "links": {
+          "self": "http://localhost:8000/v1/transactions/2"
+        }
+      },
+      {
+        "id": "1",
+        "type": "transactions",
+        "attributes": {
+          "amount": "100.00",
+          "transaction_type": "deposit",
+          "transaction_description": null,
+          "created_at": "2025-01-19T17:55:39.596693",
+          "updated_at": "2025-01-19T17:55:39.596693"
+        },
+        "links": {
+          "self": "http://localhost:8000/v1/transactions/1"
+        }
+      }
+    ],
+    "links": {
+      "self": "http://localhost:8000/v1/transactions"
+    }
+}

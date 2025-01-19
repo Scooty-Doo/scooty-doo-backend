@@ -1,6 +1,6 @@
 import datetime
 
-from api.models.db_models import Bike, MapZone, Trip, User, ZoneType
+from api.models.db_models import Bike, MapZone, Trip, User, ZoneType, Transaction
 from api.models.trip_models import (
     BikeTripEndData,
     BikeTripEndLog,
@@ -335,3 +335,32 @@ fake_mock_end_object = BikeTripEndData(
         end_position="POINT(13.100047 55.55034)",
     ),
 )
+
+fake_transaction_data = Transaction(
+    id=3,
+    amount="-10.89",
+    transaction_type="trip",
+    transaction_description=None,
+    created_at=datetime.datetime(2025, 1, 19, 17, 55, 39, 596693),
+    updated_at=datetime.datetime(2025, 1, 19, 17, 55, 39, 596693),
+)
+
+fake_transactions_data = [
+    fake_transaction_data,
+    Transaction(
+        id=2,
+        amount="-24.23",
+        transaction_type="trip",
+        transaction_description=None,
+        created_at=datetime.datetime(2025, 1, 19, 17, 55, 39, 596693),
+        updated_at=datetime.datetime(2025, 1, 19, 17, 55, 39, 596693),
+    ),
+        Transaction(
+        id=1,
+        amount="100.00",
+        transaction_type="deposit",
+        transaction_description=None,
+        created_at=datetime.datetime(2025, 1, 19, 17, 55, 39, 596693),
+        updated_at=datetime.datetime(2025, 1, 19, 17, 55, 39, 596693),
+    )
+]
