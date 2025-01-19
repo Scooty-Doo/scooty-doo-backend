@@ -26,6 +26,7 @@ from api.models.bike_models import (
     BikeSocket,
     BikeUpdate,
     UserBikeGetRequestParams,
+    ZoneBikeGetRequestParams,
 )
 from api.models.models import (
     JsonApiError,
@@ -39,42 +40,6 @@ from api.services.socket import emit_update
 router = APIRouter(
     prefix="/v1/bikes",
     tags=["bikes"],
-    responses={
-        404: {
-            "model": JsonApiErrorResponse,
-            "description": "Resource not found",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "errors": [
-                            {
-                                "status": "404",
-                                "title": "Resource not found",
-                                "detail": "The requested bike was not found",
-                            }
-                        ]
-                    }
-                }
-            },
-        },
-        422: {
-            "model": JsonApiErrorResponse,
-            "description": "Validation error",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "errors": [
-                            {
-                                "status": "422",
-                                "title": "Validation Error",
-                                "detail": "The field 'battery_lvl' must be between 0 and 100",
-                            }
-                        ]
-                    }
-                }
-            },
-        },
-    },
 )
 
 BikeRepository = Annotated[
@@ -91,6 +56,28 @@ def raise_not_found(detail: str):
         detail=JsonApiErrorResponse(
             errors=[JsonApiError(status="404", title="Resource not found", detail=detail)]
         ).model_dump(),
+    )
+
+
+@router.get("/bikes_in_zone", response_model=JsonApiResponse[BikeResource])
+async def get_bikes_in_zone(
+    # _: Annotated[int, Security(security_check, scopes=["admin"])],
+    request: Request,
+    bike_repository: BikeRepository,
+    query_params: Annotated[ZoneBikeGetRequestParams, Query()],
+) -> JsonApiResponse[BikeResource]:
+    """Get bikes in a zone."""
+    params = query_params.model_dump(exclude_none=True)
+    bikes_with_zones = await bike_repository.get_bikes_in_zone(**params)
+    request_url = str(request.url)
+    base_url = str(request.base_url)
+
+    return JsonApiResponse(
+        data=[
+            BikeResource.from_bike_zone_model(bike, base_url, map_zone_id)
+            for bike, map_zone_id in bikes_with_zones
+        ],
+        links=JsonApiLinks(self_link=request_url),
     )
 
 
@@ -138,8 +125,6 @@ async def get_bike(
 ) -> JsonApiResponse[BikeResource]:
     """Get a bike by ID."""
     bike = await bike_repository.get_bike(bike_id)
-    if bike is None:
-        raise_not_found(f"Bike with ID {bike_id} not found")
 
     base_url = str(request.base_url).rstrip("/") + request.url.path
     base_url = base_url.rsplit("/", 1)[0] + "/"
