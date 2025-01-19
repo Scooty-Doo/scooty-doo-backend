@@ -14,6 +14,7 @@ fake_bike_data = [
         updated_at=datetime.datetime(
             2024, 12, 17, 14, 21, 44, 610901, tzinfo=datetime.timezone.utc
         ),
+        deleted_at=None,
     ),
     Bike(
         id=2,
@@ -25,6 +26,7 @@ fake_bike_data = [
         updated_at=datetime.datetime(
             2024, 12, 17, 14, 21, 46, 610901, tzinfo=datetime.timezone.utc
         ),
+        deleted_at=None,
     ),
 ]
 

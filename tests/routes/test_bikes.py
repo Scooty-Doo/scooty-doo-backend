@@ -3,6 +3,7 @@
 from unittest.mock import AsyncMock
 
 import pytest
+import json
 from httpx import ASGITransport, AsyncClient
 
 from api.db.repository_bike import BikeRepository
@@ -61,6 +62,7 @@ class TestBikeRoute:
             city_id=1,
             min_battery=10.0,
             max_battery=40.0,
+            include_deleted=False,
         )
 
     @pytest.mark.asyncio
