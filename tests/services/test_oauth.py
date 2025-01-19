@@ -1,10 +1,12 @@
 """Module for testing oauth services module"""
 
+from unittest.mock import patch
+
 import pytest
 from fastapi import HTTPException
 from fastapi.security.oauth2 import SecurityScopes
 
-from api.services.oauth import security_check, settings
+from api.services.oauth import get_github_access_token, httpx, security_check, settings
 
 
 class TestOauth:
@@ -56,3 +58,23 @@ class TestOauth:
                 SecurityScopes(["apa"]),
                 token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjUxMjUiLCJzY29wZXMiOlsidXNlciIsImFkbWluIl19.IUomA__M_ua7NT75aPSzHkVnTwzFv_Otw5mfxFNQyeY",
             )
+
+    @pytest.mark.asyncio
+    @patch(
+        "api.services.bike_caller.httpx.AsyncClient.post",
+        return_value=httpx.Response(200, json={"access_token": "pjasc890123"}),
+    )
+    async def test_get_github_access_token(self, monkeypatch):
+        """Tests gitub action token fetcher"""
+        await get_github_access_token("awdiophawpiod")
+        monkeypatch.assert_called_once()
+        monkeypatch.assert_called_with(
+            "https://github.com/login/oauth/access_token",
+            headers={"Accept": "application/json"},
+            data={
+                "client_id": settings.github_client_id,
+                "client_secret": settings.github_client_secret,
+                "code": "awdiophawpiod",
+                "redirect_uri": settings.github_redirect_uri,
+            },
+        )
