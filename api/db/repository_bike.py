@@ -86,8 +86,18 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
 
     async def update_bike(self, pk: int, data: dict[str, Any]) -> Optional[db_models.Bike]:
         """Update a bike by primary key."""
+        bike_exists = await self.session.execute(
+            select(self.model)
+            .where(self.model.id == pk)
+            .where(self.model.deleted_at.is_(None))
+        )
+        bike_exists = bike_exists.scalar_one_or_none()
+        if bike_exists is None:
+            raise BikeNotFoundException(f"Bike with ID {pk} not found")
+
         query = (
             update(self.model)
+            # where bike id matches and bike is not deleted
             .where(self.model.id == pk)
             .values(**data)
             .returning(*self._get_bike_columns())
