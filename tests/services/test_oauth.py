@@ -75,7 +75,7 @@ class TestOauth:
         return_value=httpx.Response(200, json={"access_token": "pjasc890123"}),
     )
     async def test_get_github_access_token(self, monkeypatch):
-        """Tests gitub action token fetcher"""
+        """Tests github action token fetcher"""
         await get_github_access_token("awdiophawpiod")
         monkeypatch.assert_called_once()
         monkeypatch.assert_called_with(
@@ -95,7 +95,7 @@ class TestOauth:
         return_value=httpx.Response(400, json={"ape": "Apan-Papansson"}),
     )
     async def test_get_github_access_bad_response(self, monkeypatch):
-        """Tests gitub action user fetcher"""
+        """Tests github action user fetcher with bad response"""
         with pytest.raises(HTTPException):
             await get_github_access_token("awdiophawpiod")
             monkeypatch.assert_called_once()
@@ -110,7 +110,7 @@ class TestOauth:
         return_value=httpx.Response(200, json={"access_token": "Apan-Papansson"}),
     )
     async def test_get_github_user(self, monkeypatch):
-        """Tests gitub action user fetcher"""
+        """Tests github action user fetcher"""
         await get_github_user("pjasc890123")
         monkeypatch.assert_called_once()
         monkeypatch.assert_called_with(
@@ -124,7 +124,7 @@ class TestOauth:
         return_value=httpx.Response(200, json={"ape": "Apan-Papansson"}),
     )
     async def test_get_github_user_no_token(self, monkeypatch):
-        """Tests gitub action user fetcher"""
+        """Tests github action user fetcher"""
         with pytest.raises(HTTPException):
             await get_github_access_token("pjasc890123")
             monkeypatch.assert_called_once()
@@ -139,7 +139,7 @@ class TestOauth:
         return_value=httpx.Response(400, json={"access_token": "Apan-Papansson"}),
     )
     async def test_get_github_user_fail(self, monkeypatch):
-        """Tests gitub action user fetcher"""
+        """Tests github action user fetcher failing"""
         with pytest.raises(HTTPException):
             res = await get_github_user("pjasc890123")
             print(res)
@@ -151,7 +151,7 @@ class TestOauth:
 
     @pytest.mark.asyncio
     async def test_get_id_admin(self, monkeypatch):
-        """Tests gitub action user fetcher"""
+        """Tests get id with admin role"""
         get_admin_mock = AsyncMock(return_value=1)
         monkeypatch.setattr(AdminRepository, "get_admin_id_from_github_login", get_admin_mock)
         res = await get_id(
@@ -164,7 +164,7 @@ class TestOauth:
 
     @pytest.mark.asyncio
     async def test_get_id_user(self, monkeypatch):
-        """Tests gitub action user fetcher"""
+        """Tests get id with user role"""
         get_user_mock = AsyncMock(return_value=1)
         monkeypatch.setattr(UserRepository, "get_user_id_from_github_login", get_user_mock)
         res = await get_id(
