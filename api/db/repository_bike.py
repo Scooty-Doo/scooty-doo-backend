@@ -9,6 +9,7 @@ from sqlalchemy.orm import with_expression
 
 from api.db.repository_base import DatabaseRepository
 from api.models import db_models
+from api.exceptions import BikeNotFoundException
 
 
 class BikeRepository(DatabaseRepository[db_models.Bike]):
@@ -44,11 +45,17 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
             "updated_at_lt": lambda v: self.model.updated_at < v,
         }
 
-        return [
+        filters = [
             filter_map[key](value)
             for key, value in params.items()
             if key in filter_map and value is not None
         ]
+        
+        include_deleted = params.get('include_deleted', False)
+        if not include_deleted:
+            filters.append(self.model.deleted_at.is_(None))
+        
+        return filters
 
     async def get_bikes(self, **params) -> list[db_models.Bike]:
         """Get bikes with dynamic filters."""
@@ -112,3 +119,26 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
 
         result = await self.session.execute(stmt)
         return result.all()
+
+    async def delete_bike(self, bike_id: int) -> Optional[db_models.Bike]:
+        """Soft delete a bike."""
+        stmt = (
+            update(self.model)
+            .where(self.model.id == bike_id)
+            .where(self.model.deleted_at.is_(None))
+            .values(
+                deleted_at=func.now(),
+                is_available=False,
+                last_position=None
+            )
+            .returning(*self._get_bike_columns())
+        )
+        
+        result = await self.session.execute(stmt)
+        bike = result.mappings().one_or_none()
+        
+        if not bike:
+            raise BikeNotFoundException(f"Bike with ID {bike_id} not found")
+        
+        await self.session.commit()
+        return bike
