@@ -1,6 +1,6 @@
 import datetime
 
-from api.models.db_models import Bike, MapZone, Trip, User, ZoneType, Transaction
+from api.models.db_models import Bike, MapZone, Transaction, Trip, User, ZoneType
 from api.models.trip_models import (
     BikeTripEndData,
     BikeTripEndLog,
@@ -355,12 +355,12 @@ fake_transactions_data = [
         created_at=datetime.datetime(2025, 1, 19, 17, 55, 39, 596693),
         updated_at=datetime.datetime(2025, 1, 19, 17, 55, 39, 596693),
     ),
-        Transaction(
+    Transaction(
         id=1,
         amount="100.00",
         transaction_type="deposit",
         transaction_description=None,
         created_at=datetime.datetime(2025, 1, 19, 17, 55, 39, 596693),
         updated_at=datetime.datetime(2025, 1, 19, 17, 55, 39, 596693),
-    )
+    ),
 ]

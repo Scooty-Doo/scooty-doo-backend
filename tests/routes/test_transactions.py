@@ -8,7 +8,7 @@ from httpx import ASGITransport, AsyncClient
 from api.db.repository_transaction import TransactionRepository
 from api.main import app
 from api.routes.me import security_check
-from tests.mock_files.objects import fake_transactions_data, fake_transaction_data
+from tests.mock_files.objects import fake_transactions_data
 from tests.utils import get_fake_json_data
 
 
