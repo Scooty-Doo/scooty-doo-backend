@@ -6,7 +6,7 @@ import pytest
 from fastapi import HTTPException
 from fastapi.security.oauth2 import SecurityScopes
 
-from api.services.oauth import get_github_access_token, httpx, security_check, settings
+from api.services.oauth import get_github_access_token, httpx, security_check, settings, get_github_user
 
 
 class TestOauth:
@@ -61,7 +61,7 @@ class TestOauth:
 
     @pytest.mark.asyncio
     @patch(
-        "api.services.bike_caller.httpx.AsyncClient.post",
+        "api.services.oauth.httpx.AsyncClient.post",
         return_value=httpx.Response(200, json={"access_token": "pjasc890123"}),
     )
     async def test_get_github_access_token(self, monkeypatch):
@@ -78,3 +78,64 @@ class TestOauth:
                 "redirect_uri": settings.github_redirect_uri,
             },
         )
+
+    @pytest.mark.asyncio
+    @patch(
+        "api.services.oauth.httpx.AsyncClient.post",
+        return_value=httpx.Response(400, json={"ape": "Apan-Papansson"}),
+    )
+    async def test_get_github_access_bad_response(self, monkeypatch):
+        """Tests gitub action user fetcher"""
+        with pytest.raises(HTTPException) as error:
+            await get_github_access_token("awdiophawpiod")
+            monkeypatch.assert_called_once()
+            monkeypatch.assert_called_with(
+                "https://github.com/login/oauth/access_token",
+                headers={"Authorization": "Bearer pjasc890123"},
+            )
+
+
+    @pytest.mark.asyncio
+    @patch(
+        "api.services.oauth.httpx.AsyncClient.get",
+        return_value=httpx.Response(200, json={"access_token": "Apan-Papansson"}),
+    )
+    async def test_get_github_user(self, monkeypatch):
+        """Tests gitub action user fetcher"""
+        await get_github_user("pjasc890123")
+        monkeypatch.assert_called_once()
+        monkeypatch.assert_called_with(
+            "https://api.github.com/user",
+            headers={"Authorization": "Bearer pjasc890123"},
+        )
+
+    @pytest.mark.asyncio
+    @patch(
+        "api.services.oauth.httpx.AsyncClient.get",
+        return_value=httpx.Response(200, json={"ape": "Apan-Papansson"}),
+    )
+    async def test_get_github_user_no_token(self, monkeypatch):
+        """Tests gitub action user fetcher"""
+        with pytest.raises(HTTPException) as error:
+            await get_github_access_token("pjasc890123")
+            monkeypatch.assert_called_once()
+            monkeypatch.assert_called_with(
+                "https://api.github.com/user",
+                headers={"Authorization": "Bearer pjasc890123"},
+            )
+
+    @pytest.mark.asyncio
+    @patch(
+        "api.services.oauth.httpx.AsyncClient.get",
+        return_value=httpx.Response(400, json={"access_token": "Apan-Papansson"}),
+    )
+    async def test_get_github_user_fail(self, monkeypatch):
+        """Tests gitub action user fetcher"""
+        with pytest.raises(HTTPException) as error:
+            res = await get_github_user("pjasc890123")
+            print(res)
+            monkeypatch.assert_called_once()
+            monkeypatch.assert_called_with(
+                "https://api.github.com/user",
+                headers={"Authorization": "Bearer pjasc890123"},
+            )
