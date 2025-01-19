@@ -1,7 +1,6 @@
 """SQLAlchemy database models for Scooty Doo API."""
 
 from datetime import datetime
-from typing import Optional
 
 from geoalchemy2 import Geometry
 from sqlalchemy import (
@@ -45,6 +44,7 @@ class Base(AsyncAttrs, DeclarativeBase):
     def restore(self) -> None:
         """Restore a soft-deleted record."""
         self.deleted_at = None
+
 
 class City(Base):
     """City database model."""

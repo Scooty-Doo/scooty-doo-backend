@@ -3,7 +3,6 @@
 from unittest.mock import AsyncMock
 
 import pytest
-import json
 from httpx import ASGITransport, AsyncClient
 
 from api.db.repository_bike import BikeRepository

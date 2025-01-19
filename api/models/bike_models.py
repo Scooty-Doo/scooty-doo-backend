@@ -11,6 +11,7 @@ from api.models.wkt_models import WKTPoint
 
 class UserBikeAttributes(BaseModel):
     """Bike attributes visible to users."""
+
     battery_level: int = Field(ge=0, le=100, alias="battery_lvl")
     position: Optional[WKTPoint] = Field(None, alias="last_position")
     is_available: bool = True
@@ -20,6 +21,7 @@ class UserBikeAttributes(BaseModel):
 
 class AdminBikeAttributes(UserBikeAttributes):
     """Bike attributes visible to admins."""
+
     created_at: datetime
     updated_at: datetime
     deleted_at: Optional[datetime] = None
@@ -60,7 +62,9 @@ class BikeResource(BaseModel):
         )
 
     @classmethod
-    def from_bike_zone_model(cls, bike: Any, request_url: str, map_zone_id: int, is_admin: bool) -> "BikeResource":
+    def from_bike_zone_model(
+        cls, bike: Any, request_url: str, map_zone_id: int, is_admin: bool
+    ) -> "BikeResource":
         """Create a BikeResource from a database model."""
         attributes_model = AdminBikeAttributes if is_admin else UserBikeAttributes
         return cls(

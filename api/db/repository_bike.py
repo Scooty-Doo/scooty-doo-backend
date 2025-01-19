@@ -11,6 +11,7 @@ from api.db.repository_base import DatabaseRepository
 from api.exceptions import BikeNotFoundException
 from api.models import db_models
 
+
 class BikeRepository(DatabaseRepository[db_models.Bike]):
     """Repository for bike-specific operations."""
 
@@ -50,11 +51,11 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
             for key, value in params.items()
             if key in filter_map and value is not None
         ]
-        
-        include_deleted = params.get('include_deleted', False)
+
+        include_deleted = params.get("include_deleted", False)
         if not include_deleted:
             filters.append(self.model.deleted_at.is_(None))
-        
+
         return filters
 
     async def get_bikes(self, **params) -> list[db_models.Bike]:
@@ -100,7 +101,7 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
         """Get a bike by ID."""
         stmt = (
             select(self.model)
-            .options(with_expression(self.model.last_position, ST_AsText(self.model.last_position))) # noqa: F821
+            .options(with_expression(self.model.last_position, ST_AsText(self.model.last_position)))  # noqa: F821
             .where(self.model.id == pk)
         )
 
@@ -112,7 +113,6 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
 
         return bike
 
-
     async def get_bikes_in_zone(
         self, zone_type_id: int, city_id: int
     ) -> list[tuple[db_models.Bike, int]]:
@@ -121,10 +121,9 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
             select(self.model, db_models.MapZone.id.label("map_zone_id"))
             .join(
                 db_models.MapZone,
-                func.ST_Contains(db_models.MapZone.boundary, self.model.last_position), # noqa: F821
+                func.ST_Contains(db_models.MapZone.boundary, self.model.last_position),  # noqa: F821
             )
-            .options(with_expression(self.model.last_position, ST_AsText(self.model.last_position))) # noqa: F821
-
+            .options(with_expression(self.model.last_position, ST_AsText(self.model.last_position)))  # noqa: F821
             .where(db_models.MapZone.zone_type_id == zone_type_id)
             .where(self.model.city_id == city_id)
         )
@@ -146,12 +145,12 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
             )
             .returning(*self._get_bike_columns())
         )
-        
+
         result = await self.session.execute(stmt)
         bike = result.mappings().one_or_none()
-        
+
         if not bike:
             raise BikeNotFoundException(f"Bike with ID {bike_id} not found")
-        
+
         await self.session.commit()
         return bike
