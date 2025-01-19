@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import with_expression
 
 from api.db.repository_base import DatabaseRepository
+from api.exceptions import BikeNotFoundException
 from api.models import db_models
 
 
@@ -91,9 +92,20 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
 
     async def get_bike(self, pk: int) -> Optional[db_models.Bike]:
         """Get a bike by ID."""
-        stmt = select(*self._get_bike_columns()).where(self.model.id == pk)
+        stmt = (
+            select(self.model)
+            .options(with_expression(self.model.last_position, ST_AsText(self.model.last_position))) # noqa: F821
+            .where(self.model.id == pk)
+        )
+
         result = await self.session.execute(stmt)
-        return result.mappings().first()
+        bike = result.unique().scalar_one_or_none()
+
+        if bike is None:
+            raise BikeNotFoundException(f"Bike with ID {pk} not found")
+
+        return bike
+
 
     async def get_bikes_in_zone(
         self, zone_type_id: int, city_id: int
@@ -103,9 +115,10 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
             select(self.model, db_models.MapZone.id.label("map_zone_id"))
             .join(
                 db_models.MapZone,
-                func.ST_Contains(db_models.MapZone.boundary, self.model.last_position),
+                func.ST_Contains(db_models.MapZone.boundary, self.model.last_position), # noqa: F821
             )
-            .options(with_expression(self.model.last_position, ST_AsText(self.model.last_position)))
+            .options(with_expression(self.model.last_position, ST_AsText(self.model.last_position))) # noqa: F821
+
             .where(db_models.MapZone.zone_type_id == zone_type_id)
             .where(self.model.city_id == city_id)
         )
