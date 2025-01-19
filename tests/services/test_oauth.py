@@ -1,14 +1,18 @@
 """Module for testing oauth services module"""
 
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from fastapi import HTTPException
 from fastapi.security.oauth2 import SecurityScopes
 
+from api.db.repository_admin import AdminRepository
+from api.db.repository_user import UserRepository
+from api.models.oauth_models import GitHubUserResponse, UserId
 from api.services.oauth import (
     get_github_access_token,
     get_github_user,
+    get_id,
     httpx,
     security_check,
     settings,
@@ -144,3 +148,29 @@ class TestOauth:
                 "https://api.github.com/user",
                 headers={"Authorization": "Bearer pjasc890123"},
             )
+
+    @pytest.mark.asyncio
+    async def test_get_id_admin(self, monkeypatch):
+        """Tests gitub action user fetcher"""
+        get_admin_mock = AsyncMock(return_value=1)
+        monkeypatch.setattr(AdminRepository, "get_admin_id_from_github_login", get_admin_mock)
+        res = await get_id(
+            GitHubUserResponse(login="apan"),
+            role="admin",
+            admin_repository=get_admin_mock,
+            user_repository=get_admin_mock,
+        )
+        assert res == (UserId(id=1), ["admin"])
+
+    @pytest.mark.asyncio
+    async def test_get_id_user(self, monkeypatch):
+        """Tests gitub action user fetcher"""
+        get_user_mock = AsyncMock(return_value=1)
+        monkeypatch.setattr(UserRepository, "get_user_id_from_github_login", get_user_mock)
+        res = await get_id(
+            GitHubUserResponse(login="apan"),
+            role="user",
+            admin_repository=get_user_mock,
+            user_repository=get_user_mock,
+        )
+        assert res == (UserId(id=1), ["user"])
