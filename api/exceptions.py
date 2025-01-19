@@ -78,6 +78,7 @@ class BikeNotFoundException(ApiException):
     status_code = status.HTTP_404_NOT_FOUND
     title = "Bike Not Found"
 
+
 class BikeRejectedError(ApiException):
     """Exception raised when bike rejects rental request."""
 
