@@ -34,7 +34,7 @@ TransactionRepository = Annotated[
 
 @router.get("/", response_model=JsonApiResponse[TransactionResourceMinimal])
 async def get_transactions(
-    #_: Annotated[int, Security(security_check, scopes=["admin"])],
+    _: Annotated[int, Security(security_check, scopes=["admin"])],
     transaction_repository: TransactionRepository,
     request: Request,
     query_params: Annotated[TransactionGetRequestParams, Query()],
