@@ -71,6 +71,9 @@ asyncio_default_fixture_loop_scope = "function"
 
 [tool.coverage.run]
 omit = [
+    'test*',
     '*test*',
-    '*__init__*'
+    '*__init__*',
+    'tests/utils.py',
+    'tests/mock_files/objects.py'
 ]

@@ -71,7 +71,7 @@ MOCK_DATA = {
 }
 
 
-async def mock_start_trip(bike_id: int, user_id: int, trip_id: int) -> BikeTripStartData:
+async def mock_start_trip(user_id: int, trip_id: int) -> BikeTripStartData:
     """Mock bike service start trip."""
     mock_data_only = MOCK_DATA["data"]
     start_time = datetime.now(timezone.utc)
@@ -83,9 +83,7 @@ async def mock_start_trip(bike_id: int, user_id: int, trip_id: int) -> BikeTripS
     return BikeTripStartData(**mock_data_only)
 
 
-async def mock_end_trip(
-    bike_id: int, user_id: int, trip_id: int, maintenance: bool = False, ignore_zone: bool = False
-) -> BikeTripEndData:
+async def mock_end_trip(user_id: int, trip_id: int) -> BikeTripEndData:
     """Mock bike service end trip."""
     mock_data_only = MOCK_DATA["data"]
     start_time = datetime.now(timezone.utc)

@@ -31,6 +31,8 @@ class BikeRelationships(BaseModel):
 
 
 class BikeZoneRelationships(BaseModel):
+    """Bike zone relationships model"""
+
     zone: Optional[dict[str, Any]] = None
 
 
@@ -108,6 +110,8 @@ class UserBikeGetRequestParams(BaseModel):
 
 
 class ZoneBikeGetRequestParams(BaseModel):
+    """ "Model for bike zone request parameters"""
+
     zone_type_id: int = Field(gt=0)
     city_id: int = Field(gt=0)
 

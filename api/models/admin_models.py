@@ -38,7 +38,7 @@ class AdminResource(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
     @classmethod
-    def from_db_model(cls, admin: Any, request_url: str) -> "AdminResource":
+    def from_db_model(cls, admin: Any) -> "AdminResource":
         """Create a AdminResource from a database model."""
         return cls(
             id=str(admin.id),

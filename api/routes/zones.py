@@ -183,6 +183,12 @@ async def update_zone(
     base_url = str(request.base_url).rstrip("/")
     resource_url = f"{base_url}/v1/zones/{zone_id}"
 
+    return JsonApiResponse(
+        data=MapZoneResource.from_db_model(zone, resource_url),
+        links=JsonApiLinks(self_link=resource_url),
+    )
+
+
 @router.post("/point_in_zone", response_model=JsonApiResponse[MapZoneResource])
 async def get_point_in_zone(
     map_zone_repository: MapZoneRepository, request: Request, point: WKTPoint
@@ -192,7 +198,6 @@ async def get_point_in_zone(
 
     base_url = str(request.base_url).rstrip("/")
     resource_url = f"{base_url}/v1/zones/{zone.id}"
-
 
     return JsonApiResponse(
         data=MapZoneResource.from_db_model(zone, resource_url),
