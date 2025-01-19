@@ -6,7 +6,13 @@ import pytest
 from fastapi import HTTPException
 from fastapi.security.oauth2 import SecurityScopes
 
-from api.services.oauth import get_github_access_token, httpx, security_check, settings, get_github_user
+from api.services.oauth import (
+    get_github_access_token,
+    get_github_user,
+    httpx,
+    security_check,
+    settings,
+)
 
 
 class TestOauth:
@@ -86,14 +92,13 @@ class TestOauth:
     )
     async def test_get_github_access_bad_response(self, monkeypatch):
         """Tests gitub action user fetcher"""
-        with pytest.raises(HTTPException) as error:
+        with pytest.raises(HTTPException):
             await get_github_access_token("awdiophawpiod")
             monkeypatch.assert_called_once()
             monkeypatch.assert_called_with(
                 "https://github.com/login/oauth/access_token",
                 headers={"Authorization": "Bearer pjasc890123"},
             )
-
 
     @pytest.mark.asyncio
     @patch(
@@ -116,7 +121,7 @@ class TestOauth:
     )
     async def test_get_github_user_no_token(self, monkeypatch):
         """Tests gitub action user fetcher"""
-        with pytest.raises(HTTPException) as error:
+        with pytest.raises(HTTPException):
             await get_github_access_token("pjasc890123")
             monkeypatch.assert_called_once()
             monkeypatch.assert_called_with(
@@ -131,7 +136,7 @@ class TestOauth:
     )
     async def test_get_github_user_fail(self, monkeypatch):
         """Tests gitub action user fetcher"""
-        with pytest.raises(HTTPException) as error:
+        with pytest.raises(HTTPException):
             res = await get_github_user("pjasc890123")
             print(res)
             monkeypatch.assert_called_once()
