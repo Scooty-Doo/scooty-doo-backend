@@ -9,19 +9,20 @@ from api.models.models import JsonApiLinks
 from api.models.wkt_models import WKTPoint
 
 
-class BikeAttributes(BaseModel):
-    """Bike attributes for JSON:API response."""
-
+class UserBikeAttributes(BaseModel):
+    """Bike attributes visible to users."""
     battery_level: int = Field(ge=0, le=100, alias="battery_lvl")
-    position: Optional[WKTPoint] = Field(
-        None,
-        alias="last_position",
-    )
+    position: Optional[WKTPoint] = Field(None, alias="last_position")
     is_available: bool = True
-    created_at: datetime
-    updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+
+class AdminBikeAttributes(UserBikeAttributes):
+    """Bike attributes visible to admins."""
+    created_at: datetime
+    updated_at: datetime
+    deleted_at: Optional[datetime] = None
 
 
 class BikeRelationships(BaseModel):
@@ -39,18 +40,19 @@ class BikeResource(BaseModel):
 
     id: str
     type: str = "bikes"
-    attributes: BikeAttributes
+    attributes: Union[UserBikeAttributes, AdminBikeAttributes]
     relationships: Optional[Union[BikeRelationships, BikeZoneRelationships]] = None
     links: Optional[JsonApiLinks] = None
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
     @classmethod
-    def from_db_model(cls, bike: Any, request_url: str) -> "BikeResource":
+    def from_db_model(cls, bike: Any, request_url: str, is_admin: bool) -> "BikeResource":
         """Create a BikeResource from a database model."""
+        attributes_model = AdminBikeAttributes if is_admin else UserBikeAttributes
         return cls(
             id=str(bike.id),
-            attributes=BikeAttributes.model_validate(bike),
+            attributes=attributes_model.model_validate(bike),
             relationships=BikeRelationships(
                 city={"data": {"type": "cities", "id": str(bike.city_id)}}
             ),
@@ -58,11 +60,12 @@ class BikeResource(BaseModel):
         )
 
     @classmethod
-    def from_bike_zone_model(cls, bike: Any, request_url: str, map_zone_id: int) -> "BikeResource":
+    def from_bike_zone_model(cls, bike: Any, request_url: str, map_zone_id: int, is_admin: bool) -> "BikeResource":
         """Create a BikeResource from a database model."""
+        attributes_model = AdminBikeAttributes if is_admin else UserBikeAttributes
         return cls(
             id=str(bike.id),
-            attributes=BikeAttributes.model_validate(bike),
+            attributes=attributes_model.model_validate(bike),
             relationships=BikeZoneRelationships(
                 zone={"data": {"type": "zones", "id": str(map_zone_id)}}
             ),
@@ -89,6 +92,7 @@ class BikeGetRequestParams(BaseModel):
     created_at_lt: Optional[datetime] = None
     updated_at_gt: Optional[datetime] = None
     updated_at_lt: Optional[datetime] = None
+    include_deleted: Optional[bool] = False
 
 
 class UserBikeGetRequestParams(BaseModel):
