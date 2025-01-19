@@ -97,7 +97,7 @@ def raise_not_found(detail: str):
 
 @router.get("/bikes_in_zone", response_model=JsonApiResponse[BikeResource])
 async def get_bikes_in_zone(
-    # _: Annotated[int, Security(security_check, scopes=["admin"])],
+    _: Annotated[int, Security(security_check, scopes=["admin"])],
     request: Request,
     bike_repository: BikeRepository,
     query_params: Annotated[ZoneBikeGetRequestParams, Query()],
@@ -110,7 +110,7 @@ async def get_bikes_in_zone(
 
     return JsonApiResponse(
         data=[
-            BikeResource.from_bike_zone_model(bike, base_url, map_zone_id)
+            BikeResource.from_bike_zone_model(bike, base_url, map_zone_id, True)
             for bike, map_zone_id in bikes_with_zones
         ],
         links=JsonApiLinks(self_link=request_url),
@@ -129,7 +129,7 @@ async def get_all_bikes(
     base_url = str(request.base_url).rstrip("/") + request.url.path
 
     return JsonApiResponse(
-        data=[BikeResource.from_db_model(bike, base_url) for bike in bikes],
+        data=[BikeResource.from_db_model(bike, base_url, True) for bike in bikes],
         links=JsonApiLinks(self_link=base_url.rsplit("/", 1)[0]),
     )
 
@@ -147,7 +147,7 @@ async def get_available_bikes(
     base_url = str(request.base_url).rstrip("/") + request.url.path
 
     return JsonApiResponse(
-        data=[BikeResource.from_db_model(bike, base_url) for bike in bikes],
+        data=[BikeResource.from_db_model(bike, base_url, False) for bike in bikes],
         links=JsonApiLinks(self_link=base_url.rsplit("/", 1)[0]),
     )
 
@@ -169,7 +169,7 @@ async def get_bike(
     self_link = base_url + str(bike_id)
 
     return JsonApiResponse(
-        data=BikeResource.from_db_model(bike, base_url),
+        data=BikeResource.from_db_model(bike, base_url, True),
         links=JsonApiLinks(self_link=self_link),
     )
 
@@ -187,7 +187,7 @@ async def add_bike(
 
     base_url = str(request.base_url).rstrip("/") + "/v1/bikes"
     return JsonApiResponse(
-        data=BikeResource.from_db_model(created_bike, base_url),
+        data=BikeResource.from_db_model(created_bike, base_url, True),
         links=JsonApiLinks(self_link=f"{base_url}/{created_bike.id}"),
     )
 
@@ -214,20 +214,7 @@ async def update_bike(
     await emit_update(BikeSocket(**bike_update.model_dump(), bike_id=bike_id))
 
     return JsonApiResponse(
-        data=BikeResource.from_db_model(updated_bike, base_url),
+        data=BikeResource.from_db_model(updated_bike, base_url, True),
         links=JsonApiLinks(self_link=base_url),
     )
 
-
-@router.delete("/{bike_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def remove_bike(
-    _: Annotated[int, Security(security_check, scopes=["admin"])],
-    bike_id: int,
-    bike_repository: BikeRepository,
-):
-    """Remove a bike."""
-    bike = await bike_repository.get(bike_id)
-    if bike is None:
-        raise_not_found(f"Bike with ID {bike_id} not found")
-
-    await bike_repository.delete(bike_id)
