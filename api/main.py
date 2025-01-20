@@ -16,7 +16,36 @@ from api.exceptions import (
     validation_exception_handler,
 )
 from api.routes import admin, bikes, cities, me, oauth, stripe, transactions, trips, users, zones
-from api.routes.dev_routes import admin as dev_admin, bikes as dev_bikes, cities as dev_cities, me as dev_me, oauth as dev_oauth, stripe as dev_stripe, transactions as dev_transactions, trips as dev_trips, users as dev_users, zones as dev_zones
+from api.routes.dev_routes import (
+    admin as dev_admin,
+)
+from api.routes.dev_routes import (
+    bikes as dev_bikes,
+)
+from api.routes.dev_routes import (
+    cities as dev_cities,
+)
+from api.routes.dev_routes import (
+    me as dev_me,
+)
+from api.routes.dev_routes import (
+    oauth as dev_oauth,
+)
+from api.routes.dev_routes import (
+    stripe as dev_stripe,
+)
+from api.routes.dev_routes import (
+    transactions as dev_transactions,
+)
+from api.routes.dev_routes import (
+    trips as dev_trips,
+)
+from api.routes.dev_routes import (
+    users as dev_users,
+)
+from api.routes.dev_routes import (
+    zones as dev_zones,
+)
 from api.services.socket import socket
 
 sessionmanager.init(settings.database_url)
@@ -29,17 +58,10 @@ async def lifespan(application: FastAPI):  # pylint: disable=unused-argument
     if sessionmanager.is_initialized:
         await sessionmanager.close()
 
-v1_app = FastAPI(
-    title="Scooty Doo API v1",
-    openapi_prefix="/v1",
-    openapi_tags=[{"name": "v1"}]
-)
 
-dev_app = FastAPI(
-    title="Scooty Doo API Dev",
-    openapi_prefix="/dev",
-    openapi_tags=[{"name": "dev"}]
-)
+v1_app = FastAPI(title="Scooty Doo API v1", root_path="/v1", openapi_tags=[{"name": "v1"}])
+
+dev_app = FastAPI(title="Scooty Doo API Dev", root_path="/dev", openapi_tags=[{"name": "dev"}])
 
 app = FastAPI(
     title="Scooty Doo API",
