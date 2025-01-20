@@ -65,6 +65,22 @@ async def get_zones(
         links=JsonApiLinks(self_link=collection_url),
     )
 
+@router.get("/types", response_model=JsonApiResponse[ZoneTypeResource])
+async def get_zone_types(
+    request: Request, zone_type_repository: ZoneTypeRepository
+) -> JsonApiResponse[ZoneTypeResource]:
+    """Get all zone types"""
+    zone_types = await zone_type_repository.get_zone_types()
+
+    base_url = str(request.base_url).rstrip("/")
+    collection_url = f"{base_url}/v1/zones/types"
+
+    return JsonApiResponse(
+        data=[
+            ZoneTypeResource.from_db_model(zone_type, collection_url) for zone_type in zone_types
+        ],
+        links=JsonApiLinks(self_link=collection_url),
+    )
 
 @router.get("/{zone_id}", response_model=JsonApiResponse[MapZoneResource])
 async def get_zone(
@@ -127,24 +143,15 @@ async def update_zone(
         links=JsonApiLinks(self_link=resource_url),
     )
 
-
-@router.get("/types", response_model=JsonApiResponse[ZoneTypeResource])
-async def get_zone_types(
-    request: Request, zone_type_repository: ZoneTypeRepository
-) -> JsonApiResponse[ZoneTypeResource]:
-    """Get all zone types"""
-    zone_types = await zone_type_repository.get_zone_types()
-
-    base_url = str(request.base_url).rstrip("/")
-    collection_url = f"{base_url}/v1/zones/types"
-
-    return JsonApiResponse(
-        data=[
-            ZoneTypeResource.from_db_model(zone_type, collection_url) for zone_type in zone_types
-        ],
-        links=JsonApiLinks(self_link=collection_url),
-    )
-
+@router.delete("/{zone_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_zone(
+    # _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
+    map_zone_repository: MapZoneRepository,
+    zone_id: int = Path(..., ge=1),
+) -> None:
+    """Delete a zone by ID"""
+    await map_zone_repository.delete_map_zone(zone_id)
+    return
 
 @router.post(
     "/types", response_model=JsonApiResponse[ZoneTypeResource], status_code=status.HTTP_201_CREATED
@@ -187,6 +194,16 @@ async def update_zone_type(
         data=ZoneTypeResource.from_db_model(zone_type, resource_url),
         links=JsonApiLinks(self_link=resource_url),
     )
+
+@router.delete("/types/{zone_type_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_zone_type(
+    # _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
+    zone_type_repository: ZoneTypeRepository,
+    zone_type_id: int = Path(..., ge=1),
+) -> None:
+    """Delete a zone type by ID"""
+    await zone_type_repository.delete_zone_type(zone_type_id)
+    return
 
 
 @router.post("/point_in_zone", response_model=JsonApiResponse[MapZoneResource])
