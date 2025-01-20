@@ -2,7 +2,7 @@
 
 from typing import Any, Optional
 
-from sqlalchemy import BinaryExpression, and_, asc, desc, or_, select, update
+from sqlalchemy import BinaryExpression, and_, asc, desc, func, or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
@@ -73,11 +73,17 @@ class UserRepository(DatabaseRepository[db_models.User]):
             "updated_at_lt": lambda v: self.model.updated_at < v,
         }
 
-        return [
+        filters = [
             filter_map[key](value)
             for key, value in params.items()
             if key in filter_map and value is not None
         ]
+
+        include_deleted = params.get("include_deleted", False)
+        if not include_deleted:
+            filters.append(self.model.deleted_at.is_(None))
+
+        return filters
 
     async def get_users(self, **params) -> list[db_models.User]:
         """Get all users without their relationships, applying filters, sorting, and pagination."""
@@ -109,6 +115,7 @@ class UserRepository(DatabaseRepository[db_models.User]):
                 selectinload(self.model.transactions),
             )
             .where(self.model.id == user_id)
+            .where(self.model.deleted_at.is_(None))
         )
 
         result = await self.session.execute(stmt)
@@ -143,6 +150,7 @@ class UserRepository(DatabaseRepository[db_models.User]):
             update_stmt = (
                 update(self.model)
                 .where(self.model.id == user_id)
+                .where(self.model.deleted_at.is_(None))
                 .values(**data)
                 .returning(self.model.id)
             )
@@ -173,3 +181,28 @@ class UserRepository(DatabaseRepository[db_models.User]):
                     f"User with GitHub username {data.get('github_login')} already exists."
                 ) from e
             raise
+
+    async def delete_user(self, user_id: int) -> None:
+        """Soft delete a user by ID."""
+        stmt = (
+            update(self.model)
+            .where(self.model.id == user_id)
+            .where(self.model.deleted_at.is_(None))
+            .values(
+                deleted_at=func.now(),
+                full_name=None,
+                email=f"deleted_{user_id}@deleted.com",
+                github_login=f"deleted_{user_id}",
+                balance=0.00,
+                use_prepay=False,
+            )
+            .returning(self.model)
+        )
+        result = await self.session.execute(stmt)
+        user = result.scalar_one_or_none()
+
+        if user is None:
+            raise UserNotFoundException(f"User with ID {user_id} not found.")
+
+        await self.session.commit()
+        return user
