@@ -31,7 +31,9 @@ class UserAttributes(BaseModel):
 
 class UserAttributesDeleted(UserAttributes):
     """User attributes for JSON:API response."""
+
     deleted_at: Optional[datetime] = None
+
 
 class UserRelationships(BaseModel):
     """User relationships for JSON:API response."""
@@ -61,7 +63,7 @@ class UserResourceMinimal(BaseModel):
             attributes=UserAttributes.model_validate(user),
             links=JsonApiLinks(self_link=f"{request_url}"),
         )
-    
+
     @classmethod
     def from_db_model_deleted(cls, user: Any, request_url: str) -> "UserResourceMinimal":
         """Create a minimal UserResource from a database model."""
@@ -135,6 +137,7 @@ class UserGetRequestParams(BaseModel):
     updated_at_gt: Optional[datetime] = None
     updated_at_lt: Optional[datetime] = None
     include_deleted: Optional[bool] = False
+
 
 class UserCreate(BaseModel):
     """Model for payload to create a user"""

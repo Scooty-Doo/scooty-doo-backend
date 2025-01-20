@@ -171,6 +171,7 @@ fake_updated_me = User(
     meta_data={},
     created_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
     updated_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+    deleted_at=None,
 )
 
 fake_user_two = User(
@@ -182,6 +183,7 @@ fake_user_two = User(
     meta_data={},
     created_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
     updated_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+    deleted_at=None,
 )
 
 fake_users_data = [fake_me_data, fake_user_two]

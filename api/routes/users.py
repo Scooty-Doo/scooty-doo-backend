@@ -83,7 +83,8 @@ async def get_users(
 
     return JsonApiResponse(
         data=[
-            UserResourceMinimal.from_db_model_deleted(user, f"{collection_url}/{user.id}") for user in users
+            UserResourceMinimal.from_db_model_deleted(user, f"{collection_url}/{user.id}")
+            for user in users
         ],
         links=JsonApiLinks(self_link=collection_url),
     )

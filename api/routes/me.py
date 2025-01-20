@@ -153,6 +153,7 @@ async def get_my_user_transactions(
         links=JsonApiLinks(self_link=resource_url),
     )
 
+
 @router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(
     user_id: Annotated[int, Security(security_check, scopes=["user"])],

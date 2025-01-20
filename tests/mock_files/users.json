@@ -9,7 +9,8 @@
                  "github_login": "Ape-T",
                  "meta_data": null,
                  "updated_at": "2025-01-08T20:12:27.694999Z",
-                 "use_prepay": false
+                 "use_prepay": false,
+                "deleted_at": null
              },
              "id": "1201279949800724",
              "links": {
@@ -26,7 +27,8 @@
                  "github_login": "K",
                  "meta_data": {},
                  "updated_at": "2025-01-08T20:12:27.694999Z",
-                 "use_prepay": true
+                 "use_prepay": true,
+                "deleted_at": null
              },
              "id": "1201279949800725",
              "links": {
