@@ -145,7 +145,7 @@ async def update_zone(
 
 @router.delete("/{zone_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_zone(
-    # _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
+    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
     map_zone_repository: MapZoneRepository,
     zone_id: int = Path(..., ge=1),
 ) -> None:
@@ -197,7 +197,7 @@ async def update_zone_type(
 
 @router.delete("/types/{zone_type_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_zone_type(
-    # _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
+    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
     zone_type_repository: ZoneTypeRepository,
     zone_type_id: int = Path(..., ge=1),
 ) -> None:
@@ -208,6 +208,7 @@ async def delete_zone_type(
 
 @router.post("/point_in_zone", response_model=JsonApiResponse[MapZoneResource])
 async def get_point_in_zone(
+    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
     map_zone_repository: MapZoneRepository, request: Request, point: WKTPoint
 ) -> JsonApiResponse[MapZoneResource]:
     """Get a zone by point"""
