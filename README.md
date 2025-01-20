@@ -10,6 +10,12 @@ Backend for the Scooty Doo web application
 docker compose up
 ```
 
+## Documentation
+To see the documentation go to:
+```bash
+http://localhost:8000/docs
+```
+
 ## Development Setup
 
 ### Prerequisites
