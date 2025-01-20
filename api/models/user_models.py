@@ -2,7 +2,7 @@
 
 # pylint: disable=too-few-public-methods
 from datetime import datetime
-from typing import Annotated, Any, Literal, Optional
+from typing import Annotated, Any, Literal, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -29,6 +29,12 @@ class UserAttributes(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
+class UserAttributesDeleted(UserAttributes):
+    """User attributes for JSON:API response."""
+
+    deleted_at: Optional[datetime] = None
+
+
 class UserRelationships(BaseModel):
     """User relationships for JSON:API response."""
 
@@ -44,7 +50,7 @@ class UserResourceMinimal(BaseModel):
 
     id: str
     type: str = "users"
-    attributes: UserAttributes
+    attributes: Union[UserAttributes, UserAttributesDeleted]
     links: Optional[JsonApiLinks] = None
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
@@ -55,6 +61,15 @@ class UserResourceMinimal(BaseModel):
         return cls(
             id=str(user.id),
             attributes=UserAttributes.model_validate(user),
+            links=JsonApiLinks(self_link=f"{request_url}"),
+        )
+
+    @classmethod
+    def from_db_model_deleted(cls, user: Any, request_url: str) -> "UserResourceMinimal":
+        """Create a minimal UserResource from a database model."""
+        return cls(
+            id=str(user.id),
+            attributes=UserAttributesDeleted.model_validate(user),
             links=JsonApiLinks(self_link=f"{request_url}"),
         )
 
@@ -121,6 +136,7 @@ class UserGetRequestParams(BaseModel):
     created_at_lt: Optional[datetime] = None
     updated_at_gt: Optional[datetime] = None
     updated_at_lt: Optional[datetime] = None
+    include_deleted: Optional[bool] = False
 
 
 class UserCreate(BaseModel):

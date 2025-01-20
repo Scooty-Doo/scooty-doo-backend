@@ -66,6 +66,43 @@ async def get_zones(
     )
 
 
+@router.get("/types", response_model=JsonApiResponse[ZoneTypeResource])
+async def get_zone_types(
+    request: Request, zone_type_repository: ZoneTypeRepository
+) -> JsonApiResponse[ZoneTypeResource]:
+    """Get all zone types"""
+    zone_types = await zone_type_repository.get_zone_types()
+
+    base_url = str(request.base_url).rstrip("/")
+    collection_url = f"{base_url}/v1/zones/types"
+
+    return JsonApiResponse(
+        data=[
+            ZoneTypeResource.from_db_model(zone_type, collection_url) for zone_type in zone_types
+        ],
+        links=JsonApiLinks(self_link=collection_url),
+    )
+
+
+@router.get("/{zone_id}", response_model=JsonApiResponse[MapZoneResource])
+async def get_zone(
+    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
+    map_zone_repository: MapZoneRepository,
+    request: Request,
+    zone_id: int = Path(..., ge=1),
+) -> JsonApiResponse[MapZoneResource]:
+    """Get a zone by ID"""
+    zone = await map_zone_repository.get_map_zone(zone_id)
+
+    base_url = str(request.base_url).rstrip("/")
+    resource_url = f"{base_url}/v1/zones/{zone_id}"
+
+    return JsonApiResponse(
+        data=MapZoneResource.from_db_model(zone, resource_url),
+        links=JsonApiLinks(self_link=resource_url),
+    )
+
+
 @router.post(
     "/", response_model=JsonApiResponse[MapZoneResource], status_code=status.HTTP_201_CREATED
 )
@@ -88,22 +125,36 @@ async def create_zone(
     )
 
 
-@router.get("/types", response_model=JsonApiResponse[ZoneTypeResource])
-async def get_zone_types(
-    request: Request, zone_type_repository: ZoneTypeRepository
-) -> JsonApiResponse[ZoneTypeResource]:
-    """Get all zone types"""
-    zone_types = await zone_type_repository.get_zone_types()
+@router.patch("/{zone_id}", response_model=JsonApiResponse[MapZoneResource])
+async def update_zone(
+    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
+    map_zone_repository: MapZoneRepository,
+    request: Request,
+    zone_data: MapZoneUpdate,
+    zone_id: int = Path(..., ge=1),
+) -> JsonApiResponse[MapZoneResource]:
+    """Update a zone by ID"""
+    zone_data_dict = zone_data.model_dump(exclude_unset=True)
+    zone = await map_zone_repository.update_map_zone(zone_id, zone_data_dict)
 
     base_url = str(request.base_url).rstrip("/")
-    collection_url = f"{base_url}/v1/zones/types"
+    resource_url = f"{base_url}/v1/zones/{zone_id}"
 
     return JsonApiResponse(
-        data=[
-            ZoneTypeResource.from_db_model(zone_type, collection_url) for zone_type in zone_types
-        ],
-        links=JsonApiLinks(self_link=collection_url),
+        data=MapZoneResource.from_db_model(zone, resource_url),
+        links=JsonApiLinks(self_link=resource_url),
     )
+
+
+@router.delete("/{zone_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_zone(
+    _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
+    map_zone_repository: MapZoneRepository,
+    zone_id: int = Path(..., ge=1),
+) -> None:
+    """Delete a zone by ID"""
+    await map_zone_repository.delete_map_zone(zone_id)
+    return
 
 
 @router.post(
@@ -149,49 +200,23 @@ async def update_zone_type(
     )
 
 
-@router.get("/{zone_id}", response_model=JsonApiResponse[MapZoneResource])
-async def get_zone(
+@router.delete("/types/{zone_type_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_zone_type(
     _: Annotated[db_models.Admin, Security(security_check, scopes=["admin"])],
-    map_zone_repository: MapZoneRepository,
-    request: Request,
-    zone_id: int = Path(..., ge=1),
-) -> JsonApiResponse[MapZoneResource]:
-    """Get a zone by ID"""
-    zone = await map_zone_repository.get_map_zone(zone_id)
-
-    base_url = str(request.base_url).rstrip("/")
-    resource_url = f"{base_url}/v1/zones/{zone_id}"
-
-    return JsonApiResponse(
-        data=MapZoneResource.from_db_model(zone, resource_url),
-        links=JsonApiLinks(self_link=resource_url),
-    )
-
-
-@router.patch("/{zone_id}", response_model=JsonApiResponse[MapZoneResource])
-async def update_zone(
-    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
-    map_zone_repository: MapZoneRepository,
-    request: Request,
-    zone_data: MapZoneUpdate,
-    zone_id: int = Path(..., ge=1),
-) -> JsonApiResponse[MapZoneResource]:
-    """Update a zone by ID"""
-    zone_data_dict = zone_data.model_dump(exclude_unset=True)
-    zone = await map_zone_repository.update_map_zone(zone_id, zone_data_dict)
-
-    base_url = str(request.base_url).rstrip("/")
-    resource_url = f"{base_url}/v1/zones/{zone_id}"
-
-    return JsonApiResponse(
-        data=MapZoneResource.from_db_model(zone, resource_url),
-        links=JsonApiLinks(self_link=resource_url),
-    )
+    zone_type_repository: ZoneTypeRepository,
+    zone_type_id: int = Path(..., ge=1),
+) -> None:
+    """Delete a zone type by ID"""
+    await zone_type_repository.delete_zone_type(zone_type_id)
+    return
 
 
 @router.post("/point_in_zone", response_model=JsonApiResponse[MapZoneResource])
 async def get_point_in_zone(
-    map_zone_repository: MapZoneRepository, request: Request, point: WKTPoint
+    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
+    map_zone_repository: MapZoneRepository,
+    request: Request,
+    point: WKTPoint,
 ) -> JsonApiResponse[MapZoneResource]:
     """Get a zone by point"""
     zone = await map_zone_repository.check_if_point_in_zones(point)

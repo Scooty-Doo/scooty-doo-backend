@@ -29,6 +29,7 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
             self.model.meta_data,
             self.model.created_at,
             self.model.updated_at,
+            self.model.deleted_at,
             ST_AsText(self.model.last_position).label("last_position"),
         ]
 
@@ -45,11 +46,17 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
             "updated_at_lt": lambda v: self.model.updated_at < v,
         }
 
-        return [
+        filters = [
             filter_map[key](value)
             for key, value in params.items()
             if key in filter_map and value is not None
         ]
+
+        include_deleted = params.get("include_deleted", False)
+        if not include_deleted:
+            filters.append(self.model.deleted_at.is_(None))
+
+        return filters
 
     async def get_bikes(self, **params) -> list[db_models.Bike]:
         """Get bikes with dynamic filters."""
@@ -79,8 +86,16 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
 
     async def update_bike(self, pk: int, data: dict[str, Any]) -> Optional[db_models.Bike]:
         """Update a bike by primary key."""
+        bike_exists = await self.session.execute(
+            select(self.model).where(self.model.id == pk).where(self.model.deleted_at.is_(None))
+        )
+        bike_exists = bike_exists.scalar_one_or_none()
+        if bike_exists is None:
+            raise BikeNotFoundException(f"Bike with ID {pk} not found")
+
         query = (
             update(self.model)
+            # where bike id matches and bike is not deleted
             .where(self.model.id == pk)
             .values(**data)
             .returning(*self._get_bike_columns())
@@ -123,3 +138,27 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
 
         result = await self.session.execute(stmt)
         return result.all()
+
+    async def delete_bike(self, bike_id: int) -> None:
+        """Soft delete a bike."""
+        stmt = (
+            update(self.model)
+            .where(self.model.id == bike_id)
+            .where(self.model.deleted_at.is_(None))
+            .values(
+                deleted_at=func.now(),
+                is_available=False,
+                last_position=None,
+                battery_lvl=0,
+            )
+            .returning(*self._get_bike_columns())
+        )
+
+        result = await self.session.execute(stmt)
+        bike = result.mappings().one_or_none()
+
+        if not bike:
+            raise BikeNotFoundException(f"Bike with ID {bike_id} not found")
+
+        await self.session.commit()
+        return

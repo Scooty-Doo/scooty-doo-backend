@@ -21,6 +21,7 @@ fake_bike_data = [
         updated_at=datetime.datetime(
             2024, 12, 17, 14, 21, 44, 610901, tzinfo=datetime.timezone.utc
         ),
+        deleted_at=None,
     ),
     Bike(
         id=2,
@@ -32,6 +33,7 @@ fake_bike_data = [
         updated_at=datetime.datetime(
             2024, 12, 17, 14, 21, 46, 610901, tzinfo=datetime.timezone.utc
         ),
+        deleted_at=None,
     ),
 ]
 
@@ -176,6 +178,7 @@ fake_updated_me = User(
     meta_data={},
     created_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
     updated_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+    deleted_at=None,
 )
 
 fake_user_two = User(
@@ -187,6 +190,7 @@ fake_user_two = User(
     meta_data={},
     created_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
     updated_at=datetime.datetime(2025, 1, 8, 20, 12, 27, 694999, tzinfo=datetime.timezone.utc),
+    deleted_at=None,
 )
 
 fake_users_data = [fake_me_data, fake_user_two]

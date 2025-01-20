@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Security
+from fastapi import APIRouter, Depends, HTTPException, Request, Security, status
 
 from api.db.repository_transaction import TransactionRepository as TransactionRepoClass
 from api.db.repository_trip import TripRepository as TripRepoClass
@@ -152,3 +152,14 @@ async def get_my_user_transactions(
         ],
         links=JsonApiLinks(self_link=resource_url),
     )
+
+
+@router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(
+    user_id: Annotated[int, Security(security_check, scopes=["user"])],
+    user_repository: UserRepository,
+) -> None:
+    """Delete a user by ID"""
+    await user_repository.delete_user(user_id)
+
+    return

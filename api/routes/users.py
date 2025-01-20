@@ -83,7 +83,8 @@ async def get_users(
 
     return JsonApiResponse(
         data=[
-            UserResourceMinimal.from_db_model(user, f"{collection_url}/{user.id}") for user in users
+            UserResourceMinimal.from_db_model_deleted(user, f"{collection_url}/{user.id}")
+            for user in users
         ],
         links=JsonApiLinks(self_link=collection_url),
     )
@@ -172,3 +173,14 @@ async def get_user_transactions(
         ],
         links=JsonApiLinks(self_link=resource_url),
     )
+
+
+@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(
+    _: Annotated[db_models.User, Security(security_check, scopes=["admin"])],
+    user_repository: UserRepository,
+    user_id: int = Path(..., ge=1),
+) -> None:
+    """Delete a user by ID"""
+    await user_repository.delete_user(user_id)
+    return None

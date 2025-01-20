@@ -3,7 +3,7 @@
 from typing import Any, Optional
 
 from geoalchemy2.functions import ST_AsText
-from sqlalchemy import BinaryExpression, and_, asc, desc, select, update
+from sqlalchemy import BinaryExpression, and_, asc, desc, func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, with_expression
@@ -26,7 +26,7 @@ class ZoneTypeRepository(DatabaseRepository[db_models.ZoneType]):
 
     async def get_zone_types(self) -> list[db_models.ZoneType]:
         """Get all zone types."""
-        stmt = select(self.model)
+        stmt = select(self.model).where(self.model.deleted_at.is_(None))
         result = await self.session.execute(stmt)
         return list(result.scalars())
 
@@ -55,6 +55,7 @@ class ZoneTypeRepository(DatabaseRepository[db_models.ZoneType]):
             stmt = (
                 update(self.model)
                 .where(self.model.id == zone_type_id)
+                .where(self.model.deleted_at.is_(None))
                 .values(**data)
                 .returning(*self.model.__table__.columns)
             )
@@ -73,6 +74,25 @@ class ZoneTypeRepository(DatabaseRepository[db_models.ZoneType]):
             if "zone_types_name_key" in str(e):
                 raise ZoneTypeNameExistsException(f"Name {data.get('name')} already exists.") from e
             raise
+
+    async def delete_zone_type(self, zone_type_id: int) -> Optional[db_models.ZoneType]:
+        """Delete a zone type by primary key."""
+        stmt = (
+            update(self.model)
+            .where(self.model.id == zone_type_id)
+            .where(self.model.deleted_at.is_(None))
+            .values(deleted_at=func.now())
+            .returning(*self.model.__table__.columns)
+        )
+
+        result = await self.session.execute(stmt)
+        await self.session.commit()
+
+        deleted_zone = result.mappings().one_or_none()
+        if not deleted_zone:
+            raise ZoneTypeNotFoundException(f"Zone type with ID {zone_type_id} not found.")
+        await self.session.commit()
+        return deleted_zone
 
 
 class MapZoneRepository(DatabaseRepository[db_models.MapZone]):
@@ -186,3 +206,17 @@ class MapZoneRepository(DatabaseRepository[db_models.MapZone]):
         except IntegrityError:
             await self.session.rollback()
             raise
+
+    async def delete_map_zone(self, pk: int) -> None:
+        """Proper deletion of map zone (not soft)"""
+        stmt = select(self.model).where(self.model.id == pk)
+        result = await self.session.execute(stmt)
+        zone = result.scalar_one_or_none()
+
+        if not zone:
+            raise MapZoneNotFoundException(f"Map zone with ID {pk} not found.")
+
+        await self.session.delete(zone)
+        await self.session.commit()
+
+        return

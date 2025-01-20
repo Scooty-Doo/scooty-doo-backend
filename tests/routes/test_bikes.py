@@ -61,6 +61,7 @@ class TestBikeRoute:
             city_id=1,
             min_battery=10.0,
             max_battery=40.0,
+            include_deleted=False,
         )
 
     @pytest.mark.asyncio
