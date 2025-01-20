@@ -74,7 +74,7 @@ class ZoneTypeRepository(DatabaseRepository[db_models.ZoneType]):
             if "zone_types_name_key" in str(e):
                 raise ZoneTypeNameExistsException(f"Name {data.get('name')} already exists.") from e
             raise
-    
+
     async def delete_zone_type(self, zone_type_id: int) -> Optional[db_models.ZoneType]:
         """Delete a zone type by primary key."""
         stmt = (
