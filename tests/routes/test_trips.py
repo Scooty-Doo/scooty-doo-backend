@@ -60,6 +60,22 @@ class TestTrips:
         assert response.json() == get_fake_json_data("trips")
 
     @pytest.mark.asyncio
+    async def test_get_trip(self, monkeypatch):
+        """Tests get trips route"""
+
+        app.dependency_overrides[security_check] = self.mock_security_check
+
+        mock_trip_return = AsyncMock(return_value=fake_trips[0])
+        monkeypatch.setattr(TripRepository, "get_trip", mock_trip_return)
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://localhost:8000/"
+        ) as ac:
+            response = await ac.get("v1/trips/12409712904")
+
+        assert response.status_code == 200
+        assert response.json() == get_fake_json_data("trip")
+
+    @pytest.mark.asyncio
     async def test_start_trip(self, monkeypatch):
         """Tests the start trip route aka the post /trips"""
         # Setup

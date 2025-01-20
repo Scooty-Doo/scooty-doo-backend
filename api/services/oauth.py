@@ -91,7 +91,7 @@ async def get_id(github_user: GitHubUserResponse, role: str, admin_repository, u
     return user_id, ["user"]
 
 
-async def security_check(
+def security_check(
     security_scopes: SecurityScopes,
     token=Depends(oauth2_scheme),
 ) -> int:

@@ -40,7 +40,7 @@ class ZoneTypeResource(BaseModel):
         return cls(
             id=str(zone_type.id),
             attributes=ZoneTypeAttributes.model_validate(zone_type),
-            links=JsonApiLinks(self_link=f"{request_url}"),
+            links=JsonApiLinks(self_link=f"{request_url}/{zone_type.id}"),
         )
 
 
