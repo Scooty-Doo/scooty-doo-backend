@@ -205,4 +205,4 @@ class UserRepository(DatabaseRepository[db_models.User]):
             raise UserNotFoundException(f"User with ID {user_id} not found.")
 
         await self.session.commit()
-        return user
+        return

@@ -139,7 +139,7 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
         result = await self.session.execute(stmt)
         return result.all()
 
-    async def delete_bike(self, bike_id: int) -> Optional[db_models.Bike]:
+    async def delete_bike(self, bike_id: int) -> None:
         """Soft delete a bike."""
         stmt = (
             update(self.model)
@@ -161,4 +161,4 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
             raise BikeNotFoundException(f"Bike with ID {bike_id} not found")
 
         await self.session.commit()
-        return bike
+        return
