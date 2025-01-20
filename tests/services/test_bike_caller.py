@@ -5,7 +5,15 @@ from unittest.mock import patch
 import pytest
 
 from api.exceptions import BikeServiceUnavailableError
-from api.services.bike_caller import end_trip, httpx, start_trip
+from api.services.bike_caller import (
+    datetime,
+    end_trip,
+    httpx,
+    mock_end_trip,
+    mock_start_trip,
+    start_trip,
+)
+from tests.mock_files.objects import fake_mock_end_object, fake_mock_start_object
 from tests.utils import get_fake_json_data
 
 
@@ -112,3 +120,32 @@ class TestBikeCaller:
             params={"bike_id": mock_log["bike_id"]},
             timeout=30,
         )
+
+    @pytest.mark.asyncio
+    async def test_mock_start_trip(self, monkeypatch):
+        """Tests mocked bike caller start"""
+        fixed_now = datetime(2025, 1, 19, 17, 25, 39, 596693)
+
+        class MockDateTime(datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return fixed_now
+
+        monkeypatch.setattr("api.services.bike_caller.datetime", MockDateTime)
+
+        res = await mock_start_trip(12, 125125, 1111)
+        assert res == fake_mock_start_object
+
+    @pytest.mark.asyncio
+    async def test_mock_end_trip(self, monkeypatch):
+        """Tests mocked bike caller end"""
+        fixed_now = datetime(2025, 1, 19, 17, 25, 39, 596693)
+
+        class MockDateTime(datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return fixed_now
+
+        monkeypatch.setattr("api.services.bike_caller.datetime", MockDateTime)
+        res = await mock_end_trip(12, 125125, 1111)
+        assert res == fake_mock_end_object

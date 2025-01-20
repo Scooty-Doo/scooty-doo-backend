@@ -94,7 +94,7 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
         """Get a bike by ID."""
         stmt = (
             select(self.model)
-            .options(with_expression(self.model.last_position, ST_AsText(self.model.last_position))) # noqa: F821
+            .options(with_expression(self.model.last_position, ST_AsText(self.model.last_position)))  # noqa: F821
             .where(self.model.id == pk)
         )
 
@@ -106,7 +106,6 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
 
         return bike
 
-
     async def get_bikes_in_zone(
         self, zone_type_id: int, city_id: int
     ) -> list[tuple[db_models.Bike, int]]:
@@ -115,10 +114,9 @@ class BikeRepository(DatabaseRepository[db_models.Bike]):
             select(self.model, db_models.MapZone.id.label("map_zone_id"))
             .join(
                 db_models.MapZone,
-                func.ST_Contains(db_models.MapZone.boundary, self.model.last_position), # noqa: F821
+                func.ST_Contains(db_models.MapZone.boundary, self.model.last_position),  # noqa: F821
             )
-            .options(with_expression(self.model.last_position, ST_AsText(self.model.last_position))) # noqa: F821
-
+            .options(with_expression(self.model.last_position, ST_AsText(self.model.last_position)))  # noqa: F821
             .where(db_models.MapZone.zone_type_id == zone_type_id)
             .where(self.model.city_id == city_id)
         )

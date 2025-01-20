@@ -53,7 +53,7 @@ async def get_transactions(
             )
             for transaction in transactions
         ],
-        links=JsonApiLinks(self_links=collection_url),
+        links=JsonApiLinks(self_link=collection_url),
     )
 
 
