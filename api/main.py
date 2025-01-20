@@ -16,6 +16,7 @@ from api.exceptions import (
     validation_exception_handler,
 )
 from api.routes import admin, bikes, cities, me, oauth, stripe, transactions, trips, users, zones
+from api.routes.dev_routes import admin as dev_admin, bikes as dev_bikes, cities as dev_cities, me as dev_me, oauth as dev_oauth, stripe as dev_stripe, transactions as dev_transactions, trips as dev_trips, users as dev_users, zones as dev_zones
 from api.services.socket import socket
 
 sessionmanager.init(settings.database_url)
@@ -28,9 +29,21 @@ async def lifespan(application: FastAPI):  # pylint: disable=unused-argument
     if sessionmanager.is_initialized:
         await sessionmanager.close()
 
+v1_app = FastAPI(
+    title="Scooty Doo API v1",
+    openapi_prefix="/v1",
+    openapi_tags=[{"name": "v1"}]
+)
+
+dev_app = FastAPI(
+    title="Scooty Doo API Dev",
+    openapi_prefix="/dev",
+    openapi_tags=[{"name": "dev"}]
+)
 
 app = FastAPI(
     title="Scooty Doo API",
+    root_path="/",
     summary="Everything you need to make a custom app with the Scooty Doo API",
 )
 
@@ -49,16 +62,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(bikes.router)
-app.include_router(zones.router)
-app.include_router(users.router)
-app.include_router(trips.router)
-app.include_router(oauth.router)
-app.include_router(transactions.router)
-app.include_router(stripe.router)
-app.include_router(me.router)
-app.include_router(admin.router)
-app.include_router(cities.router)
+v1_app.include_router(bikes.router)
+v1_app.include_router(zones.router)
+v1_app.include_router(users.router)
+v1_app.include_router(trips.router)
+v1_app.include_router(oauth.router)
+v1_app.include_router(transactions.router)
+v1_app.include_router(stripe.router)
+v1_app.include_router(me.router)
+v1_app.include_router(admin.router)
+v1_app.include_router(cities.router)
+
+dev_app.include_router(dev_bikes.router)
+dev_app.include_router(dev_zones.router)
+dev_app.include_router(dev_users.router)
+dev_app.include_router(dev_trips.router)
+dev_app.include_router(dev_oauth.router)
+dev_app.include_router(dev_transactions.router)
+dev_app.include_router(dev_stripe.router)
+dev_app.include_router(dev_me.router)
+dev_app.include_router(dev_admin.router)
+dev_app.include_router(dev_cities.router)
+
+app.mount("/v1", v1_app)
+app.mount("/dev", dev_app)
 
 # Add exception handlers
 app.add_exception_handler(ApiException, api_exception_handler)
